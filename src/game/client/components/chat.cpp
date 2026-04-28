@@ -1000,10 +1000,17 @@ void CChat::AddLine(int ClientId, int Team, const char *pLine)
 		return;
 	}
 
-	// Track new lines while selecting to prevent scroll offset issues
+	// Keep the visible line mapping stable only while actively dragging a selection.
+	// Once a finished selection exists, any new incoming line invalidates it because
+	// the cached selection coordinates no longer match the live chat backlog.
 	if(m_Selecting || m_HasSelection)
 	{
 		m_NewLineCounter++;
+	}
+	else
+	{
+		m_SelectionText.clear();
+		m_NewLineCounter = 0;
 	}
 
 	m_CurrentLine = (m_CurrentLine + 1) % MAX_LINES;
@@ -1624,6 +1631,7 @@ void CChat::OnRender()
 		if(!m_Selecting && MousePressed && MousePos.y < ChatInputAreaY)
 		{
 			m_Selecting = true;
+			m_NewLineCounter = 0;
 			m_SelectionMousePress = MousePos;
 			m_SelectionMouseRelease = m_SelectionMousePress;
 			m_HasSelection = false;
@@ -1648,6 +1656,7 @@ void CChat::OnRender()
 		{
 			m_HasSelection = false;
 			m_SelectionText.clear();
+			m_NewLineCounter = 0;
 		}
 	}
 	else
@@ -1658,6 +1667,7 @@ void CChat::OnRender()
 			m_Selecting = false;
 			m_HasSelection = false;
 			m_SelectionText.clear();
+			m_NewLineCounter = 0;
 		}
 	}
 
