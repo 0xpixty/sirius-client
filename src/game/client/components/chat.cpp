@@ -1539,6 +1539,7 @@ void CChat::OnPrepareLines(float y)
 		}
 		else
 		{
+			ColorizeLine(Line, AppendCursor);
 			if(g_Config.m_ClChatColorParsing && Line.m_ClientId != SERVER_MSG)
 				TextRender()->ColorParsing(pText, &AppendCursor, Color, &Line.m_TextContainerIndex);
 			else
@@ -2085,53 +2086,59 @@ bool CChat::ChatDetection(int ClientId, int Team, const char *pLine)
 	if(Client()->State() == CClient::STATE_DEMOPLAYBACK)
 		return false;
 
+	auto FindName = [&](int Idx = 0) -> std::string {
+		if(Idx < 0)
+			return "";
+
+		const char *pSearch = pLine;
+		for(int i = 0; i <= Idx; ++i)
+		{
+			const char *pFindName = str_find_nocase(pSearch, "'");
+			if(!pFindName)
+				return "";
+
+			const char *pNameEnd = str_find_nocase(pFindName + 1, "'");
+			if(!pNameEnd || pNameEnd <= pFindName + 1)
+				return "";
+
+			if(i == Idx)
+				return std::string(pFindName + 1, pNameEnd);
+
+			pSearch = pNameEnd + 1;
+		}
+
+		return "";
+	};
+
 	if(ClientId == SERVER_MSG)
 	{
 		if(g_Config.m_ClAutoAddOnNameChange)
 		{
-			if(str_find_nocase(pLine, "' changed name to '"))
+			if(str_find_nocase(pLine, "changed name to"))
 			{
-				char aNewName[MAX_NAME_LENGTH];
-				char aOldName[MAX_NAME_LENGTH];
-				{
-					const char *pName = str_find_nocase(pLine, " '");
-					const char *pOldName = str_find_nocase(pLine, "'");
-					const char *pNameLength = str_find_nocase(pLine, "' ");
+				std::string NameBefore = FindName(0);
+				std::string NameAfter = FindName(1);
 
-					std::string NewName(pName);
-					NewName.erase(NewName.begin() + str_length(pName) - 1);
-					NewName.erase(NewName.begin());
-					NewName.erase(NewName.begin());
-
-					str_copy(aNewName, NewName.c_str(), sizeof(aNewName));
-
-					std::string OldName(pOldName);
-					OldName.erase(str_length(pOldName) - str_length(pNameLength));
-					OldName.erase(OldName.begin());
-
-					str_copy(aOldName, OldName.c_str(), sizeof(aOldName));
-				}
-
-				int PlayerCid = GameClient()->GetClientId(aOldName);
+				int PlayerCid = GameClient()->GetClientId(NameBefore.c_str());
 
 				if(PlayerCid >= 0)
 				{
 					const CWarDataCache Cache = GameClient()->m_WarList.GetWarData(PlayerCid);
-					const CWarEntry *ExistingEntry = GameClient()->m_WarList.FindWarEntryWithName(aNewName);
-					const CWarEntry *OldEntry = GameClient()->m_WarList.FindWarEntryWithName(aOldName);
+					const CWarEntry *ExistingEntry = GameClient()->m_WarList.FindWarEntryWithName(NameAfter.c_str());
+					const CWarEntry *OldEntry = GameClient()->m_WarList.FindWarEntryWithName(NameBefore.c_str());
 
-					if(ExistingEntry && OldEntry && ExistingEntry->m_pWarType == OldEntry->m_pWarType && str_comp(ExistingEntry->m_aName, aNewName) == 0)
+					if(ExistingEntry && OldEntry && ExistingEntry->m_pWarType == OldEntry->m_pWarType && str_comp(ExistingEntry->m_aName, NameAfter.c_str()) == 0)
 						return false; // Already exists with the new name
 
 					char aBuf[128];
 					char aReason[128] = "";
-					str_copy(aReason, aOldName);
+					str_copy(aReason, NameBefore.c_str());
 					if(OldEntry && OldEntry->m_aReason[0] != '\0')
 						str_copy(aReason, OldEntry->m_aReason);
 
 					if(ExistingEntry && ExistingEntry->m_pWarType->m_Index == 2)
 					{
-						str_format(aBuf, sizeof(aBuf), "'%s' changed their name to a Teammates ['%s']", aOldName, aNewName);
+						str_format(aBuf, sizeof(aBuf), "'%s' changed their name to a Teammates ['%s']", NameBefore.c_str(), NameAfter.c_str());
 						if(g_Config.m_ClAutoAddOnNameChange == 2)
 							GameClient()->ClientMessage(aBuf);
 					}
@@ -2144,16 +2151,16 @@ bool CChat::ChatDetection(int ClientId, int Team, const char *pLine)
 
 						if(Cache.m_WarGroupMatches[WarlistType])
 						{
-							GameClient()->m_WarList.AddWarEntry(aNewName, "", aReason, pWarName, true);
-							str_format(aBuf, sizeof(aBuf), "Auto Added \"%s\" to Temp '%s' list", aNewName, pWarName);
+							GameClient()->m_WarList.AddWarEntry(NameAfter.c_str(), "", aReason, pWarName, true);
+							str_format(aBuf, sizeof(aBuf), "Auto Added \"%s\" to Temp '%s' list", NameAfter.c_str(), pWarName);
 							if(g_Config.m_ClAutoAddOnNameChange == 2)
 								GameClient()->ClientMessage(aBuf);
 						}
 					}
 					if(Cache.m_IsMuted)
 					{
-						GameClient()->m_WarList.AddMute(aNewName, true, true);
-						str_format(aBuf, sizeof(aBuf), "Auto Added \"%s\" to Temp Mute list", aNewName);
+						GameClient()->m_WarList.AddMute(NameAfter.c_str(), true, true);
+						str_format(aBuf, sizeof(aBuf), "Auto Added \"%s\" to Temp Mute list", NameAfter.c_str());
 						if(g_Config.m_ClAutoAddOnNameChange == 2)
 							GameClient()->ClientMessage(aBuf);
 					}
@@ -2161,60 +2168,33 @@ bool CChat::ChatDetection(int ClientId, int Team, const char *pLine)
 			}
 		}
 
-		if(g_Config.m_ClAutoJoinTeam)
+		if(g_Config.m_ClAutoJoinTeam && g_Config.m_ClAutoJoinTeamName[0] != '\0')
 		{
-			if(str_find_nocase(pLine, "' joined team "))
+			std::string Name = FindName();
+			if(str_find_nocase(pLine, "joined team "))
 			{
-				const char *PName = str_find_nocase(pLine, "'");
-				const char *NameLength = str_find_nocase(pLine, "' ");
-				if(str_find_nocase(pLine, g_Config.m_ClAutoJoinTeamName))
+				if(!str_comp(Name.c_str(), g_Config.m_ClAutoJoinTeamName))
 				{
-					int Length = str_length(PName) - str_length(NameLength);
-					std::string Name(PName);
-					Name.erase(Length);
-					Name.erase(Name.begin());
+					char aBuf[2048] = "/Join ";
+					str_append(aBuf, Name.c_str());
+					GameClient()->m_Chat.SendChat(0, aBuf);
+					char Joined[2048] = "Auto Joined ";
+					str_append(Joined, Name.c_str());
 
-					char PlayerName[16];
-					str_copy(PlayerName, Name.c_str(), sizeof(PlayerName));
-					if(!str_comp(g_Config.m_ClAutoJoinTeamName, PlayerName))
-					{
-						char aBuf[2048] = "/Join ";
-						str_append(aBuf, PlayerName);
-						GameClient()->m_Chat.SendChat(0, aBuf);
-						char Joined[2048] = "Auto Joined ";
-						str_append(Joined, PlayerName);
-
-						GameClient()->ClientMessage(Joined);
-					}
+					GameClient()->ClientMessage(Joined);
 				}
 			}
 		}
 
-		if(g_Config.m_ClNotifyOnJoin)
+		if(g_Config.m_ClNotifyOnJoin && g_Config.m_ClAutoNotifyName[0] != '\0')
 		{
-			if(str_find_nocase(pLine, g_Config.m_ClAutoNotifyName))
+			std::string Name = FindName();
+			if(str_find_nocase(pLine, "entered and joined the game"))
 			{
-				if(str_find_nocase(pLine, "entered and joined the game"))
+				if(!str_comp(Name.c_str(), g_Config.m_ClAutoNotifyName))
 				{
-					const char *PName = str_find_nocase(pLine, "'");
-					const char *NameLength = str_find_nocase(pLine, "' ");
-					if(str_find_nocase(pLine, g_Config.m_ClAutoNotifyName))
-					{
-						int Length = str_length(PName) - str_length(NameLength);
-						std::string Name(PName);
-						Name.erase(Length);
-						Name.erase(Name.begin());
-
-						char PlayerName[16];
-						str_copy(PlayerName, Name.c_str(), sizeof(PlayerName));
-
-						int NameToJoin = str_comp(g_Config.m_ClAutoNotifyName, PlayerName);
-						if(NameToJoin == 0)
-						{
-							GameClient()->ClientMessage(g_Config.m_ClAutoNotifyMsg);
-							GameClient()->m_Sounds.Play(CSounds::CHN_GUI, SOUND_CTF_CAPTURE, 0.6f);
-						}
-					}
+					GameClient()->ClientMessage(g_Config.m_ClAutoNotifyMsg);
+					GameClient()->m_Sounds.Play(CSounds::CHN_GUI, SOUND_CTF_CAPTURE, 0.3f);
 				}
 			}
 		}
@@ -2274,6 +2254,45 @@ bool CChat::ChatDetection(int ClientId, int Team, const char *pLine)
 		}
 	}
 	return false;
+}
+
+void CChat::ColorizeLine(const CLine &Line, CTextCursor &Cursor)
+{
+	if(!g_Config.m_ClWarListColorJoinLeave)
+		return;
+
+	const char *pLine = Line.m_aText;
+
+	int ClientId = Line.m_ClientId;
+	if(ClientId != SERVER_MSG)
+		return;
+
+	if(!str_find_nocase(pLine, "entered and joined the game") && !str_find_nocase(pLine, "has left the game"))
+		return;
+
+	const char *pNameBeginQuote = str_find(pLine, "'");
+	if(!pNameBeginQuote)
+		return;
+
+	const char *pNameStart = pNameBeginQuote + 1;
+	const char *pNameEndQuote = str_find(pNameStart, "'");
+	if(!pNameEndQuote || pNameEndQuote <= pNameStart)
+		return;
+
+	std::string Name(pNameStart, pNameEndQuote);
+	if(Name.empty())
+		return;
+
+	const CWarEntry *ExistingEntry = GameClient()->m_WarList.FindWarEntryWithName(Name.c_str());
+	if(!ExistingEntry || ExistingEntry->m_pWarType == nullptr)
+		return;
+
+	const int SplitIndex = Cursor.m_CharCount + (int)(pNameStart - 1 - pLine);
+	const int SplitLength = (int)(pNameEndQuote + 2 - pNameStart);
+	if(SplitLength <= 0)
+		return;
+
+	Cursor.m_vColorSplits.emplace_back(SplitIndex, SplitLength, ExistingEntry->m_pWarType->m_Color);
 }
 
 void CChat::ConSetChatInput(IConsole::IResult *pResult, void *pUserData)

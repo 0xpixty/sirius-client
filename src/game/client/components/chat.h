@@ -271,6 +271,7 @@ public:
 	// <EClient
 	bool LineHighlighted(int ClientId, const char *pLine);
 	bool ChatDetection(int ClientId, int Team, const char *pLine);
+	void ColorizeLine(const CLine &Line, CTextCursor &Cursor);
 	void AddHistoryEntry(const char *pLine);
 
 private:
