@@ -1,9 +1,15 @@
 // https://github.com/wxj881027/QmClient
 #include <base/detect.h>
 
+#ifndef MEDIA_PLAYER_DBUS
+#define MEDIA_PLAYER_DBUS 0
+#endif
+
 #if defined(CONF_FAMILY_WINDOWS) && __has_include(<winrt/Windows.Foundation.h>)
 #define MEDIA_PLAYER_WINRT 1
+#endif
 
+#if MEDIA_PLAYER_WINRT
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
@@ -27,15 +33,21 @@
 #undef ERROR
 #endif
 
-#include <algorithm>
-#include <chrono>
-#include <cmath>
-#include <deque>
-#include <mutex>
-#include <numbers>
-#include <string>
-#include <vector>
-#else
+#elif MEDIA_PLAYER_DBUS
+#include <curl/curl.h>
+#include <dbus/dbus.h>
+#define STB_IMAGE_IMPLEMENTATION
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wduplicated-branches"
+#endif
+#include <engine/external/stb_image.h>
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+#endif
+
+#ifndef MEDIA_PLAYER_WINRT
 #define MEDIA_PLAYER_WINRT 0
 #endif
 
@@ -44,6 +56,16 @@
 #include <base/system.h>
 
 #include <engine/image.h>
+
+#include <algorithm>
+#include <cctype>
+#include <chrono>
+#include <cmath>
+#include <deque>
+#include <mutex>
+#include <numbers>
+#include <string>
+#include <vector>
 #define IStorage EngineIStorage
 #include <engine/shared/config.h>
 #undef IStorage
@@ -51,15 +73,18 @@
 #if MEDIA_PLAYER_WINRT
 using namespace winrt::Windows::Media::Control;
 
-struct CMediaViewer::SWinrt
+class CMediaViewer::CWinrt
 {
-	CMediaViewer::CState m_State{};
+public:
+	CMediaViewer::CState m_State = {};
 	bool m_HasMedia = false;
 	std::vector<uint8_t> m_AlbumArtPendingRgba;
 	int m_AlbumArtPendingWidth = 0;
 	int m_AlbumArtPendingHeight = 0;
 };
+#endif
 
+#if MEDIA_PLAYER_WINRT || MEDIA_PLAYER_DBUS
 class CPlainState
 {
 public:
@@ -75,6 +100,8 @@ public:
 	int64_t m_PositionMs = 0;
 	int64_t m_DurationMs = 0;
 	CMediaViewer::CAlbumArtColors m_AlbumArtColors;
+	std::string m_AlbumArtUrl;
+	std::string m_TrackId;
 };
 
 enum class ECommand
@@ -96,7 +123,9 @@ public:
 	int m_AlbumArtHeight = 0;
 	bool m_AlbumArtDirty = false;
 };
+#endif
 
+#if MEDIA_PLAYER_WINRT
 class CMediaViewer::CAudioCapture
 {
 public:
@@ -106,6 +135,26 @@ public:
 
 	int64_t m_LastFrequencyChange = 0;
 };
+#endif
+
+#if MEDIA_PLAYER_DBUS
+class CMediaViewer::CDbus
+{
+public:
+	std::mutex m_Mutex;
+	CPlainState m_State{};
+	bool m_HasMedia = false;
+	std::deque<ECommand> m_Commands;
+	std::string m_ServiceName;
+	std::string m_PendingAlbumArtUrl;
+	bool m_AlbumArtDirty = false;
+	CMediaViewer::CAlbumArt m_AlbumArt;
+	CMediaViewer::CAlbumArt m_PrevAlbumArt;
+	std::vector<uint8_t> m_AlbumArtPendingRgba;
+	int m_AlbumArtPendingWidth = 0;
+	int m_AlbumArtPendingHeight = 0;
+};
+#endif
 
 namespace FFT
 {
@@ -194,6 +243,7 @@ namespace FFT
 	}
 }
 
+#if MEDIA_PLAYER_WINRT
 template<typename TAsyncOp>
 static bool WaitForAsync(const TAsyncOp &Operation, const std::atomic_bool &StopFlag)
 {
@@ -211,7 +261,7 @@ static bool WaitForAsync(const TAsyncOp &Operation, const std::atomic_bool &Stop
 	}
 }
 
-static void ClearAlbumArtLocal(CMediaViewer::SWinrt *pWinrt, IGraphics *pGraphics)
+static void ClearAlbumArtLocal(CMediaViewer::CWinrt *pWinrt, IGraphics *pGraphics)
 {
 	if(pGraphics && pWinrt->m_State.m_AlbumArt.m_Texture.IsValid())
 	{
@@ -233,14 +283,17 @@ static void ClearAlbumArtLocal(CMediaViewer::SWinrt *pWinrt, IGraphics *pGraphic
 	pWinrt->m_AlbumArtPendingWidth = 0;
 	pWinrt->m_AlbumArtPendingHeight = 0;
 }
-
-static void ClearState(CMediaViewer::SWinrt *pWinrt, IGraphics *pGraphics)
+#endif
+#if MEDIA_PLAYER_WINRT
+static void ClearState(CMediaViewer::CWinrt *pWinrt, IGraphics *pGraphics)
 {
 	ClearAlbumArtLocal(pWinrt, pGraphics);
 	pWinrt->m_State = CMediaViewer::CState{};
 	pWinrt->m_HasMedia = false;
 }
+#endif
 
+#if MEDIA_PLAYER_WINRT || MEDIA_PLAYER_DBUS
 static void ClearSharedAlbumArt(CMediaViewer::CShared *pShared)
 {
 	std::scoped_lock Lock(pShared->m_Mutex);
@@ -259,17 +312,18 @@ static void SetSharedAlbumArt(CMediaViewer::CShared *pShared, std::vector<uint8_
 	pShared->m_AlbumArtDirty = true;
 }
 
+static void ClearAlbumArtColors(CPlainState &State)
+{
+	State.m_AlbumArtColors = CMediaViewer::CAlbumArtColors{};
+}
+
+#if MEDIA_PLAYER_WINRT
 static void ClearMediaText(CPlainState &State)
 {
 	State.m_ServiceId.clear();
 	State.m_Title.clear();
 	State.m_Artist.clear();
 	State.m_Album.clear();
-}
-
-static void ClearAlbumArtColors(CPlainState &State)
-{
-	State.m_AlbumArtColors = CMediaViewer::CAlbumArtColors{};
 }
 
 static void ClearMediaDetails(CPlainState &State, std::string &AlbumArtKey, CMediaViewer::CShared *pShared)
@@ -290,9 +344,11 @@ static void ResetSharedState(CMediaViewer::CShared *pShared, CPlainState &State,
 	pShared->m_State = State;
 	pShared->m_HasMedia = false;
 }
+#endif
 
-struct CColorAccumulator
+class CColorAccumulator
 {
+public:
 	float m_Weight = 0.0f;
 	float m_SumR = 0.0f;
 	float m_SumG = 0.0f;
@@ -373,7 +429,6 @@ static void ComputeAlbumArtColors(const std::vector<uint8_t> &Pixels, int Width,
 	std::array<CColorAccumulator, HUE_BIN_COUNT> aHueBins{};
 	CColorAccumulator NeutralBin;
 	float TotalWeight = 0.0f;
-
 	for(size_t Index = 0; Index + 3 < Pixels.size(); Index += 4)
 	{
 		const float Alpha = Pixels[Index + 3] / 255.0f;
@@ -494,8 +549,100 @@ static void ComputeAlbumArtColors(const std::vector<uint8_t> &Pixels, int Width,
 		State.m_AlbumArtColors.m_Secondary = SecondaryColor;
 		State.m_AlbumArtColors.m_HasSecondary = true;
 	}
+	dbg_msg("test", "Primary (%.3f, %.3f, %.3f), Secondary (%.3f, %.3f, %.3f)",
+		State.m_AlbumArtColors.m_Primary.r, State.m_AlbumArtColors.m_Primary.g, State.m_AlbumArtColors.m_Primary.b,
+		State.m_AlbumArtColors.m_Secondary.r, State.m_AlbumArtColors.m_Secondary.g, State.m_AlbumArtColors.m_Secondary.b);
 }
 
+static void ApplyRoundedMask(std::vector<uint8_t> &Pixels, int Width, int Height, float Radius)
+{
+	if(Pixels.empty() || Width <= 0 || Height <= 0 || Radius <= 0.0f)
+		return;
+
+	const float MaxRadius = 0.5f * (float)std::min(Width, Height);
+	const float R = std::min(Radius, MaxRadius);
+	if(R <= 0.0f)
+		return;
+
+	const float Left = R;
+	const float Right = (float)Width - R;
+	const float Top = R;
+	const float Bottom = (float)Height - R;
+	const float OuterR2 = R * R;
+	const float InnerR = R - 1.0f;
+	const float InnerR2 = InnerR > 0.0f ? InnerR * InnerR : 0.0f;
+	const bool UseSoftEdge = InnerR > 0.0f;
+
+	for(int y = 0; y < Height; ++y)
+	{
+		const float Fy = (float)y + 0.5f;
+		for(int x = 0; x < Width; ++x)
+		{
+			const float Fx = (float)x + 0.5f;
+			float Dx = 0.0f;
+			float Dy = 0.0f;
+			bool Corner = false;
+
+			if(Fx < Left && Fy < Top)
+			{
+				Dx = Left - Fx;
+				Dy = Top - Fy;
+				Corner = true;
+			}
+			else if(Fx > Right && Fy < Top)
+			{
+				Dx = Fx - Right;
+				Dy = Top - Fy;
+				Corner = true;
+			}
+			else if(Fx < Left && Fy > Bottom)
+			{
+				Dx = Left - Fx;
+				Dy = Fy - Bottom;
+				Corner = true;
+			}
+			else if(Fx > Right && Fy > Bottom)
+			{
+				Dx = Fx - Right;
+				Dy = Fy - Bottom;
+				Corner = true;
+			}
+
+			if(!Corner)
+				continue;
+
+			const float Dist2 = Dx * Dx + Dy * Dy;
+			if(Dist2 <= (UseSoftEdge ? InnerR2 : OuterR2))
+				continue;
+
+			float Alpha = 0.0f;
+			if(UseSoftEdge && Dist2 < OuterR2)
+			{
+				const float Dist = std::sqrt(Dist2);
+				Alpha = std::clamp(R - Dist, 0.0f, 1.0f);
+			}
+
+			const size_t Index = (size_t)(y * Width + x) * 4;
+			if(Alpha <= 0.0f)
+			{
+				Pixels[Index + 0] = 0;
+				Pixels[Index + 1] = 0;
+				Pixels[Index + 2] = 0;
+				Pixels[Index + 3] = 0;
+			}
+			else if(Alpha < 1.0f)
+			{
+				Pixels[Index + 0] = (uint8_t)std::round(Pixels[Index + 0] * Alpha);
+				Pixels[Index + 1] = (uint8_t)std::round(Pixels[Index + 1] * Alpha);
+				Pixels[Index + 2] = (uint8_t)std::round(Pixels[Index + 2] * Alpha);
+				Pixels[Index + 3] = (uint8_t)std::round(Pixels[Index + 3] * Alpha);
+			}
+		}
+	}
+}
+#endif
+
+#if MEDIA_PLAYER_WINRT
 static bool UpdateAlbumArtData(CMediaViewer::CShared *pShared, CPlainState &State, const winrt::Windows::Storage::Streams::IRandomAccessStreamReference &Thumbnail, const std::atomic_bool &StopFlag)
 {
 	if(!Thumbnail)
@@ -594,94 +741,7 @@ static bool UpdateAlbumArtData(CMediaViewer::CShared *pShared, CPlainState &Stat
 	}
 }
 
-static void ApplyRoundedMask(std::vector<uint8_t> &Pixels, int Width, int Height, float Radius)
-{
-	if(Pixels.empty() || Width <= 0 || Height <= 0 || Radius <= 0.0f)
-		return;
-
-	const float MaxRadius = 0.5f * (float)std::min(Width, Height);
-	const float R = std::min(Radius, MaxRadius);
-	if(R <= 0.0f)
-		return;
-
-	const float Left = R;
-	const float Right = (float)Width - R;
-	const float Top = R;
-	const float Bottom = (float)Height - R;
-	const float OuterR2 = R * R;
-	const float InnerR = R - 1.0f;
-	const float InnerR2 = InnerR > 0.0f ? InnerR * InnerR : 0.0f;
-	const bool UseSoftEdge = InnerR > 0.0f;
-
-	for(int y = 0; y < Height; ++y)
-	{
-		const float Fy = (float)y + 0.5f;
-		for(int x = 0; x < Width; ++x)
-		{
-			const float Fx = (float)x + 0.5f;
-			float Dx = 0.0f;
-			float Dy = 0.0f;
-			bool Corner = false;
-
-			if(Fx < Left && Fy < Top)
-			{
-				Dx = Left - Fx;
-				Dy = Top - Fy;
-				Corner = true;
-			}
-			else if(Fx > Right && Fy < Top)
-			{
-				Dx = Fx - Right;
-				Dy = Top - Fy;
-				Corner = true;
-			}
-			else if(Fx < Left && Fy > Bottom)
-			{
-				Dx = Left - Fx;
-				Dy = Fy - Bottom;
-				Corner = true;
-			}
-			else if(Fx > Right && Fy > Bottom)
-			{
-				Dx = Fx - Right;
-				Dy = Fy - Bottom;
-				Corner = true;
-			}
-
-			if(!Corner)
-				continue;
-
-			const float Dist2 = Dx * Dx + Dy * Dy;
-			if(Dist2 <= (UseSoftEdge ? InnerR2 : OuterR2))
-				continue;
-
-			float Alpha = 0.0f;
-			if(UseSoftEdge && Dist2 < OuterR2)
-			{
-				const float Dist = std::sqrt(Dist2);
-				Alpha = std::clamp(R - Dist, 0.0f, 1.0f);
-			}
-
-			const size_t Index = (size_t)(y * Width + x) * 4;
-			if(Alpha <= 0.0f)
-			{
-				Pixels[Index + 0] = 0;
-				Pixels[Index + 1] = 0;
-				Pixels[Index + 2] = 0;
-				Pixels[Index + 3] = 0;
-			}
-			else if(Alpha < 1.0f)
-			{
-				Pixels[Index + 0] = (uint8_t)std::round(Pixels[Index + 0] * Alpha);
-				Pixels[Index + 1] = (uint8_t)std::round(Pixels[Index + 1] * Alpha);
-				Pixels[Index + 2] = (uint8_t)std::round(Pixels[Index + 2] * Alpha);
-				Pixels[Index + 3] = (uint8_t)std::round(Pixels[Index + 3] * Alpha);
-			}
-		}
-	}
-}
-
-static void ApplySharedAlbumArt(CMediaViewer::CShared *pShared, CMediaViewer::SWinrt *pWinrt, IGraphics *pGraphics)
+static void ApplySharedAlbumArt(CMediaViewer::CShared *pShared, CMediaViewer::CWinrt *pWinrt, IGraphics *pGraphics)
 {
 	if(!pShared || !pWinrt || !pGraphics)
 		return;
@@ -754,10 +814,815 @@ static void ApplySharedAlbumArt(CMediaViewer::CShared *pShared, CMediaViewer::SW
 		pWinrt->m_AlbumArtPendingHeight = 0;
 	}
 }
+#elif MEDIA_PLAYER_DBUS
+
+static void ApplyDbusSharedAlbumArt(CMediaViewer::CShared *pShared, CMediaViewer::CDbus *pDbus, IGraphics *pGraphics)
+{
+	if(!pShared || !pDbus || !pGraphics)
+		return;
+
+	bool AlbumArtDirty = false;
+	int AlbumArtWidth = 0;
+	int AlbumArtHeight = 0;
+	std::vector<uint8_t> AlbumArtPixels;
+	{
+		std::scoped_lock Lock(pShared->m_Mutex);
+		if(pShared->m_AlbumArtDirty)
+		{
+			AlbumArtDirty = true;
+			AlbumArtWidth = pShared->m_AlbumArtWidth;
+			AlbumArtHeight = pShared->m_AlbumArtHeight;
+			AlbumArtPixels = std::move(pShared->m_AlbumArtRgba);
+			pShared->m_AlbumArtRgba.clear();
+			pShared->m_AlbumArtDirty = false;
+		}
+	}
+
+	if(AlbumArtDirty)
+	{
+		const size_t ExpectedSize = (size_t)AlbumArtWidth * (size_t)AlbumArtHeight * 4;
+		if(AlbumArtWidth > 0 && AlbumArtHeight > 0 && AlbumArtPixels.size() >= ExpectedSize)
+		{
+			const float RoundingRatio = 2.0f / 14.0f;
+			const float Radius = (float)std::min(AlbumArtWidth, AlbumArtHeight) * RoundingRatio;
+			ApplyRoundedMask(AlbumArtPixels, AlbumArtWidth, AlbumArtHeight, Radius);
+
+			std::scoped_lock Lock(pDbus->m_Mutex);
+			pDbus->m_AlbumArtPendingRgba = std::move(AlbumArtPixels);
+			pDbus->m_AlbumArtPendingWidth = AlbumArtWidth;
+			pDbus->m_AlbumArtPendingHeight = AlbumArtHeight;
+		}
+		else
+		{
+			std::scoped_lock Lock(pDbus->m_Mutex);
+			pDbus->m_AlbumArtPendingRgba.clear();
+			pDbus->m_AlbumArtPendingWidth = 0;
+			pDbus->m_AlbumArtPendingHeight = 0;
+		}
+	}
+
+	std::scoped_lock Lock(pDbus->m_Mutex);
+	if(pDbus->m_AlbumArtPendingRgba.empty() || pDbus->m_AlbumArtPendingWidth <= 0 || pDbus->m_AlbumArtPendingHeight <= 0)
+		return;
+
+	const size_t ExpectedSize = (size_t)pDbus->m_AlbumArtPendingWidth * (size_t)pDbus->m_AlbumArtPendingHeight * 4;
+	CImageInfo Image;
+	Image.m_Width = (size_t)pDbus->m_AlbumArtPendingWidth;
+	Image.m_Height = (size_t)pDbus->m_AlbumArtPendingHeight;
+	Image.m_Format = CImageInfo::FORMAT_RGBA;
+	Image.m_pData = static_cast<uint8_t *>(malloc(ExpectedSize));
+	if(!Image.m_pData)
+		return;
+
+	mem_copy(Image.m_pData, pDbus->m_AlbumArtPendingRgba.data(), ExpectedSize);
+	const IGraphics::CTextureHandle NewAlbumArt = pGraphics->LoadTextureRawMove(Image, 0, "dbus_album_art");
+	if(Image.m_pData)
+		Image.Free();
+
+	if(NewAlbumArt.IsValid())
+	{
+		if(pDbus->m_AlbumArt.m_Texture.IsValid())
+			pGraphics->UnloadTexture(&pDbus->m_AlbumArt.m_Texture);
+		pDbus->m_PrevAlbumArt = pDbus->m_AlbumArt;
+		pDbus->m_AlbumArt.m_Texture = NewAlbumArt;
+		pDbus->m_AlbumArt.m_Width = pDbus->m_AlbumArtPendingWidth;
+		pDbus->m_AlbumArt.m_Height = pDbus->m_AlbumArtPendingHeight;
+		pDbus->m_AlbumArt.m_Colors = pDbus->m_State.m_AlbumArtColors;
+		pDbus->m_AlbumArtPendingRgba.clear();
+		pDbus->m_AlbumArtPendingWidth = 0;
+		pDbus->m_AlbumArtPendingHeight = 0;
+	}
+}
+
+static std::string UrlDecode(const std::string &Encoded)
+{
+	std::string Decoded;
+	Decoded.reserve(Encoded.size());
+
+	for(size_t i = 0; i < Encoded.size(); ++i)
+	{
+		const char c = Encoded[i];
+		if(c == '%' && i + 2 < Encoded.size())
+		{
+			auto HexToInt = [](char h) {
+				if(h >= '0' && h <= '9')
+					return h - '0';
+				if(h >= 'A' && h <= 'F')
+					return h - 'A' + 10;
+				if(h >= 'a' && h <= 'f')
+					return h - 'a' + 10;
+				return 0;
+			};
+			const char hi = Encoded[i + 1];
+			const char lo = Encoded[i + 2];
+			if(std::isxdigit(hi) && std::isxdigit(lo))
+			{
+				Decoded += (char)((HexToInt(hi) << 4) | HexToInt(lo));
+				i += 2;
+				continue;
+			}
+		}
+		if(c == '+')
+			Decoded += ' ';
+		else
+			Decoded += c;
+	}
+
+	return Decoded;
+}
+
+static std::string DecodeFileUri(const std::string &Uri)
+{
+	const std::string Prefix = "file:";
+	if(Uri.rfind(Prefix, 0) != 0)
+		return Uri;
+
+	std::string Path = Uri.substr(Prefix.size());
+
+	// file:///path or file:/path
+	if(Path.rfind("///", 0) == 0)
+	{
+		Path = Path.substr(2);
+	}
+	// file://localhost/path
+	else if(Path.rfind("//localhost/", 0) == 0)
+	{
+		Path = Path.substr(11);
+	}
+	// file://host/path
+	else if(Path.rfind("//", 0) == 0)
+	{
+		Path = Path.substr(2);
+	}
+
+	return UrlDecode(Path);
+}
+
+static size_t CurlWriteCallback(void *contents, size_t size, size_t nmemb, void *userp)
+{
+	const size_t total = size * nmemb;
+	if(total == 0)
+		return 0;
+	auto *pVec = static_cast<std::vector<uint8_t> *>(userp);
+	const uint8_t *pData = static_cast<uint8_t *>(contents);
+	// Enforce max download size (10 MB)
+	if(pVec->size() + total > 10 * 1024 * 1024)
+		return 0; // abort
+	pVec->insert(pVec->end(), pData, pData + total);
+	return total;
+}
+
+static bool DownloadUrlToVector(const std::string &Url, std::vector<uint8_t> &Out)
+{
+	static std::once_flag s_CurlInitFlag;
+	std::call_once(s_CurlInitFlag, []() {
+		curl_global_init(CURL_GLOBAL_DEFAULT);
+	});
+
+	CURL *pEasy = curl_easy_init();
+	if(!pEasy)
+		return false;
+	CURLM *pMulti = curl_multi_init();
+	if(!pMulti)
+	{
+		curl_easy_cleanup(pEasy);
+		return false;
+	}
+
+	curl_easy_setopt(pEasy, CURLOPT_URL, Url.c_str());
+	curl_easy_setopt(pEasy, CURLOPT_FOLLOWLOCATION, 1L);
+	curl_easy_setopt(pEasy, CURLOPT_WRITEFUNCTION, CurlWriteCallback);
+	curl_easy_setopt(pEasy, CURLOPT_WRITEDATA, &Out);
+	curl_easy_setopt(pEasy, CURLOPT_ACCEPT_ENCODING, "");
+	curl_easy_setopt(pEasy, CURLOPT_USERAGENT, "DDNetMediaViewer/1.0");
+	curl_easy_setopt(pEasy, CURLOPT_TIMEOUT, 10L);
+	curl_easy_setopt(pEasy, CURLOPT_MAXFILESIZE, 10 * 1024 * 1024L);
+
+	if(curl_multi_add_handle(pMulti, pEasy) != CURLM_OK)
+	{
+		curl_multi_cleanup(pMulti);
+		curl_easy_cleanup(pEasy);
+		return false;
+	}
+
+	CURLcode Result = CURLE_FAILED_INIT;
+	bool GotResult = false;
+	auto ReadResult = [&]() {
+		int MessagesLeft = 0;
+		while(CURLMsg *pMsg = curl_multi_info_read(pMulti, &MessagesLeft))
+		{
+			if(pMsg->msg == CURLMSG_DONE && pMsg->easy_handle == pEasy)
+			{
+				Result = pMsg->data.result;
+				GotResult = true;
+				return true;
+			}
+		}
+		return false;
+	};
+
+	int RunningHandles = 0;
+	CURLMcode MultiResult = curl_multi_perform(pMulti, &RunningHandles);
+	while(MultiResult == CURLM_OK && !GotResult)
+	{
+		ReadResult();
+		if(GotResult)
+			break;
+		if(RunningHandles == 0)
+			break;
+
+		int NumFds = 0;
+		MultiResult = curl_multi_poll(pMulti, nullptr, 0, 1000, &NumFds);
+		if(MultiResult != CURLM_OK)
+			break;
+
+		MultiResult = curl_multi_perform(pMulti, &RunningHandles);
+	}
+
+	ReadResult();
+	curl_multi_remove_handle(pMulti, pEasy);
+	curl_multi_cleanup(pMulti);
+	curl_easy_cleanup(pEasy);
+	return MultiResult == CURLM_OK && GotResult && Result == CURLE_OK && !Out.empty();
+}
+
+static bool DecodeImageFromBuffer(const std::vector<uint8_t> &Data, std::vector<uint8_t> &OutRgba, int &OutWidth, int &OutHeight)
+{
+	OutWidth = 0;
+	OutHeight = 0;
+	OutRgba.clear();
+
+	if(Data.empty())
+	{
+		dbg_msg("mediaviewer", "Cannot decode empty image buffer");
+		return false;
+	}
+
+	int Channels = 0;
+	int Width = 0, Height = 0;
+	uint8_t *ImageData = stbi_load_from_memory(Data.data(), (int)Data.size(), &Width, &Height, &Channels, 4);
+
+	if(!ImageData)
+	{
+		dbg_msg("mediaviewer", "Failed to load image from buffer: %s", stbi_failure_reason());
+		return false;
+	}
+
+	if(Width <= 0 || Height <= 0)
+	{
+		dbg_msg("mediaviewer", "Invalid image dimensions: %dx%d", Width, Height);
+		stbi_image_free(ImageData);
+		return false;
+	}
+
+	// Copy RGBA data
+	const size_t PixelCount = (size_t)Width * (size_t)Height;
+	const size_t ByteCount = PixelCount * 4;
+	OutRgba.resize(ByteCount);
+	memcpy(OutRgba.data(), ImageData, ByteCount);
+
+	OutWidth = Width;
+	OutHeight = Height;
+	stbi_image_free(ImageData);
+	return true;
+}
+
+static bool DecodeAlbumArtUrl(const std::string &Url, std::vector<uint8_t> &OutRgba, int &OutWidth, int &OutHeight)
+{
+	OutRgba.clear();
+	OutWidth = 0;
+	OutHeight = 0;
+
+	std::vector<uint8_t> Data;
+
+	// Handle file:// URLs (local files)
+	if(Url.rfind("file:", 0) == 0)
+	{
+		// Parse the file path from the URL
+		std::string FilePath = DecodeFileUri(Url);
+
+		// Read the file into memory
+		FILE *File = fopen(FilePath.c_str(), "rb");
+		if(!File)
+		{
+			dbg_msg("mediaviewer", "Failed to open local album art file: %s", FilePath.c_str());
+			return false;
+		}
+
+		// Get file size
+		fseek(File, 0, SEEK_END);
+		long FileSize = ftell(File);
+		fseek(File, 0, SEEK_SET);
+
+		if(FileSize <= 0 || FileSize > 10 * 1024 * 1024) // 10 MB max
+		{
+			dbg_msg("mediaviewer", "Album art file too large or empty: %s", FilePath.c_str());
+			fclose(File);
+			return false;
+		}
+
+		Data.resize(FileSize);
+		if(fread(Data.data(), 1, FileSize, File) != (size_t)FileSize)
+		{
+			dbg_msg("mediaviewer", "Failed to read album art file: %s", FilePath.c_str());
+			fclose(File);
+			return false;
+		}
+		fclose(File);
+	}
+	// Handle HTTP(S) URLs
+	else if(Url.rfind("http://", 0) == 0 || Url.rfind("https://", 0) == 0)
+	{
+		if(!DownloadUrlToVector(Url, Data))
+		{
+			dbg_msg("mediaviewer", "Failed to download album art from %s", Url.c_str());
+			return false;
+		}
+	}
+	else
+	{
+		dbg_msg("mediaviewer", "Unsupported album art URL scheme: %s", Url.c_str());
+		return false;
+	}
+
+	if(!DecodeImageFromBuffer(Data, OutRgba, OutWidth, OutHeight))
+	{
+		dbg_msg("mediaviewer", "Failed to decode album art image from %s", Url.c_str());
+		return false;
+	}
+
+	return true;
+}
 #endif
 
 CMediaViewer::CMediaViewer() = default;
 CMediaViewer::~CMediaViewer() = default;
+
+#if MEDIA_PLAYER_DBUS
+
+static bool DBusGetPropertyString(DBusConnection *pConnection, const char *pService, const char *pPath, const char *pInterface, const char *pProperty, std::string &Value)
+{
+	DBusError Error;
+	dbus_error_init(&Error);
+
+	DBusMessage *pMessage = dbus_message_new_method_call(pService, pPath, "org.freedesktop.DBus.Properties", "Get");
+	if(!pMessage)
+	{
+		dbus_error_free(&Error);
+		return false;
+	}
+
+	const char *pIface = pInterface;
+	const char *pProp = pProperty;
+	dbus_message_append_args(pMessage, DBUS_TYPE_STRING, &pIface, DBUS_TYPE_STRING, &pProp, DBUS_TYPE_INVALID);
+
+	DBusMessage *pReply = dbus_connection_send_with_reply_and_block(pConnection, pMessage, 1000, &Error);
+	dbus_message_unref(pMessage);
+	if(!pReply)
+	{
+		dbus_error_free(&Error);
+		return false;
+	}
+
+	DBusMessageIter Iter;
+	if(!dbus_message_iter_init(pReply, &Iter) || dbus_message_iter_get_arg_type(&Iter) != DBUS_TYPE_VARIANT)
+	{
+		dbus_message_unref(pReply);
+		return false;
+	}
+
+	DBusMessageIter Variant;
+	dbus_message_iter_recurse(&Iter, &Variant);
+	if(dbus_message_iter_get_arg_type(&Variant) != DBUS_TYPE_STRING)
+	{
+		dbus_message_unref(pReply);
+		return false;
+	}
+
+	const char *pValue = nullptr;
+	dbus_message_iter_get_basic(&Variant, &pValue);
+	if(pValue)
+		Value = pValue;
+	dbus_message_unref(pReply);
+	return true;
+}
+
+static bool DBusGetPropertyBool(DBusConnection *pConnection, const char *pService, const char *pPath, const char *pInterface, const char *pProperty, bool &Value)
+{
+	DBusError Error;
+	dbus_error_init(&Error);
+
+	DBusMessage *pMessage = dbus_message_new_method_call(pService, pPath, "org.freedesktop.DBus.Properties", "Get");
+	if(!pMessage)
+	{
+		dbus_error_free(&Error);
+		return false;
+	}
+
+	const char *pIface = pInterface;
+	const char *pProp = pProperty;
+	dbus_message_append_args(pMessage, DBUS_TYPE_STRING, &pIface, DBUS_TYPE_STRING, &pProp, DBUS_TYPE_INVALID);
+
+	DBusMessage *pReply = dbus_connection_send_with_reply_and_block(pConnection, pMessage, 1000, &Error);
+	dbus_message_unref(pMessage);
+	if(!pReply)
+	{
+		dbus_error_free(&Error);
+		return false;
+	}
+
+	DBusMessageIter Iter;
+	if(!dbus_message_iter_init(pReply, &Iter) || dbus_message_iter_get_arg_type(&Iter) != DBUS_TYPE_VARIANT)
+	{
+		dbus_message_unref(pReply);
+		return false;
+	}
+
+	DBusMessageIter Variant;
+	dbus_message_iter_recurse(&Iter, &Variant);
+	if(dbus_message_iter_get_arg_type(&Variant) != DBUS_TYPE_BOOLEAN)
+	{
+		dbus_message_unref(pReply);
+		return false;
+	}
+
+	dbus_bool_t RawValue = false;
+	dbus_message_iter_get_basic(&Variant, &RawValue);
+	Value = RawValue != 0;
+	dbus_message_unref(pReply);
+	return true;
+}
+
+static bool DBusGetPropertyInt64(DBusConnection *pConnection, const char *pService, const char *pPath, const char *pInterface, const char *pProperty, int64_t &Value)
+{
+	DBusError Error;
+	dbus_error_init(&Error);
+
+	DBusMessage *pMessage = dbus_message_new_method_call(pService, pPath, "org.freedesktop.DBus.Properties", "Get");
+	if(!pMessage)
+	{
+		dbus_error_free(&Error);
+		return false;
+	}
+
+	const char *pIface = pInterface;
+	const char *pProp = pProperty;
+	dbus_message_append_args(pMessage, DBUS_TYPE_STRING, &pIface, DBUS_TYPE_STRING, &pProp, DBUS_TYPE_INVALID);
+
+	DBusMessage *pReply = dbus_connection_send_with_reply_and_block(pConnection, pMessage, 1000, &Error);
+	dbus_message_unref(pMessage);
+	if(!pReply)
+	{
+		dbus_error_free(&Error);
+		return false;
+	}
+
+	DBusMessageIter Iter;
+	if(!dbus_message_iter_init(pReply, &Iter) || dbus_message_iter_get_arg_type(&Iter) != DBUS_TYPE_VARIANT)
+	{
+		dbus_message_unref(pReply);
+		return false;
+	}
+
+	DBusMessageIter Variant;
+	dbus_message_iter_recurse(&Iter, &Variant);
+	if(dbus_message_iter_get_arg_type(&Variant) != DBUS_TYPE_INT64)
+	{
+		dbus_message_unref(pReply);
+		return false;
+	}
+
+	dbus_int64_t RawValue = 0;
+	dbus_message_iter_get_basic(&Variant, &RawValue);
+	Value = static_cast<int64_t>(RawValue);
+	dbus_message_unref(pReply);
+	return true;
+}
+
+static bool DBusGetNames(DBusConnection *pConnection, std::vector<std::string> &Names)
+{
+	DBusError Error;
+	dbus_error_init(&Error);
+
+	DBusMessage *pMessage = dbus_message_new_method_call("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "ListNames");
+	if(!pMessage)
+	{
+		dbus_error_free(&Error);
+		return false;
+	}
+
+	DBusMessage *pReply = dbus_connection_send_with_reply_and_block(pConnection, pMessage, 1000, &Error);
+	dbus_message_unref(pMessage);
+	if(!pReply)
+	{
+		dbus_error_free(&Error);
+		return false;
+	}
+
+	DBusMessageIter Iter;
+	if(!dbus_message_iter_init(pReply, &Iter) || dbus_message_iter_get_arg_type(&Iter) != DBUS_TYPE_ARRAY)
+	{
+		dbus_message_unref(pReply);
+		return false;
+	}
+
+	DBusMessageIter Array;
+	dbus_message_iter_recurse(&Iter, &Array);
+
+	while(dbus_message_iter_get_arg_type(&Array) == DBUS_TYPE_STRING)
+	{
+		const char *pName = nullptr;
+		dbus_message_iter_get_basic(&Array, &pName);
+		if(pName)
+			Names.emplace_back(pName);
+		dbus_message_iter_next(&Array);
+	}
+
+	dbus_message_unref(pReply);
+	return true;
+}
+
+static bool DBusGetMetadata(DBusConnection *pConnection, const char *pService, CPlainState &State)
+{
+	DBusError Error;
+	dbus_error_init(&Error);
+
+	DBusMessage *pMessage = dbus_message_new_method_call(pService, "/org/mpris/MediaPlayer2", "org.freedesktop.DBus.Properties", "Get");
+	if(!pMessage)
+	{
+		dbus_error_free(&Error);
+		return false;
+	}
+
+	const char *pIface = "org.mpris.MediaPlayer2.Player";
+	const char *pProp = "Metadata";
+	dbus_message_append_args(pMessage, DBUS_TYPE_STRING, &pIface, DBUS_TYPE_STRING, &pProp, DBUS_TYPE_INVALID);
+
+	DBusMessage *pReply = dbus_connection_send_with_reply_and_block(pConnection, pMessage, 1000, &Error);
+	dbus_message_unref(pMessage);
+	if(!pReply)
+	{
+		dbus_error_free(&Error);
+		return false;
+	}
+
+	DBusMessageIter Iter;
+	if(!dbus_message_iter_init(pReply, &Iter) || dbus_message_iter_get_arg_type(&Iter) != DBUS_TYPE_VARIANT)
+	{
+		dbus_message_unref(pReply);
+		return false;
+	}
+
+	DBusMessageIter Variant;
+	dbus_message_iter_recurse(&Iter, &Variant);
+	if(dbus_message_iter_get_arg_type(&Variant) != DBUS_TYPE_ARRAY)
+	{
+		dbus_message_unref(pReply);
+		return false;
+	}
+
+	DBusMessageIter Dict;
+	dbus_message_iter_recurse(&Variant, &Dict);
+
+	while(dbus_message_iter_get_arg_type(&Dict) == DBUS_TYPE_DICT_ENTRY)
+	{
+		DBusMessageIter Entry;
+		dbus_message_iter_recurse(&Dict, &Entry);
+
+		const char *pKey = nullptr;
+		dbus_message_iter_get_basic(&Entry, &pKey);
+		dbus_message_iter_next(&Entry);
+
+		if(dbus_message_iter_get_arg_type(&Entry) == DBUS_TYPE_VARIANT)
+		{
+			DBusMessageIter ValueIter;
+			dbus_message_iter_recurse(&Entry, &ValueIter);
+			int ArgType = dbus_message_iter_get_arg_type(&ValueIter);
+
+			if(pKey && strcmp(pKey, "xesam:title") == 0 && ArgType == DBUS_TYPE_STRING)
+			{
+				const char *pString = nullptr;
+				dbus_message_iter_get_basic(&ValueIter, &pString);
+				if(pString)
+					State.m_Title = pString;
+			}
+			else if(pKey && strcmp(pKey, "xesam:album") == 0 && ArgType == DBUS_TYPE_STRING)
+			{
+				const char *pString = nullptr;
+				dbus_message_iter_get_basic(&ValueIter, &pString);
+				if(pString)
+					State.m_Album = pString;
+			}
+			else if(pKey && strcmp(pKey, "xesam:artist") == 0 && ArgType == DBUS_TYPE_ARRAY)
+			{
+				std::vector<std::string> Artists;
+				DBusMessageIter ArrayIter;
+				dbus_message_iter_recurse(&ValueIter, &ArrayIter);
+				while(dbus_message_iter_get_arg_type(&ArrayIter) == DBUS_TYPE_STRING)
+				{
+					const char *pString = nullptr;
+					dbus_message_iter_get_basic(&ArrayIter, &pString);
+					if(pString)
+						Artists.emplace_back(pString);
+					dbus_message_iter_next(&ArrayIter);
+				}
+				if(!Artists.empty())
+					State.m_Artist = Artists.front();
+			}
+			else if(pKey && (strcmp(pKey, "mpris:artUrl") == 0 || strcmp(pKey, "xesam:artUrl") == 0) && (ArgType == DBUS_TYPE_STRING || ArgType == DBUS_TYPE_OBJECT_PATH))
+			{
+				const char *pString = nullptr;
+				dbus_message_iter_get_basic(&ValueIter, &pString);
+				if(pString)
+				{
+					State.m_AlbumArtUrl = pString;
+				}
+			}
+			else if(pKey && strcmp(pKey, "mpris:trackid") == 0 && (ArgType == DBUS_TYPE_STRING || ArgType == DBUS_TYPE_OBJECT_PATH))
+			{
+				const char *pString = nullptr;
+				dbus_message_iter_get_basic(&ValueIter, &pString);
+				if(pString)
+				{
+					State.m_TrackId = pString;
+				}
+			}
+			else if(pKey && strcmp(pKey, "mpris:length") == 0 && ArgType == DBUS_TYPE_INT64)
+			{
+				dbus_int64_t Length = 0;
+				dbus_message_iter_get_basic(&ValueIter, &Length);
+				if(Length > 0)
+					State.m_DurationMs = Length / 1000;
+			}
+		}
+
+		dbus_message_iter_next(&Dict);
+	}
+
+	dbus_message_unref(pReply);
+	return true;
+}
+
+static std::string DBusChoosePlayer(DBusConnection *pConnection)
+{
+	std::vector<std::string> Names;
+	if(!DBusGetNames(pConnection, Names))
+		return std::string();
+
+	std::string Best;
+	for(const std::string &Name : Names)
+	{
+		if(Name.rfind("org.mpris.MediaPlayer2.", 0) != 0)
+			continue;
+
+		std::string PlaybackStatus;
+		if(DBusGetPropertyString(pConnection, Name.c_str(), "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player", "PlaybackStatus", PlaybackStatus))
+		{
+			if(PlaybackStatus == "Playing")
+				return Name;
+			if(Best.empty())
+				Best = Name;
+		}
+	}
+
+	return Best;
+}
+
+static void DBusSendPlayerCommand(DBusConnection *pConnection, const std::string &Service, const char *pCommand)
+{
+	DBusError Error;
+	dbus_error_init(&Error);
+
+	DBusMessage *pMessage = dbus_message_new_method_call(Service.c_str(), "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player", pCommand);
+	if(pMessage)
+	{
+		dbus_connection_send_with_reply_and_block(pConnection, pMessage, 1000, &Error);
+		dbus_message_unref(pMessage);
+	}
+	dbus_error_free(&Error);
+}
+
+static bool DBusUpdatePlayerState(DBusConnection *pConnection, const std::string &Service, CPlainState &State)
+{
+	std::string PlaybackStatus;
+	if(!DBusGetPropertyString(pConnection, Service.c_str(), "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player", "PlaybackStatus", PlaybackStatus))
+		return false;
+
+	State.m_Playing = PlaybackStatus == "Playing";
+
+	std::string Identity;
+	if(DBusGetPropertyString(pConnection, Service.c_str(), "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2", "Identity", Identity) && !Identity.empty())
+		State.m_ServiceId = Identity;
+	else
+		State.m_ServiceId = Service;
+
+	DBusGetPropertyBool(pConnection, Service.c_str(), "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player", "CanPlay", State.m_CanPlay);
+	DBusGetPropertyBool(pConnection, Service.c_str(), "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player", "CanPause", State.m_CanPause);
+	DBusGetPropertyBool(pConnection, Service.c_str(), "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player", "CanGoPrevious", State.m_CanPrev);
+	DBusGetPropertyBool(pConnection, Service.c_str(), "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player", "CanGoNext", State.m_CanNext);
+
+	int64_t Position = 0;
+	if(DBusGetPropertyInt64(pConnection, Service.c_str(), "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player", "Position", Position) && Position > 0)
+		State.m_PositionMs = Position / 1000;
+
+	DBusGetMetadata(pConnection, Service.c_str(), State);
+
+	return true;
+}
+
+void CMediaViewer::ThreadMain()
+{
+	DBusError Error;
+	dbus_error_init(&Error);
+
+	DBusConnection *pConnection = dbus_bus_get(DBUS_BUS_SESSION, &Error);
+	if(!pConnection)
+	{
+		dbus_error_free(&Error);
+		return;
+	}
+
+	dbus_connection_set_exit_on_disconnect(pConnection, false);
+
+	std::string PrevAlbumArtUrl;
+	std::string PrevTrackId;
+	CMediaViewer::CAlbumArtColors AlbumArtColors;
+
+	while(!m_StopThread.load(std::memory_order_relaxed))
+	{
+		CPlainState State;
+		bool HasMedia = false;
+		const std::string Service = DBusChoosePlayer(pConnection);
+		if(!Service.empty())
+		{
+			HasMedia = DBusUpdatePlayerState(pConnection, Service, State);
+		}
+
+		// Decode album art once per track: compare trackid and artUrl
+		const bool TrackChanged = (State.m_TrackId != PrevTrackId) || (State.m_AlbumArtUrl != PrevAlbumArtUrl);
+		if(TrackChanged)
+		{
+			PrevAlbumArtUrl = State.m_AlbumArtUrl;
+			PrevTrackId = State.m_TrackId;
+			AlbumArtColors = CMediaViewer::CAlbumArtColors{};
+
+			if(!State.m_AlbumArtUrl.empty())
+			{
+				std::vector<uint8_t> RgbaPixels;
+				int Width = 0, Height = 0;
+				if(DecodeAlbumArtUrl(State.m_AlbumArtUrl, RgbaPixels, Width, Height))
+				{
+					dbg_msg("Info", "computing album art colors and set shared album art");
+					ComputeAlbumArtColors(RgbaPixels, Width, Height, State);
+					AlbumArtColors = State.m_AlbumArtColors;
+					SetSharedAlbumArt(m_pShared.get(), std::move(RgbaPixels), Width, Height);
+				}
+				else
+				{
+					ClearSharedAlbumArt(m_pShared.get());
+				}
+			}
+			else
+			{
+				ClearSharedAlbumArt(m_pShared.get());
+			}
+		}
+		else
+		{
+			State.m_AlbumArtColors = AlbumArtColors;
+		}
+
+		std::deque<ECommand> Commands;
+		{
+			std::scoped_lock Lock(m_pShared->m_Mutex);
+			m_pShared->m_State = State;
+			m_pShared->m_HasMedia = HasMedia;
+			Commands.swap(m_pShared->m_Commands);
+		}
+
+		if(HasMedia && !Service.empty())
+		{
+			for(const ECommand Command : Commands)
+			{
+				switch(Command)
+				{
+				case ECommand::Prev:
+					DBusSendPlayerCommand(pConnection, Service, "Previous");
+					break;
+				case ECommand::PlayPause:
+					DBusSendPlayerCommand(pConnection, Service, "PlayPause");
+					break;
+				case ECommand::Next:
+					DBusSendPlayerCommand(pConnection, Service, "Next");
+					break;
+				}
+			}
+		}
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+	}
+}
+#endif
 
 #if MEDIA_PLAYER_WINRT
 void CMediaViewer::ThreadMain()
@@ -1254,7 +2119,7 @@ void CMediaViewer::ProcessAudioFrame(const float *pSamples, int NumSamples, int 
 void CMediaViewer::OnInit()
 {
 #if MEDIA_PLAYER_WINRT
-	m_pWinrt = std::make_unique<SWinrt>();
+	m_pWinrt = std::make_unique<CWinrt>();
 	m_pShared = std::make_unique<CShared>();
 	m_pAudioCapture = std::make_unique<CAudioCapture>();
 
@@ -1263,6 +2128,11 @@ void CMediaViewer::OnInit()
 
 	m_Thread = std::thread(&CMediaViewer::ThreadMain, this);
 	m_AudioThread = std::thread(&CMediaViewer::AudioThreadMain, this);
+#elif MEDIA_PLAYER_DBUS
+	m_pDbus = std::make_unique<CDbus>();
+	m_pShared = std::make_unique<CShared>();
+	m_StopThread.store(false, std::memory_order_relaxed);
+	m_Thread = std::thread(&CMediaViewer::ThreadMain, this);
 #endif
 }
 
@@ -1282,6 +2152,11 @@ void CMediaViewer::OnShutdown()
 	m_pAudioCapture.reset();
 	m_pShared.reset();
 	m_pWinrt.reset();
+#elif MEDIA_PLAYER_DBUS
+	m_StopThread.store(true, std::memory_order_relaxed);
+	if(m_Thread.joinable())
+		m_Thread.join();
+	m_pDbus.reset();
 #endif
 }
 
@@ -1326,6 +2201,45 @@ void CMediaViewer::OnUpdate()
 	}
 
 	ApplySharedAlbumArt(m_pShared.get(), m_pWinrt.get(), Graphics());
+#elif MEDIA_PLAYER_DBUS
+	if(!m_pShared || !m_pDbus)
+		return;
+
+	CPlainState SharedState{};
+	bool HasMedia = false;
+	{
+		std::scoped_lock Lock(m_pShared->m_Mutex);
+		SharedState = m_pShared->m_State;
+		HasMedia = m_pShared->m_HasMedia;
+	}
+
+	if(!HasMedia)
+	{
+		if(m_pDbus->m_HasMedia)
+		{
+			std::scoped_lock Lock(m_pDbus->m_Mutex);
+			m_pDbus->m_HasMedia = false;
+		}
+	}
+	else
+	{
+		std::scoped_lock Lock(m_pDbus->m_Mutex);
+		m_pDbus->m_HasMedia = true;
+		m_pDbus->m_State.m_CanPlay = SharedState.m_CanPlay;
+		m_pDbus->m_State.m_CanPause = SharedState.m_CanPause;
+		m_pDbus->m_State.m_CanPrev = SharedState.m_CanPrev;
+		m_pDbus->m_State.m_CanNext = SharedState.m_CanNext;
+		m_pDbus->m_State.m_Playing = SharedState.m_Playing;
+		m_pDbus->m_State.m_ServiceId = SharedState.m_ServiceId;
+		m_pDbus->m_State.m_Title = SharedState.m_Title;
+		m_pDbus->m_State.m_Artist = SharedState.m_Artist;
+		m_pDbus->m_State.m_Album = SharedState.m_Album;
+		m_pDbus->m_State.m_PositionMs = SharedState.m_PositionMs;
+		m_pDbus->m_State.m_DurationMs = SharedState.m_DurationMs;
+		m_pDbus->m_State.m_AlbumArtColors = SharedState.m_AlbumArtColors;
+	}
+
+	ApplyDbusSharedAlbumArt(m_pShared.get(), m_pDbus.get(), Graphics());
 #endif
 }
 
@@ -1356,6 +2270,66 @@ bool CMediaViewer::GetStateSnapshot(CMediaViewer::CState &State) const
 		}
 		return true;
 	}
+#elif MEDIA_PLAYER_DBUS
+	if(!m_pDbus)
+	{
+		State = CMediaViewer::CState{};
+		return false;
+	}
+
+	{
+		std::scoped_lock Lock(m_pDbus->m_Mutex);
+		if(!m_pDbus->m_HasMedia)
+		{
+			State = CMediaViewer::CState{};
+			return false;
+		}
+
+		State.m_CanPlay = m_pDbus->m_State.m_CanPlay;
+		State.m_CanPause = m_pDbus->m_State.m_CanPause;
+		State.m_CanPrev = m_pDbus->m_State.m_CanPrev;
+		State.m_CanNext = m_pDbus->m_State.m_CanNext;
+		State.m_Playing = m_pDbus->m_State.m_Playing;
+		State.m_ServiceId = m_pDbus->m_State.m_ServiceId;
+		State.m_Title = m_pDbus->m_State.m_Title;
+		State.m_Artist = m_pDbus->m_State.m_Artist;
+		State.m_Album = m_pDbus->m_State.m_Album;
+		State.m_PositionMs = m_pDbus->m_State.m_PositionMs;
+		State.m_DurationMs = m_pDbus->m_State.m_DurationMs;
+		State.m_AlbumArt = m_pDbus->m_AlbumArt;
+		State.m_AlbumArt.m_Colors = m_pDbus->m_State.m_AlbumArtColors;
+		State.m_PrevAlbumArt = m_pDbus->m_PrevAlbumArt;
+
+		// Simple synthetic visualizer fallback for DBus builds (animated bands)
+		// Only show when music is actually playing
+		if(State.m_Playing)
+		{
+			const int NumBands = CVisualizer::NUM_FREQUENCY_BANDS;
+			const double t = (double)time_get() / (double)time_freq();
+			for(int i = 0; i < NumBands; ++i)
+			{
+				const double freq = 0.8 + (double)i / (double)NumBands * 3.0;
+				double s = std::sin(t * freq * 2.0 + i * 0.13);
+				double v = 0.15 + 0.35 * std::pow(std::abs(s), 1.3);
+				// slow LFO for gentle breathing
+				double lfo = 0.5 + 0.5 * std::sin(t * 0.15 + i * 0.19);
+				v *= 0.55 + 0.45 * lfo;
+				State.m_Visualizer.m_aFrequencyBands[i] = (float)std::clamp(v, 0.0, 1.0);
+			}
+			State.m_Visualizer.m_Active = true;
+		}
+		else
+		{
+			// When paused, clear visualizer
+			for(int i = 0; i < CVisualizer::NUM_FREQUENCY_BANDS; ++i)
+			{
+				State.m_Visualizer.m_aFrequencyBands[i] = 0.0f;
+			}
+			State.m_Visualizer.m_Active = false;
+		}
+		State.m_Visualizer.m_LastFrequencyChange = time_get();
+	}
+	return true;
 #endif
 
 	State = CMediaViewer::CState{};
@@ -1370,6 +2344,12 @@ void CMediaViewer::Previous()
 
 	std::scoped_lock Lock(m_pShared->m_Mutex);
 	m_pShared->m_Commands.push_back(ECommand::Prev);
+#elif MEDIA_PLAYER_DBUS
+	if(!m_pDbus)
+		return;
+
+	std::scoped_lock Lock(m_pDbus->m_Mutex);
+	m_pDbus->m_Commands.push_back(ECommand::Prev);
 #endif
 }
 
@@ -1381,6 +2361,12 @@ void CMediaViewer::PlayPause()
 
 	std::scoped_lock Lock(m_pShared->m_Mutex);
 	m_pShared->m_Commands.push_back(ECommand::PlayPause);
+#elif MEDIA_PLAYER_DBUS
+	if(!m_pDbus)
+		return;
+
+	std::scoped_lock Lock(m_pDbus->m_Mutex);
+	m_pDbus->m_Commands.push_back(ECommand::PlayPause);
 #endif
 }
 
@@ -1392,6 +2378,12 @@ void CMediaViewer::Next()
 
 	std::scoped_lock Lock(m_pShared->m_Mutex);
 	m_pShared->m_Commands.push_back(ECommand::Next);
+#elif MEDIA_PLAYER_DBUS
+	if(!m_pDbus)
+		return;
+
+	std::scoped_lock Lock(m_pDbus->m_Mutex);
+	m_pDbus->m_Commands.push_back(ECommand::Next);
 #endif
 }
 

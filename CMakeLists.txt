@@ -511,7 +511,11 @@ if(TARGET_OS STREQUAL "android")
 endif()
 find_package(ZLIB)
 find_package(Crypto)
-find_package(Curl)
+if(CLIENT AND TARGET_OS STREQUAL "linux")
+  find_package(Curl REQUIRED)
+else()
+  find_package(Curl)
+endif()
 if(CLIENT AND VIDEORECORDER)
   find_package(FFMPEG)
 endif()
@@ -538,6 +542,9 @@ find_package(PNG)
 find_package(Python3)
 find_package(Rust)
 find_package(SDL2)
+if(CLIENT AND TARGET_OS STREQUAL "linux")
+  find_package(DBus REQUIRED)
+endif()
 find_package(SQLite3)
 if(DISCORD)
   find_package(DiscordSdk)
@@ -2259,6 +2266,7 @@ set_src(ENGINE_EXTERNAL GLOB src/engine/external
   regex.h
   spt.cpp
   spt.h
+  stb_image.h
 )
 
 # ChaiScript
@@ -2771,6 +2779,8 @@ if(CLIENT)
     ${GLEW_LIBRARIES}
     ${PNG_LIBRARIES}
     ${SDL2_LIBRARIES}
+    ${CURL_LIBRARIES}
+    ${DBUS_LIBRARIES}
     ${WAVPACK_LIBRARIES}
     ${FFMPEG_LIBRARIES}
 
@@ -2867,6 +2877,7 @@ if(CLIENT)
     ${OPUS_INCLUDE_DIRS}
     ${PNG_INCLUDE_DIRS}
     ${SDL2_INCLUDE_DIRS}
+    ${DBUS_INCLUDE_DIRS}
     ${WAVPACK_INCLUDE_DIRS}
     ${FFMPEG_INCLUDE_DIRS}
     ${DISCORDSDK_INCLUDE_DIRS}
@@ -2907,6 +2918,10 @@ if(CLIENT)
 
   if(VULKAN)
     target_compile_definitions(game-client PRIVATE CONF_BACKEND_VULKAN)
+  endif()
+
+  if(TARGET_OS STREQUAL "linux" AND DBus_FOUND)
+    target_compile_definitions(game-client PRIVATE MEDIA_PLAYER_DBUS=1)
   endif()
 
   list(APPEND TARGETS_OWN game-client)

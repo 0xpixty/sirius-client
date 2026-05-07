@@ -15,6 +15,11 @@
 #include <string>
 #include <thread>
 
+#ifndef MEDIA_PLAYER_DBUS
+#define MEDIA_PLAYER_DBUS 0
+#endif
+#include <base/detect.h>
+
 class CMediaViewer : public CComponent
 {
 public:
@@ -80,9 +85,10 @@ public:
 		std::string m_Album;
 		int64_t m_PositionMs = 0;
 		int64_t m_DurationMs = 0;
+
 		CAlbumArt m_AlbumArt;
-		// for media island transition
-		CAlbumArt m_PrevAlbumArt;
+		CAlbumArt m_PrevAlbumArt; // for media island transition
+
 		CVisualizer m_Visualizer;
 
 		bool operator==(const CState &Other) const
@@ -96,9 +102,12 @@ public:
 	};
 
 #if defined(CONF_FAMILY_WINDOWS) && __has_include(<winrt/Windows.Foundation.h>)
-	struct SWinrt;
-	struct CShared;
-	struct CAudioCapture;
+	class CWinrt;
+	class CShared;
+	class CAudioCapture;
+#elif MEDIA_PLAYER_DBUS
+	class CDbus;
+	class CShared;
 #endif
 
 	CMediaViewer();
@@ -115,7 +124,7 @@ public:
 
 private:
 #if defined(CONF_FAMILY_WINDOWS) && __has_include(<winrt/Windows.Foundation.h>)
-	std::unique_ptr<SWinrt> m_pWinrt;
+	std::unique_ptr<CWinrt> m_pWinrt;
 	std::unique_ptr<CShared> m_pShared;
 	std::unique_ptr<CAudioCapture> m_pAudioCapture;
 	std::thread m_Thread;
@@ -126,6 +135,13 @@ private:
 	void ThreadMain();
 	void AudioThreadMain();
 	void ProcessAudioFrame(const float *pSamples, int NumSamples, int SampleRate);
+#elif MEDIA_PLAYER_DBUS
+	std::unique_ptr<CDbus> m_pDbus;
+	std::unique_ptr<CShared> m_pShared;
+	std::thread m_Thread;
+	std::atomic_bool m_StopThread = false;
+
+	void ThreadMain();
 #endif
 };
 
