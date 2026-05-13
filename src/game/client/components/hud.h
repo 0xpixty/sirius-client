@@ -2,7 +2,7 @@
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #ifndef GAME_CLIENT_COMPONENTS_HUD_H
 #define GAME_CLIENT_COMPONENTS_HUD_H
-#include "entity/media_player.h"
+#include "entity/mediaplayer/media_player.h"
 
 #include <base/color.h>
 #include <base/vmath.h>

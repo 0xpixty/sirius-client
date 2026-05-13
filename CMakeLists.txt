@@ -511,11 +511,7 @@ if(TARGET_OS STREQUAL "android")
 endif()
 find_package(ZLIB)
 find_package(Crypto)
-if(CLIENT AND TARGET_OS STREQUAL "linux")
-  find_package(Curl REQUIRED)
-else()
-  find_package(Curl)
-endif()
+find_package(Curl)
 if(CLIENT AND VIDEORECORDER)
   find_package(FFMPEG)
 endif()
@@ -2507,8 +2503,11 @@ if(CLIENT)
     components/entity/info.h
     components/entity/map_overview.cpp
     components/entity/map_overview.h 
-    components/entity/media_player.cpp
-    components/entity/media_player.h
+    components/entity/mediaplayer/media_player.cpp
+    components/entity/mediaplayer/media_player.h
+    components/entity/mediaplayer/media_player_dbus.cpp
+    components/entity/mediaplayer/media_player_impl.h
+    components/entity/mediaplayer/media_player_winrt.cpp
     components/entity/menus_entity.cpp 
     components/entity/moving_tiles.cpp
     components/entity/moving_tiles.h 

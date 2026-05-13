@@ -75,7 +75,7 @@
 #include "components/entity/freeze_kill.h"
 #include "components/entity/info.h"
 #include "components/entity/map_overview.h"
-#include "components/entity/media_player.h"
+#include "components/entity/mediaplayer/media_player.h"
 #include "components/entity/moving_tiles.h"
 #include "components/entity/physicball.h"
 #include "components/entity/quick_actions.h"

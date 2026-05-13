@@ -1,6 +1,6 @@
 // https://github.com/wxj881027/QmClient
-#ifndef GAME_CLIENT_COMPONENTS_ENTITY_MEDIA_PLAYER_H
-#define GAME_CLIENT_COMPONENTS_ENTITY_MEDIA_PLAYER_H
+#ifndef GAME_CLIENT_COMPONENTS_ENTITY_MEDIAPLAYER_MEDIA_PLAYER_H
+#define GAME_CLIENT_COMPONENTS_ENTITY_MEDIAPLAYER_MEDIA_PLAYER_H
 
 #include <base/color.h>
 
@@ -101,13 +101,13 @@ public:
 		}
 	};
 
+	class CShared;
+
 #if defined(CONF_FAMILY_WINDOWS) && __has_include(<winrt/Windows.Foundation.h>)
 	class CWinrt;
-	class CShared;
 	class CAudioCapture;
 #elif MEDIA_PLAYER_DBUS
 	class CDbus;
-	class CShared;
 #endif
 
 	CMediaViewer();
