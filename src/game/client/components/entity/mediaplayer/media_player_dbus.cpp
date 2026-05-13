@@ -5,9 +5,17 @@
 #define MEDIA_PLAYER_DBUS 0
 #endif
 
+#ifndef MEDIA_PLAYER_PULSEAUDIO
+#define MEDIA_PLAYER_PULSEAUDIO 0
+#endif
+
 #if MEDIA_PLAYER_DBUS
 #include <curl/curl.h>
 #include <dbus/dbus.h>
+#if MEDIA_PLAYER_PULSEAUDIO
+#include <pulse/pulseaudio.h>
+#include <pulse/simple.h>
+#endif
 #define STB_IMAGE_IMPLEMENTATION
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
@@ -23,10 +31,13 @@
 
 #if MEDIA_PLAYER_DBUS
 #include <base/log.h>
+#include <base/system.h>
 
 #include <algorithm>
+#include <array>
 #include <cctype>
 #include <chrono>
+#include <cmath>
 #include <cstdio>
 #include <cstring>
 #include <mutex>
@@ -36,6 +47,17 @@
 
 namespace
 {
+	void ClearAudioCapture(CMediaViewer::CAudioCapture *pAudioCapture)
+	{
+		if(!pAudioCapture)
+			return;
+
+		std::scoped_lock Lock(pAudioCapture->m_Mutex);
+		pAudioCapture->m_aFrequencyBands.fill(0.0f);
+		pAudioCapture->m_Active = false;
+		pAudioCapture->m_LastFrequencyChange = 0;
+	}
+
 	std::string UrlDecode(const std::string &Encoded)
 	{
 		std::string Decoded;
@@ -628,7 +650,172 @@ namespace
 		DBusGetMetadata(pConnection, Service.c_str(), State);
 		return true;
 	}
-} // Close anonymous namespace
+
+#if MEDIA_PLAYER_PULSEAUDIO
+	struct CPulseNameQuery
+	{
+		pa_threaded_mainloop *m_pMainLoop = nullptr;
+		std::string m_Value;
+		bool m_Done = false;
+		bool m_Success = false;
+	};
+
+	struct CPulseStreamData
+	{
+		CMediaViewer *m_pMediaViewer = nullptr;
+		std::vector<float> m_SampleBuffer;
+		int m_Channels = 0;
+		int m_SampleRate = 0;
+	};
+
+	void PulseContextStateCallback(pa_context *pContext, void *pUser)
+	{
+		(void)pContext;
+		pa_threaded_mainloop_signal(static_cast<pa_threaded_mainloop *>(pUser), 0);
+	}
+
+	void PulseStreamStateCallback(pa_stream *pStream, void *pUser)
+	{
+		(void)pStream;
+		pa_threaded_mainloop_signal(static_cast<pa_threaded_mainloop *>(pUser), 0);
+	}
+
+	bool PulseWaitForContextReady(pa_threaded_mainloop *pMainLoop, pa_context *pContext)
+	{
+		while(true)
+		{
+			const pa_context_state_t State = pa_context_get_state(pContext);
+			if(State == PA_CONTEXT_READY)
+				return true;
+			if(!PA_CONTEXT_IS_GOOD(State))
+				return false;
+			pa_threaded_mainloop_wait(pMainLoop);
+		}
+	}
+
+	bool PulseWaitForStreamReady(pa_threaded_mainloop *pMainLoop, pa_stream *pStream)
+	{
+		while(true)
+		{
+			const pa_stream_state_t State = pa_stream_get_state(pStream);
+			if(State == PA_STREAM_READY)
+				return true;
+			if(!PA_STREAM_IS_GOOD(State))
+				return false;
+			pa_threaded_mainloop_wait(pMainLoop);
+		}
+	}
+
+	void PulseServerInfoCallback(pa_context *pContext, const pa_server_info *pInfo, void *pUser)
+	{
+		(void)pContext;
+		auto *pQuery = static_cast<CPulseNameQuery *>(pUser);
+		if(pInfo && pInfo->default_sink_name)
+		{
+			pQuery->m_Value = pInfo->default_sink_name;
+			pQuery->m_Success = true;
+		}
+		pQuery->m_Done = true;
+		pa_threaded_mainloop_signal(pQuery->m_pMainLoop, 0);
+	}
+
+	void PulseSinkInfoCallback(pa_context *pContext, const pa_sink_info *pInfo, int Eol, void *pUser)
+	{
+		(void)pContext;
+		auto *pQuery = static_cast<CPulseNameQuery *>(pUser);
+		if(Eol > 0)
+		{
+			pQuery->m_Done = true;
+			pa_threaded_mainloop_signal(pQuery->m_pMainLoop, 0);
+			return;
+		}
+
+		if(pInfo && pInfo->monitor_source_name)
+		{
+			pQuery->m_Value = pInfo->monitor_source_name;
+			pQuery->m_Success = true;
+			pQuery->m_Done = true;
+			pa_threaded_mainloop_signal(pQuery->m_pMainLoop, 0);
+		}
+	}
+
+	std::string PulseResolveDefaultMonitorSource(pa_threaded_mainloop *pMainLoop, pa_context *pContext)
+	{
+		CPulseNameQuery SinkQuery;
+		SinkQuery.m_pMainLoop = pMainLoop;
+		pa_operation *pServerOp = pa_context_get_server_info(pContext, PulseServerInfoCallback, &SinkQuery);
+		if(!pServerOp)
+			return std::string();
+
+		while(!SinkQuery.m_Done)
+			pa_threaded_mainloop_wait(pMainLoop);
+		pa_operation_unref(pServerOp);
+		if(!SinkQuery.m_Success || SinkQuery.m_Value.empty())
+			return std::string();
+
+		CPulseNameQuery MonitorQuery;
+		MonitorQuery.m_pMainLoop = pMainLoop;
+		pa_operation *pSinkOp = pa_context_get_sink_info_by_name(pContext, SinkQuery.m_Value.c_str(), PulseSinkInfoCallback, &MonitorQuery);
+		if(!pSinkOp)
+			return std::string();
+
+		while(!MonitorQuery.m_Done)
+			pa_threaded_mainloop_wait(pMainLoop);
+		pa_operation_unref(pSinkOp);
+		if(!MonitorQuery.m_Success || MonitorQuery.m_Value.empty())
+			return std::string();
+
+		return MonitorQuery.m_Value;
+	}
+
+	void PulseConsumeSamples(CPulseStreamData *pStreamData, const float *pSamples, size_t NumFloats)
+	{
+		if(!pStreamData || !pStreamData->m_pMediaViewer || !pSamples || pStreamData->m_Channels <= 0)
+			return;
+
+		const size_t NumFrames = NumFloats / (size_t)pStreamData->m_Channels;
+		for(size_t i = 0; i < NumFrames; ++i)
+		{
+			float Sample = 0.0f;
+			for(int Channel = 0; Channel < pStreamData->m_Channels; ++Channel)
+				Sample += pSamples[i * (size_t)pStreamData->m_Channels + (size_t)Channel];
+			Sample /= (float)pStreamData->m_Channels;
+
+			pStreamData->m_SampleBuffer.push_back(Sample);
+			if(pStreamData->m_SampleBuffer.size() >= (size_t)FFT::FFT_SIZE)
+			{
+				pStreamData->m_pMediaViewer->ProcessAudioFrame(pStreamData->m_SampleBuffer.data(), (int)pStreamData->m_SampleBuffer.size(), pStreamData->m_SampleRate);
+				pStreamData->m_SampleBuffer.clear();
+			}
+		}
+	}
+
+	void PulseStreamReadCallback(pa_stream *pStream, size_t Length, void *pUser)
+	{
+		(void)Length;
+		auto *pStreamData = static_cast<CPulseStreamData *>(pUser);
+		if(!pStreamData)
+			return;
+
+		while(true)
+		{
+			size_t ReadableBytes = pa_stream_readable_size(pStream);
+			if(ReadableBytes == 0 || ReadableBytes == (size_t)-1)
+				break;
+
+			const void *pData = nullptr;
+			size_t NumBytes = 0;
+			if(pa_stream_peek(pStream, &pData, &NumBytes) < 0)
+				break;
+
+			if(pData && NumBytes >= sizeof(float) * (size_t)std::max(1, pStreamData->m_Channels))
+				PulseConsumeSamples(pStreamData, static_cast<const float *>(pData), NumBytes / sizeof(float));
+
+			pa_stream_drop(pStream);
+		}
+	}
+#endif
+}
 
 void ClearDbusAlbumArtLocal(CMediaViewer::CDbus *pDbus, IGraphics *pGraphics)
 {
@@ -786,5 +973,286 @@ void CMediaViewer::ThreadMain()
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(500));
 	}
+}
+
+void CMediaViewer::AudioThreadMain()
+{
+#if !MEDIA_PLAYER_PULSEAUDIO
+	ClearAudioCapture(m_pAudioCapture.get());
+	while(!m_StopAudioThread.load(std::memory_order_relaxed))
+		std::this_thread::sleep_for(std::chrono::milliseconds(250));
+	return;
+#else
+	ClearAudioCapture(m_pAudioCapture.get());
+
+	while(!m_StopAudioThread.load(std::memory_order_relaxed))
+	{
+		pa_threaded_mainloop *pMainLoop = nullptr;
+		pa_context *pContext = nullptr;
+		pa_stream *pStream = nullptr;
+		bool MainLoopStarted = false;
+		bool MainLoopLocked = false;
+		bool Connected = false;
+
+		auto Cleanup = [&]() {
+			if(MainLoopLocked)
+			{
+				pa_threaded_mainloop_unlock(pMainLoop);
+				MainLoopLocked = false;
+			}
+
+			if(pStream)
+			{
+				if(MainLoopStarted)
+				{
+					pa_threaded_mainloop_lock(pMainLoop);
+					pa_stream_disconnect(pStream);
+					pa_stream_unref(pStream);
+					pa_threaded_mainloop_unlock(pMainLoop);
+				}
+				else
+				{
+					pa_stream_unref(pStream);
+				}
+				pStream = nullptr;
+			}
+
+			if(pContext)
+			{
+				if(MainLoopStarted)
+				{
+					pa_threaded_mainloop_lock(pMainLoop);
+					pa_context_disconnect(pContext);
+					pa_context_unref(pContext);
+					pa_threaded_mainloop_unlock(pMainLoop);
+				}
+				else
+				{
+					pa_context_unref(pContext);
+				}
+				pContext = nullptr;
+			}
+
+			if(pMainLoop)
+			{
+				if(MainLoopStarted)
+					pa_threaded_mainloop_stop(pMainLoop);
+				pa_threaded_mainloop_free(pMainLoop);
+				pMainLoop = nullptr;
+			}
+		};
+
+		pMainLoop = pa_threaded_mainloop_new();
+		if(!pMainLoop)
+		{
+			log_info("mediaviewer", "Failed to create PulseAudio mainloop");
+			std::this_thread::sleep_for(std::chrono::seconds(1));
+			continue;
+		}
+
+		pContext = pa_context_new(pa_threaded_mainloop_get_api(pMainLoop), "DDNetMediaViewer");
+		if(!pContext)
+		{
+			log_info("mediaviewer", "Failed to create PulseAudio context");
+			Cleanup();
+			std::this_thread::sleep_for(std::chrono::seconds(1));
+			continue;
+		}
+
+		pa_context_set_state_callback(pContext, PulseContextStateCallback, pMainLoop);
+		if(pa_threaded_mainloop_start(pMainLoop) < 0)
+		{
+			log_info("mediaviewer", "Failed to start PulseAudio mainloop");
+			Cleanup();
+			std::this_thread::sleep_for(std::chrono::seconds(1));
+			continue;
+		}
+		MainLoopStarted = true;
+
+		pa_threaded_mainloop_lock(pMainLoop);
+		MainLoopLocked = true;
+		if(pa_context_connect(pContext, nullptr, PA_CONTEXT_NOFLAGS, nullptr) < 0)
+		{
+			log_info("mediaviewer", "Failed to connect PulseAudio context: %s", pa_strerror(pa_context_errno(pContext)));
+			Cleanup();
+			std::this_thread::sleep_for(std::chrono::seconds(1));
+			continue;
+		}
+
+		if(!PulseWaitForContextReady(pMainLoop, pContext))
+		{
+			log_info("mediaviewer", "PulseAudio context did not become ready");
+			Cleanup();
+			std::this_thread::sleep_for(std::chrono::seconds(1));
+			continue;
+		}
+
+		const std::string MonitorSource = PulseResolveDefaultMonitorSource(pMainLoop, pContext);
+		if(MonitorSource.empty())
+		{
+			log_info("mediaviewer", "Failed to resolve PulseAudio monitor source");
+			Cleanup();
+			std::this_thread::sleep_for(std::chrono::seconds(1));
+			continue;
+		}
+
+		pa_sample_spec Spec;
+		Spec.format = PA_SAMPLE_FLOAT32NE;
+		Spec.rate = 48000;
+		Spec.channels = 2;
+
+		pa_buffer_attr Attr;
+		Attr.maxlength = static_cast<uint32_t>(-1);
+		Attr.tlength = static_cast<uint32_t>(-1);
+		Attr.prebuf = static_cast<uint32_t>(-1);
+		Attr.minreq = static_cast<uint32_t>(-1);
+		Attr.fragsize = (uint32_t)(sizeof(float) * Spec.channels * FFT::FFT_SIZE);
+
+		pStream = pa_stream_new(pContext, "media_visualizer", &Spec, nullptr);
+		if(!pStream)
+		{
+			log_info("mediaviewer", "Failed to create PulseAudio stream: %s", pa_strerror(pa_context_errno(pContext)));
+			Cleanup();
+			std::this_thread::sleep_for(std::chrono::seconds(1));
+			continue;
+		}
+
+		CPulseStreamData StreamData;
+		StreamData.m_pMediaViewer = this;
+		StreamData.m_Channels = Spec.channels;
+		StreamData.m_SampleRate = (int)Spec.rate;
+
+		pa_stream_set_state_callback(pStream, PulseStreamStateCallback, pMainLoop);
+		pa_stream_set_read_callback(pStream, PulseStreamReadCallback, &StreamData);
+		if(pa_stream_connect_record(pStream, MonitorSource.c_str(), &Attr, PA_STREAM_ADJUST_LATENCY) < 0)
+		{
+			log_info("mediaviewer", "Failed to connect PulseAudio record stream: %s", pa_strerror(pa_context_errno(pContext)));
+			Cleanup();
+			std::this_thread::sleep_for(std::chrono::seconds(1));
+			continue;
+		}
+
+		if(!PulseWaitForStreamReady(pMainLoop, pStream))
+		{
+			log_info("mediaviewer", "PulseAudio record stream did not become ready");
+			Cleanup();
+			std::this_thread::sleep_for(std::chrono::seconds(1));
+			continue;
+		}
+
+		if(const pa_sample_spec *pActualSpec = pa_stream_get_sample_spec(pStream))
+		{
+			StreamData.m_Channels = pActualSpec->channels;
+			StreamData.m_SampleRate = (int)pActualSpec->rate;
+		}
+
+		MainLoopLocked = false;
+		pa_threaded_mainloop_unlock(pMainLoop);
+		Connected = true;
+
+		while(!m_StopAudioThread.load(std::memory_order_relaxed))
+		{
+			bool TimedOut = false;
+			{
+				std::scoped_lock Lock(m_pAudioCapture->m_Mutex);
+				const int64_t LastChange = m_pAudioCapture->m_LastFrequencyChange;
+				if(LastChange == 0 || time_get() - LastChange > time_freq() * 10)
+				{
+					m_pAudioCapture->m_Active = false;
+					TimedOut = true;
+				}
+			}
+
+			pa_threaded_mainloop_lock(pMainLoop);
+			const pa_context_state_t ContextState = pa_context_get_state(pContext);
+			const pa_stream_state_t StreamState = pa_stream_get_state(pStream);
+			const bool BadContext = !PA_CONTEXT_IS_GOOD(ContextState);
+			const bool BadStream = !PA_STREAM_IS_GOOD(StreamState);
+			pa_threaded_mainloop_unlock(pMainLoop);
+
+			if(BadContext || BadStream)
+			{
+				log_info("mediaviewer", "PulseAudio stream disconnected, retrying");
+				Connected = false;
+				break;
+			}
+
+			(void)TimedOut;
+			std::this_thread::sleep_for(std::chrono::milliseconds(250));
+		}
+
+		Cleanup();
+		ClearAudioCapture(m_pAudioCapture.get());
+		if(Connected && !m_StopAudioThread.load(std::memory_order_relaxed))
+			std::this_thread::sleep_for(std::chrono::seconds(1));
+	}
+
+	ClearAudioCapture(m_pAudioCapture.get());
+#endif
+}
+
+void CMediaViewer::ProcessAudioFrame(const float *pSamples, int NumSamples, int SampleRate)
+{
+	if(!m_pAudioCapture || !pSamples || NumSamples <= 1 || SampleRate <= 0)
+		return;
+
+	std::vector<FFT::CComplex> FftResult;
+	FFT::ComputeFFT(pSamples, NumSamples, FftResult);
+
+	const int NumBands = CVisualizer::NUM_FREQUENCY_BANDS;
+	std::array<float, CVisualizer::NUM_FREQUENCY_BANDS> Bands{};
+
+	const int UsableBins = FFT::FFT_SIZE / 2;
+	const float FreqPerBin = (float)SampleRate / FFT::FFT_SIZE;
+	const float MinFreq = 48000.0f / FFT::FFT_SIZE;
+	const float MaxFreq = 20000.0f;
+	const float LogMin = std::log10(MinFreq);
+	const float LogMax = std::log10(MaxFreq);
+
+	bool AllZero = true;
+	for(int Band = 0; Band < NumBands; ++Band)
+	{
+		const float t0 = (float)Band / NumBands;
+		const float t1 = (float)(Band + 1) / NumBands;
+		const float Freq0 = std::pow(10.0f, LogMin + t0 * (LogMax - LogMin));
+		const float Freq1 = std::pow(10.0f, LogMin + t1 * (LogMax - LogMin));
+
+		const int Bin0 = std::clamp((int)(Freq0 / FreqPerBin), 0, UsableBins - 1);
+		const int Bin1 = std::clamp((int)(Freq1 / FreqPerBin), Bin0 + 1, UsableBins);
+
+		float Sum = 0.0f;
+		int Count = 0;
+		for(int Bin = Bin0; Bin < Bin1; ++Bin)
+		{
+			Sum += FftResult[Bin].Magnitude();
+			++Count;
+		}
+
+		if(Count > 0)
+		{
+			float Magnitude = Sum / Count;
+			Magnitude = std::log10(1.0f + Magnitude * 100.0f) / 2.0f;
+			Bands[Band] = std::clamp(Magnitude, 0.0f, 1.0f);
+			if(Magnitude > 0.001f)
+				AllZero = false;
+		}
+	}
+
+	std::scoped_lock Lock(m_pAudioCapture->m_Mutex);
+	const float Smoothing = 0.7f;
+	for(int i = 0; i < NumBands; ++i)
+	{
+		m_pAudioCapture->m_aFrequencyBands[i] =
+			m_pAudioCapture->m_aFrequencyBands[i] * Smoothing +
+			Bands[i] * (1.0f - Smoothing);
+	}
+	m_pAudioCapture->m_Active = true;
+
+	if(!AllZero)
+		m_pAudioCapture->m_LastFrequencyChange = time_get();
+
+	const int64_t Now = time_get();
+	if(m_pAudioCapture->m_LastFrequencyChange == 0 || Now - m_pAudioCapture->m_LastFrequencyChange > time_freq() * 10)
+		m_pAudioCapture->m_Active = false;
 }
 #endif

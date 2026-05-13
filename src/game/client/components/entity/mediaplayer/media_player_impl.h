@@ -16,12 +16,17 @@
 #define MEDIA_PLAYER_WINRT 0
 #endif
 
+#ifndef MEDIA_PLAYER_PULSEAUDIO
+#define MEDIA_PLAYER_PULSEAUDIO 0
+#endif
+
 #include "media_player.h"
 
 #include <array>
 #include <cstdint>
 #include <deque>
 #include <mutex>
+#include <numbers>
 #include <string>
 #include <vector>
 
@@ -95,6 +100,88 @@ public:
 	int m_AlbumArtPendingWidth = 0;
 	int m_AlbumArtPendingHeight = 0;
 };
+#endif
+
+#if MEDIA_PLAYER_WINRT || MEDIA_PLAYER_DBUS
+namespace FFT
+{
+	constexpr int FFT_SIZE = 768;
+
+	class CComplex
+	{
+	public:
+		float Real;
+		float Imag;
+
+		CComplex(float r = 0.0f, float i = 0.0f) :
+			Real(r), Imag(i) {}
+
+		CComplex operator+(const CComplex &Other) const
+		{
+			return CComplex(Real + Other.Real, Imag + Other.Imag);
+		}
+
+		CComplex operator-(const CComplex &Other) const
+		{
+			return CComplex(Real - Other.Real, Imag - Other.Imag);
+		}
+
+		CComplex operator*(const CComplex &Other) const
+		{
+			return CComplex(
+				Real * Other.Real - Imag * Other.Imag,
+				Real * Other.Imag + Imag * Other.Real);
+		}
+
+		float Magnitude() const
+		{
+			return std::sqrt(Real * Real + Imag * Imag);
+		}
+	};
+
+	inline void FFTRecursive(std::vector<CComplex> &x)
+	{
+		const int N = (int)x.size();
+		if(N <= 1)
+			return;
+
+		std::vector<CComplex> Even(N / 2);
+		std::vector<CComplex> Odd(N / 2);
+		for(int i = 0; i < N / 2; ++i)
+		{
+			Even[i] = x[i * 2];
+			Odd[i] = x[i * 2 + 1];
+		}
+
+		FFTRecursive(Even);
+		FFTRecursive(Odd);
+
+		for(int k = 0; k < N / 2; ++k)
+		{
+			const float Angle = -2.0f * std::numbers::pi_v<float> * k / N;
+			const CComplex t = CComplex(std::cos(Angle), std::sin(Angle)) * Odd[k];
+			x[k] = Even[k] + t;
+			x[k + N / 2] = Even[k] - t;
+		}
+	}
+
+	inline void ComputeFFT(const float *pSamples, int NumSamples, std::vector<CComplex> &Output)
+	{
+		const int N = std::min(NumSamples, FFT_SIZE);
+		Output.resize(FFT_SIZE);
+
+		for(int i = 0; i < N; ++i)
+		{
+			const float Window = 0.54f - 0.46f * std::cos(2.0f * std::numbers::pi_v<float> * i / (N - 1));
+			Output[i] = CComplex(pSamples[i] * Window, 0.0f);
+		}
+
+		for(int i = N; i < FFT_SIZE; ++i)
+			Output[i] = CComplex(0.0f, 0.0f);
+
+		FFTRecursive(Output);
+	}
+}
 
 class CMediaViewer::CAudioCapture
 {

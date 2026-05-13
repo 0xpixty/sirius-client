@@ -428,8 +428,11 @@ void CMediaViewer::OnInit()
 #elif MEDIA_PLAYER_DBUS
 	m_pDbus = std::make_unique<CDbus>();
 	m_pShared = std::make_unique<CShared>();
+	m_pAudioCapture = std::make_unique<CAudioCapture>();
 	m_StopThread.store(false, std::memory_order_relaxed);
+	m_StopAudioThread.store(false, std::memory_order_relaxed);
 	m_Thread = std::thread(&CMediaViewer::ThreadMain, this);
+	m_AudioThread = std::thread(&CMediaViewer::AudioThreadMain, this);
 #endif
 }
 
@@ -451,9 +454,13 @@ void CMediaViewer::OnShutdown()
 	m_pWinrt.reset();
 #elif MEDIA_PLAYER_DBUS
 	m_StopThread.store(true, std::memory_order_relaxed);
+	m_StopAudioThread.store(true, std::memory_order_relaxed);
+	if(m_AudioThread.joinable())
+		m_AudioThread.join();
 	if(m_Thread.joinable())
 		m_Thread.join();
 	ClearDbusAlbumArtLocal(m_pDbus.get(), Graphics());
+	m_pAudioCapture.reset();
 	m_pShared.reset();
 	m_pDbus.reset();
 #endif
@@ -544,7 +551,7 @@ bool CMediaViewer::GetStateSnapshot(CMediaViewer::CState &State) const
 		return true;
 	}
 #elif MEDIA_PLAYER_DBUS
-	if(!m_pDbus)
+	if(!m_pDbus || !m_pAudioCapture)
 	{
 		State = CMediaViewer::CState{};
 		return false;
@@ -562,29 +569,13 @@ bool CMediaViewer::GetStateSnapshot(CMediaViewer::CState &State) const
 		State.m_AlbumArt = m_pDbus->m_AlbumArt;
 		State.m_AlbumArt.m_Colors = m_pDbus->m_State.m_AlbumArtColors;
 		State.m_PrevAlbumArt = m_pDbus->m_PrevAlbumArt;
+	}
 
-		if(State.m_Playing)
-		{
-			const int NumBands = CVisualizer::NUM_FREQUENCY_BANDS;
-			const double t = (double)time_get() / (double)time_freq();
-			for(int i = 0; i < NumBands; ++i)
-			{
-				const double freq = 0.8 + (double)i / (double)NumBands * 3.0;
-				double s = std::sin(t * freq * 2.0 + i * 0.13);
-				double v = 0.15 + 0.35 * std::pow(std::abs(s), 1.3);
-				double lfo = 0.5 + 0.5 * std::sin(t * 0.15 + i * 0.19);
-				v *= 0.55 + 0.45 * lfo;
-				State.m_Visualizer.m_aFrequencyBands[i] = (float)std::clamp(v, 0.0, 1.0);
-			}
-			State.m_Visualizer.m_Active = true;
-		}
-		else
-		{
-			for(int i = 0; i < CVisualizer::NUM_FREQUENCY_BANDS; ++i)
-				State.m_Visualizer.m_aFrequencyBands[i] = 0.0f;
-			State.m_Visualizer.m_Active = false;
-		}
-		State.m_Visualizer.m_LastFrequencyChange = time_get();
+	{
+		std::scoped_lock Lock(m_pAudioCapture->m_Mutex);
+		State.m_Visualizer.m_aFrequencyBands = m_pAudioCapture->m_aFrequencyBands;
+		State.m_Visualizer.m_Active = m_pAudioCapture->m_Active;
+		State.m_Visualizer.m_LastFrequencyChange = m_pAudioCapture->m_LastFrequencyChange;
 	}
 	return true;
 #endif

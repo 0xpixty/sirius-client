@@ -540,6 +540,7 @@ find_package(Rust)
 find_package(SDL2)
 if(CLIENT AND TARGET_OS STREQUAL "linux")
   find_package(DBus REQUIRED)
+  find_package(PulseAudio)
 endif()
 find_package(SQLite3)
 if(DISCORD)
@@ -2780,6 +2781,7 @@ if(CLIENT)
     ${SDL2_LIBRARIES}
     ${CURL_LIBRARIES}
     ${DBUS_LIBRARIES}
+    ${PULSEAUDIO_LIBRARIES}
     ${WAVPACK_LIBRARIES}
     ${FFMPEG_LIBRARIES}
 
@@ -2877,6 +2879,7 @@ if(CLIENT)
     ${PNG_INCLUDE_DIRS}
     ${SDL2_INCLUDE_DIRS}
     ${DBUS_INCLUDE_DIRS}
+    ${PULSEAUDIO_INCLUDE_DIRS}
     ${WAVPACK_INCLUDE_DIRS}
     ${FFMPEG_INCLUDE_DIRS}
     ${DISCORDSDK_INCLUDE_DIRS}
@@ -2921,6 +2924,10 @@ if(CLIENT)
 
   if(TARGET_OS STREQUAL "linux" AND DBus_FOUND)
     target_compile_definitions(game-client PRIVATE MEDIA_PLAYER_DBUS=1)
+  endif()
+
+  if(TARGET_OS STREQUAL "linux" AND PulseAudio_FOUND)
+    target_compile_definitions(game-client PRIVATE MEDIA_PLAYER_PULSEAUDIO=1)
   endif()
 
   list(APPEND TARGETS_OWN game-client)

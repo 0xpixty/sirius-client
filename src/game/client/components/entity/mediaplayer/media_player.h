@@ -18,6 +18,11 @@
 #ifndef MEDIA_PLAYER_DBUS
 #define MEDIA_PLAYER_DBUS 0
 #endif
+
+#ifndef MEDIA_PLAYER_PULSEAUDIO
+#define MEDIA_PLAYER_PULSEAUDIO 0
+#endif
+
 #include <base/detect.h>
 
 class CMediaViewer : public CComponent
@@ -108,6 +113,7 @@ public:
 	class CAudioCapture;
 #elif MEDIA_PLAYER_DBUS
 	class CDbus;
+	class CAudioCapture;
 #endif
 
 	CMediaViewer();
@@ -121,6 +127,7 @@ public:
 	void Previous();
 	void PlayPause();
 	void Next();
+	void ProcessAudioFrame(const float *pSamples, int NumSamples, int SampleRate);
 
 private:
 #if defined(CONF_FAMILY_WINDOWS) && __has_include(<winrt/Windows.Foundation.h>)
@@ -134,14 +141,17 @@ private:
 
 	void ThreadMain();
 	void AudioThreadMain();
-	void ProcessAudioFrame(const float *pSamples, int NumSamples, int SampleRate);
 #elif MEDIA_PLAYER_DBUS
 	std::unique_ptr<CDbus> m_pDbus;
 	std::unique_ptr<CShared> m_pShared;
+	std::unique_ptr<CAudioCapture> m_pAudioCapture;
 	std::thread m_Thread;
+	std::thread m_AudioThread;
 	std::atomic_bool m_StopThread = false;
+	std::atomic_bool m_StopAudioThread = false;
 
 	void ThreadMain();
+	void AudioThreadMain();
 #endif
 };
 
