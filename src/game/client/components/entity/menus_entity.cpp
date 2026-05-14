@@ -608,22 +608,36 @@ void CMenus::RenderEClientInfoPage(CUIRect MainView)
 	// Left Side
 
 	LeftView.HSplitTop(HeadlineHeight, &Label, &LeftView);
-	Ui()->DoLabel(&Label, EcLocalize("Code Stealer:"), HeadlineFontSize, TEXTALIGN_ML);
+	Ui()->DoLabel(&Label, EcLocalize("Developers:"), HeadlineFontSize, TEXTALIGN_ML);
 	LeftView.HSplitTop(MarginSmall, nullptr, &LeftView);
 	LeftView.HSplitTop(MarginSmall, nullptr, &LeftView);
 
-	LeftView.HSplitTop(CardSize, &DevCardRect, &LeftView);
-	DevCardRect.VSplitLeft(CardSize, &TeeRect, &Label);
-
-	static CButtonContainer s_LinkButton;
+	vec2 TeePos1, TeePos2;
+	static CButtonContainer s_LinkButton1, s_LinkButton2;
 	{
+		LeftView.HSplitTop(CardSize, &DevCardRect, &LeftView);
+		DevCardRect.VSplitLeft(CardSize, &TeeRect, &Label);
 		const char *pName = "qxdFox";
 		Label.VSplitLeft(TextRender()->TextWidth(LineSize, pName), &Label, &Button);
 		Button.VSplitLeft(MarginSmall, nullptr, &Button);
 		Button.w = LineSize, Button.h = LineSize, Button.y = Label.y + (Label.h / 2.0f - Button.h / 2.0f);
 		Ui()->DoLabel(&Label, pName, LineSize, TEXTALIGN_ML);
-		if(Ui()->DoButton_FontIcon(&s_LinkButton, FontIcon::ARROW_UP_RIGHT_FROM_SQUARE, 0, &Button, BUTTONFLAG_LEFT))
+		if(Ui()->DoButton_FontIcon(&s_LinkButton1, FontIcon::ARROW_UP_RIGHT_FROM_SQUARE, 0, &Button, BUTTONFLAG_LEFT))
 			Client()->ViewLink("https://github.com/qxdFox");
+		TeePos1 = TeeRect.Center();
+	}
+
+	{
+		LeftView.HSplitTop(CardSize, &DevCardRect, &LeftView);
+		DevCardRect.VSplitLeft(CardSize, &TeeRect, &Label);
+		const char *pName = "Tide";
+		Label.VSplitLeft(TextRender()->TextWidth(LineSize, pName), &Label, &Button);
+		Button.VSplitLeft(MarginSmall, nullptr, &Button);
+		Button.w = LineSize, Button.h = LineSize, Button.y = Label.y + (Label.h / 2.0f - Button.h / 2.0f);
+		Ui()->DoLabel(&Label, pName, LineSize, TEXTALIGN_ML);
+		if(Ui()->DoButton_FontIcon(&s_LinkButton2, FontIcon::ARROW_UP_RIGHT_FROM_SQUARE, 0, &Button, BUTTONFLAG_LEFT))
+			Client()->ViewLink("https://github.com/Miro8D");
+		TeePos2 = TeeRect.Center();
 	}
 
 	LeftView.HSplitTop(HeadlineHeight, &Label, &LeftView);
@@ -697,14 +711,31 @@ void CMenus::RenderEClientInfoPage(CUIRect MainView)
 		Client()->ViewFile("data/entity/fonts");
 	}
 
-	// Render Tee Above everything else
+	static vec2 s_Pos1 = TeePos1, s_Pos2 = TeePos2;
+	static bool s_Dragging1 = false, s_Dragging2 = false;
+
+	// Render Tees Above everything else
 	{
 		CTeeRenderInfo TeeRenderInfo;
 		TeeRenderInfo.Apply(GameClient()->m_Skins.Find("Catnoa"));
 		TeeRenderInfo.ApplyColors(true, 10784768, 15269690);
 		TeeRenderInfo.m_Size = TeeSize;
 
-		RenderDraggableTee(MainView, TeeRect.Center(), TeeEyeDirection(TeeRect.Center()), CAnimState::GetIdle(), &TeeRenderInfo, EMOTE_NORMAL);
+		RenderDraggableTee(MainView, TeePos1, s_Pos1, s_Dragging1, TeeEyeDirection(TeePos1), &TeeRenderInfo);
+	}
+
+	if(s_Dragging1)
+		s_Dragging2 = false;
+	else if(s_Dragging2)
+		s_Dragging1 = false;
+
+	{
+		CTeeRenderInfo TeeRenderInfo;
+		TeeRenderInfo.Apply(GameClient()->m_Skins.Find("froghat"));
+		TeeRenderInfo.ApplyColors(true, 9690163, 16318719);
+		TeeRenderInfo.m_Size = TeeSize;
+
+		RenderDraggableTee(MainView, TeePos2, s_Pos2, s_Dragging2, TeeEyeDirection(TeePos2), &TeeRenderInfo);
 	}
 }
 
@@ -3759,14 +3790,14 @@ void CMenus::RenderSettingsVisual(CUIRect MainView)
 				DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClMediaIsland, "Enable media island", &g_Config.m_ClMediaIsland, &ModuleRect, LineSize);
 				ModuleRect.HSplitTop(LineSize, &Button, &ModuleRect);
 				Ui()->DoScrollbarOption(&g_Config.m_ClMediaIslandSize, &g_Config.m_ClMediaIslandSize, &Button, "Island Size", 0, 10, &CUi::ms_LinearScrollbarScale, 0u, "");
-				
+
 				//ModuleRect.HSplitTop(LineSize, &Button, &ModuleRect);
 				//Ui()->DoScrollbarOption(&g_Config.m_ClMediaIslandAnimation, &g_Config.m_ClMediaIslandAnimation, &Button, "Animation Time", 0, 300, &CUi::ms_LinearScrollbarScale, 0u, "");
 				//GameClient()->m_Tooltips.DoToolTip(&g_Config.m_ClMediaIslandAnimation, &Button, "Time it takes for the Islands animation, lower = slower", FontSize);
 
 				ModuleRect.HSplitTop(5.0f, &Button, &ModuleRect);
 				DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClMediaIslandVisualizer, "Show Visualizer", &g_Config.m_ClMediaIslandVisualizer, &ModuleRect, LineSize);
-				
+
 				if(g_Config.m_ClMediaIslandVisualizer || HasSearch)
 				{
 					static std::vector<CButtonContainer> s_vButtonContainers = {{}, {}};
@@ -4220,27 +4251,29 @@ vec2 CMenus::TeeEyeDirection(vec2 Pos)
 	return TeeDirection;
 }
 
-void CMenus::RenderDraggableTee(CUIRect MainView, vec2 SpawnPos, vec2 TeeDirection, const CAnimState *pAnim, CTeeRenderInfo *pInfo, int EyeEmote, bool HappyHover)
+void CMenus::RenderDraggableTee(CUIRect MainView, vec2 StartPos, vec2 &CurPos, bool &Dragging, vec2 TeeDirection, CTeeRenderInfo *pInfo)
 {
-	static bool s_OverrideTeePos = false;
-	static bool s_CanDrag = false;
-	static vec2 s_Pos = SpawnPos;
+	bool CanDrag = false;
 
-	if(m_ResetTeePos || !s_OverrideTeePos)
-		s_Pos = SpawnPos;
-	if(m_ResetTeePos)
-		m_ResetTeePos = false;
+	bool Hovering = length(Ui()->MousePos() - CurPos) < pInfo->m_Size / 2.4f;
+	bool JustStartedDragging = Ui()->MouseButtonClicked(0) && Hovering;
 
-	if(length(Ui()->MousePos() - s_Pos) < pInfo->m_Size / 2.4f)
-	{
-		s_CanDrag = true;
+	if(Hovering)
 		Ui()->SetHotItem(nullptr);
+
+	if(Dragging && !Ui()->MouseButton(0))
+		Dragging = false;
+
+	if(JustStartedDragging || Dragging)
+	{
+		CanDrag = true;
+		Dragging = true;
 	}
 
-	if(GameClient()->Input()->KeyIsPressed(KEY_MOUSE_1) && s_CanDrag)
+	if(CanDrag)
 	{
 		vec2 Offset = vec2(0.0f, 2.5f);
-		s_Pos = Ui()->MousePos() - Offset;
+		CurPos = Ui()->MousePos() - Offset;
 
 		float MenuTop = MainView.y + 25.0f;
 		float MenuBottom = MainView.Size().y + 35.0f;
@@ -4249,24 +4282,19 @@ void CMenus::RenderDraggableTee(CUIRect MainView, vec2 SpawnPos, vec2 TeeDirecti
 		float MenuRight = MainView.Size().x + 10.0f;
 
 		if(Ui()->MousePos().y < MenuTop)
-			s_Pos.y = MenuTop - Offset.y;
+			CurPos.y = MenuTop - Offset.y;
 		if(Ui()->MousePos().y > MenuBottom)
-			s_Pos.y = MenuBottom - Offset.y;
+			CurPos.y = MenuBottom - Offset.y;
 
 		if(Ui()->MousePos().x < MenuLeft)
-			s_Pos.x = MenuLeft;
+			CurPos.x = MenuLeft;
 		if(Ui()->MousePos().x > MenuRight)
-			s_Pos.x = MenuRight;
-
-		s_CanDrag = true;
-		s_OverrideTeePos = true;
+			CurPos.x = MenuRight;
 	}
-	else if(GameClient()->Input()->KeyIsPressed(KEY_MOUSE_2) && s_OverrideTeePos && s_CanDrag)
-		s_OverrideTeePos = false;
-	else
-		s_CanDrag = false;
+	else if(Hovering && Ui()->MouseButtonClicked(1))
+		CurPos = StartPos;
 
-	RenderTee(s_Pos, TeeEyeDirection(s_Pos), pAnim, pInfo, EyeEmote, HappyHover);
+	RenderTee(CurPos, TeeEyeDirection(CurPos), CAnimState::GetIdle(), pInfo, EMOTE_NORMAL, true);
 }
 
 void CMenus::RenderTee(vec2 Pos, vec2 TeeDirection, const CAnimState *pAnim, CTeeRenderInfo *pInfo, int EyeEmote, bool HappyHover)
