@@ -691,11 +691,7 @@ void CTranslate::Translate(const char *pName, bool Manual)
 			CChat::CLine *pLine = &GameClient()->m_Chat.m_aLines[((GameClient()->m_Chat.m_CurrentLine - i) + MAX_LINES) % MAX_LINES];
 			if(pLine->m_pTranslateResponse)
 			{
-				if(pLine->m_pTranslateResponse->m_Auto && Manual)
-				{
-					pLine->m_pTranslateResponse->m_Auto = false;
-				}
-				else
+				if(!(pLine->m_pTranslateResponse->m_Auto && Manual))
 					continue;
 			}
 			if(pLine->m_ClientId == CChat::CLIENT_MSG)
@@ -739,6 +735,8 @@ void CTranslate::Translate(CChat::CLine &Line, bool Manual)
 {
 	if(m_vJobs.size() > 15)
 	{
+		if(Manual)
+			GameClient()->m_Chat.Echo("Translate queue is full");
 		return;
 	}
 
