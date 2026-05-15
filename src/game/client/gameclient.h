@@ -129,6 +129,10 @@
 #include <optional>
 #include <vector>
 
+// EClient
+static constexpr int ENTITY_CLIENT_ID_BODY = 101;
+static constexpr int ENTITY_CLIENT_ID_FEET = 99;
+
 class IMap;
 
 class CGameInfo
@@ -635,6 +639,9 @@ public:
 
 		// 0.7 Skin
 		CSixup m_aSixup[NUM_DUMMIES];
+
+		// EClient
+		bool m_IsEntityClientUser;
 	};
 
 	CClientData m_aClients[MAX_CLIENTS];

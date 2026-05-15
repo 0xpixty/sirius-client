@@ -85,6 +85,13 @@
 #include <chrono>
 #include <limits>
 
+// EClient
+union ColorIdentifier
+{
+	int m_Color = 0;
+	unsigned char m_B[4];
+};
+
 using namespace std::chrono_literals;
 
 const char *CGameClient::Version() const { return GAME_VERSION; }
@@ -1868,6 +1875,19 @@ void CGameClient::OnNewSnapshot()
 					pClient->m_UseCustomColor = pInfo->m_UseCustomColor;
 					pClient->m_ColorBody = pInfo->m_ColorBody;
 					pClient->m_ColorFeet = pInfo->m_ColorFeet;
+
+					// EClient
+					// identify clients
+					// code originally from Kaizo Client by +KZ, credit if used
+
+					ColorIdentifier Body, Feet;
+					Body.m_Color = pInfo->m_ColorBody;
+					Feet.m_Color = pInfo->m_ColorFeet;
+
+					if(Body.m_B[3] == ENTITY_CLIENT_ID_BODY && Feet.m_B[3] == ENTITY_CLIENT_ID_FEET)
+					{
+						pClient->m_IsEntityClientUser = true;
+					}
 				}
 			}
 			else if(Item.m_Type == NETOBJTYPE_PLAYERINFO)
@@ -3643,6 +3663,24 @@ bool CGameClient::GotWantedSkin7(bool Dummy)
 	return true;
 }
 
+// function originally from Kaizo Client by +KZ, credit if used
+static void InsertCustomClientIntoColor(int &ColorBody, int &ColorFeet)
+{
+	ColorIdentifier Body;
+	Body.m_Color = ColorBody;
+
+	// alpha is unused
+	Body.m_B[3] = (unsigned char)ENTITY_CLIENT_ID_BODY;
+	ColorBody = Body.m_Color;
+
+	ColorIdentifier Feet;
+	Feet.m_Color = ColorFeet;
+
+	// alpha is unused
+	Feet.m_B[3] = (unsigned char)ENTITY_CLIENT_ID_FEET;
+	ColorFeet = Feet.m_Color;
+}
+
 void CGameClient::SendInfo(bool Start)
 {
 	if(m_pClient->IsSixup())
@@ -3676,6 +3714,9 @@ void CGameClient::SendInfo(bool Start)
 			if(m_EClient.m_RainbowBody[0] || m_EClient.m_RainbowFeet[0])
 				Msg.m_UseCustomColor = true;
 		}
+
+		InsertCustomClientIntoColor(Msg.m_ColorBody, Msg.m_ColorFeet);
+
 		CMsgPacker Packer(&Msg);
 		Msg.Pack(&Packer);
 		Client()->SendMsg(IClient::CONN_MAIN, &Packer, MSGFLAG_VITAL | MSGFLAG_FLUSH);
@@ -3700,6 +3741,9 @@ void CGameClient::SendInfo(bool Start)
 			if(m_EClient.m_RainbowBody[0] || m_EClient.m_RainbowFeet[0])
 				Msg.m_UseCustomColor = true;
 		}
+
+		InsertCustomClientIntoColor(Msg.m_ColorBody, Msg.m_ColorFeet);
+
 		CMsgPacker Packer(&Msg);
 		Msg.Pack(&Packer);
 		Client()->SendMsg(IClient::CONN_MAIN, &Packer, MSGFLAG_VITAL);
@@ -3740,6 +3784,9 @@ void CGameClient::SendDummyInfo(bool Start)
 			if(m_EClient.m_RainbowBody[1] || m_EClient.m_RainbowFeet[1])
 				Msg.m_UseCustomColor = true;
 		}
+
+		InsertCustomClientIntoColor(Msg.m_ColorBody, Msg.m_ColorFeet);
+
 		CMsgPacker Packer(&Msg);
 		Msg.Pack(&Packer);
 		Client()->SendMsg(IClient::CONN_DUMMY, &Packer, MSGFLAG_VITAL);
@@ -3764,6 +3811,9 @@ void CGameClient::SendDummyInfo(bool Start)
 			if(m_EClient.m_RainbowBody[1] || m_EClient.m_RainbowFeet[1])
 				Msg.m_UseCustomColor = true;
 		}
+
+		InsertCustomClientIntoColor(Msg.m_ColorBody, Msg.m_ColorFeet);
+
 		CMsgPacker Packer(&Msg);
 		Msg.Pack(&Packer);
 		Client()->SendMsg(IClient::CONN_DUMMY, &Packer, MSGFLAG_VITAL);

@@ -1,4 +1,4 @@
-﻿
+
 #include "entity.h"
 
 #include <base/log.h>
@@ -371,8 +371,6 @@ void CEClient::PlayerInfo(const char *pName)
 	if(Id >= 0)
 	{
 		GameClient()->ClientMessage("╭──                  Player Info");
-		GameClient()->ClientMessage("│");
-
 		str_format(aBuf, sizeof(aBuf), "│ Name: %s", pName);
 		GameClient()->ClientMessage(aBuf);
 		str_format(aBuf, sizeof(aBuf), "│ Clan: %s", GameClient()->m_aClients[Id].m_aClan);
@@ -384,18 +382,16 @@ void CEClient::PlayerInfo(const char *pName)
 		str_format(aBuf, sizeof(aBuf), "│ Feet Color: %d", GameClient()->m_aClients[Id].m_ColorFeet);
 		GameClient()->ClientMessage(aBuf);
 		GameClient()->ClientMessage("│");
-
 		str_format(aBuf, sizeof(aBuf), "│ Skin Name: %s", GameClient()->m_aClients[Id].m_aSkinName);
 		GameClient()->ClientMessage(aBuf);
 		GameClient()->ClientMessage("│");
-
 		if(GameClient()->m_aClients[Id].m_AuthLevel > 0)
 			str_format(aBuf, sizeof(aBuf), "│ Authed: Yes, Auth Level %d", GameClient()->m_aClients[Id].m_AuthLevel);
 		else
 			str_copy(aBuf, "│ Authed: No");
 		GameClient()->ClientMessage(aBuf);
-
-		GameClient()->ClientMessage("│");
+		if(GameClient()->m_aClients[Id].m_IsEntityClientUser)
+			GameClient()->ClientMessage("│ Entity Client User: Yes");
 		GameClient()->ClientMessage("╰───────────────────────");
 	}
 	else
@@ -459,7 +455,7 @@ void CEClient::OnConsoleInit()
 	// Misc
 	Console()->Register("votekick", "s[name] ?r[reason]", CFGFLAG_CLIENT, ConVotekick, this, "Call a votekick");
 	Console()->Register("onlineinfo", "", CFGFLAG_CLIENT, ConOnlineInfo, this, "Shows you how many people of default lists are on the current server");
-	Console()->Register("playerinfo", "s[name]", CFGFLAG_CLIENT, ConPlayerInfo, this, "Get Info of a Player");
+	Console()->Register("playerinfo", "r[name]", CFGFLAG_CLIENT, ConPlayerInfo, this, "Get Info of a Player");
 
 	// Temporary Lists
 	//Console()->Register("addtempwar", "s[name] ?r[reason]", CFGFLAG_CLIENT, ConTempWar, this, "temporary War");
