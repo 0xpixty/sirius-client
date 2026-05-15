@@ -175,21 +175,19 @@ void CMenus::RenderSettingsModuleSearchBar(CScrollRegion &ScrollRegion, CUIRect 
 		SearchBar.Margin(Margin, &EditBox);
 		EditBox.HSplitTop(EditBoxFontSize * 1.5f, &EditBox, nullptr);
 
+		TextRender()->SetFontPreset(EFontPreset::ICON_FONT);
+		TextRender()->SetRenderFlags(ETextRenderFlags::TEXT_RENDER_FLAG_ONLY_ADVANCE_WIDTH | ETextRenderFlags::TEXT_RENDER_FLAG_NO_X_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_Y_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_PIXEL_ALIGNMENT | ETextRenderFlags::TEXT_RENDER_FLAG_NO_OVERSIZE);
+		Ui()->DoLabel(&EditBox, FontIcon::MAGNIFYING_GLASS, EditBoxFontSize, TEXTALIGN_ML);
+		TextRender()->SetRenderFlags(0);
+		TextRender()->SetFontPreset(EFontPreset::DEFAULT_FONT);
+		EditBox.VSplitLeft(SearchWidth, nullptr, &EditBox);
+		if(!Ui()->IsPopupOpen() && Input()->ModifierIsPressed() && Input()->KeyPress(KEY_F))
 		{
-			TextRender()->SetFontPreset(EFontPreset::ICON_FONT);
-			TextRender()->SetRenderFlags(ETextRenderFlags::TEXT_RENDER_FLAG_ONLY_ADVANCE_WIDTH | ETextRenderFlags::TEXT_RENDER_FLAG_NO_X_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_Y_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_PIXEL_ALIGNMENT | ETextRenderFlags::TEXT_RENDER_FLAG_NO_OVERSIZE);
-			Ui()->DoLabel(&EditBox, FontIcon::MAGNIFYING_GLASS, EditBoxFontSize, TEXTALIGN_ML);
-			TextRender()->SetRenderFlags(0);
-			TextRender()->SetFontPreset(EFontPreset::DEFAULT_FONT);
-			EditBox.VSplitLeft(SearchWidth, nullptr, &EditBox);
-			if(Ui()->IsPopupOpen() && Input()->ModifierIsPressed() && Input()->KeyPress(KEY_F))
-			{
-				Ui()->SetActiveItem(&SearchInput);
-				SearchInput.SelectAll();
-			}
-			SearchInput.SetEmptyText(Localize("Search"));
-			Ui()->DoClearableEditBox(&SearchInput, &EditBox, EditBoxFontSize);
+			Ui()->SetActiveItem(&SearchInput);
+			SearchInput.SelectAll();
 		}
+		SearchInput.SetEmptyText(Localize("Search"));
+		Ui()->DoClearableEditBox(&SearchInput, &EditBox, EditBoxFontSize);
 
 		Status = EditBox;
 		Status.HSplitTop(EditBoxFontSize * 1.5f + StatusFontSize * 1.5f + 1, nullptr, &Status);
