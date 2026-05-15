@@ -438,6 +438,8 @@ MACRO_CONFIG_INT(ClMediaIslandVisualizerAlignment, ec_media_island_visualizer_al
 MACRO_CONFIG_INT(ClMediaIslandVisualizerColorDynamic, ec_media_island_visualizer_color_dynamic, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Enable dynamic color for media island visualizer")
 MACRO_CONFIG_COL(ClMediaIslandVisualizerColor, ec_media_island_visualizer_color, 10485663 /* Blue-ish */, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Color of the media island visualizer")
 
+MACRO_CONFIG_INT(ClForceSevenSkin, ec_force_seven_skin, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Whether to force rendering the 0.7 skin on any server for yourself")
+
 // Custom variables from my server for the editor
 // You can use these if you get my server from https://github.com/FoxNet-DDNet/FoxNet
 

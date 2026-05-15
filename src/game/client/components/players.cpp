@@ -21,6 +21,7 @@
 #include <game/client/components/effects.h>
 #include <game/client/components/flow.h>
 #include <game/client/components/skins.h>
+#include <game/client/components/skins7.h>
 #include <game/client/components/sounds.h>
 #include <game/client/gameclient.h>
 #include <game/gamecore.h>
@@ -1165,6 +1166,20 @@ void CPlayers::OnRender()
 				aRenderInfo[i].m_CustomColoredSkin = true;
 			aRenderInfo[i].m_ColorBody = Color;
 			aRenderInfo[i].m_ColorFeet = Color;
+		}
+
+		if(g_Config.m_ClForceSevenSkin && (Local || Dummy))
+		{
+			aRenderInfo[i].m_aSixup[g_Config.m_ClDummy].Reset();
+			for(int Part = 0; Part < protocol7::NUM_SKINPARTS; Part++)
+			{
+				GameClient()->m_Skins7.FindSkinPart(Part, CSkins7::ms_apSkinVariables[g_Config.m_ClDummy][Part], false)->ApplyTo(aRenderInfo[i].m_aSixup[g_Config.m_ClDummy]);
+				GameClient()->m_Skins7.ApplyColorTo(
+					aRenderInfo[i].m_aSixup[g_Config.m_ClDummy],
+					*CSkins7::ms_apUCCVariables[g_Config.m_ClDummy][Part],
+					*CSkins7::ms_apColorVariables[g_Config.m_ClDummy][Part],
+					Part);
+			}
 		}
 	}
 	CTeeRenderInfo RenderInfoSpec;
