@@ -281,7 +281,10 @@ void CEClient::OnlineInfo()
 			bool Muted = WarData.m_IsMuted;
 
 			if(Muted && WarlistType == 1)
+			{
 				Mutes++;
+				HasAny = true;
+			}
 			if(Matches)
 			{
 				Amount++;
@@ -319,8 +322,33 @@ void CEClient::OnlineInfo()
 		Info.m_ActiveAmount = AmountActive;
 		OnlineInfos.push_back(Info);
 	}
-	if(Mutes > 0)
-		HasAny = true;
+
+	if(g_Config.m_ClClientUsersOnlineInfo)
+	{
+		int Amount = 0;
+		int AmountActive = 0;
+		for(const CGameClient::CClientData &Client : GameClient()->m_aClients)
+		{
+			if(Client.m_IsEntityClientUser)
+			{
+				Amount++;
+				if(!Client.m_Afk)
+					AmountActive++;
+			}
+		}
+		if(Amount > 0)
+		{
+			COnlineInfo Info;
+			int NumActive = Amount - AmountActive;
+			char Label[16] = "";
+			str_format(Label, sizeof(Label), "entity user%s", NumActive != 1 ? "s" : "");
+			str_copy(Info.m_aLabel, Label, sizeof(Info.m_aLabel));
+			Info.m_Amount = Amount;
+			Info.m_ActiveAmount = AmountActive;
+			OnlineInfos.push_back(Info);
+			HasAny = true;
+		}
+	}
 
 	if(!HasAny)
 	{

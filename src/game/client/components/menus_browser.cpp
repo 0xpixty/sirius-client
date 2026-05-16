@@ -2344,7 +2344,7 @@ void CMenus::RenderWarlistPlayers(CUIRect &View, CUIRect &List, CScrollRegion &S
 
 void CMenus::RenderEntityClientUsers(CUIRect &View, CUIRect &List, CScrollRegion &ScrollRegion)
 {
-	if(!g_Config.m_ClClientIndicatorBrowser)
+	if(!g_Config.m_ClClientUsersBrowser)
 		return;
 
 	const float FontSize = 10.0f;

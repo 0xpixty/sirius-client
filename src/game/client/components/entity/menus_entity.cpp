@@ -3639,7 +3639,7 @@ void CMenus::RenderSettingsVisual(CUIRect MainView)
 	/* ModuleRect */
 	vModules.push_back({
 		ESettingsModuleColumn::RIGHT,
-		{"miscellaneous", "options", "freeze", "stars", "ping", "circles", "names", "white", "feet"},
+		{"miscellaneous", "custom", "font", "katana", "colored", "options", "freeze", "frozen", "stars", "ping", "circles", "names", "white", "feet", "old", "team", "moving", "tiles", "entities", "entity", "cursor"},
 		[](bool HasSearch) {
 			int Size = 260;
 			if(g_Config.m_ClWhiteFeet || HasSearch)

@@ -91,7 +91,6 @@ MACRO_CONFIG_INT(ClWarlistBrowser, ec_warlist_browser, 1, 0, 1, CFGFLAG_CLIENT |
 MACRO_CONFIG_INT(ClWarlistBrowserFlags, ec_warlist_browser_flags, 0, 0, 262144, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Bit flags to hide wartypes in server browser")
 MACRO_CONFIG_INT(ClWarlistAutoAddFlags, ec_warlist_auto_add_flags, 4, 0, 262144, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Bit flags to disable wartypes getting auto added")
 MACRO_CONFIG_INT(ClWarlistFrozenTeeFlags, ec_warlist_frozen_tee_flags, 0, 0, 262144, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Bit flags to hide/show wartypes getting in frozen tee hud")
-MACRO_CONFIG_INT(ClClientIndicatorBrowser, ec_client_indicator_browser, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Whether to show a list of people using EClient in the server browser")
 
 // Server Info
 MACRO_CONFIG_INT(ClWarlistPrefixesServerInfo, ec_warlist_prefixes_server_info, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Whether to show warlist prefixes in the server info")
@@ -448,6 +447,10 @@ MACRO_CONFIG_INT(ClMouseSensXIngame, ec_mouse_sens_x_ingame, -1, 1, 100000, CFGF
 MACRO_CONFIG_INT(ClMouseSensYIngame, ec_mouse_sens_y_ingame, -1, 1, 100000, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Mouse sensitivity for Y axis when decoupled")
 MACRO_CONFIG_INT(ClMouseSensXUi, ec_mouse_sens_x_ui, -1, 1, 100000, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Mouse sensitivity for X axis when decoupled")
 MACRO_CONFIG_INT(ClMouseSensYUi, ec_mouse_sens_y_ui, -1, 1, 100000, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Mouse sensitivity for Y axis when decoupled")
+
+// Client Indicator
+MACRO_CONFIG_INT(ClClientUsersBrowser, ec_client_users_browser, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Whether to show a list of people using EClient in the server browser")
+MACRO_CONFIG_INT(ClClientUsersOnlineInfo, ec_client_users_online_info, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "list entity client users in the 'onlineinfo' command")
 
 // Custom variables from my server for the editor
 // You can use these if you get my server from https://github.com/FoxNet-DDNet/FoxNet
