@@ -126,9 +126,22 @@ void CScrollRegion::End()
 
 	if(m_RequestScrollY >= 0.0f)
 	{
-		m_AnimTargetScrollY = m_RequestScrollY;
-		m_AnimTime = 0.0f;
+		const float TargetScrollY = m_RequestScrollY;
 		m_RequestScrollY = -1.0f;
+
+		const float SmoothTime = g_Config.m_UiSmoothScrollTime / 1000.0f;
+		if(SmoothTime > 0.0f && absolute(m_ScrollY - TargetScrollY) >= 0.5f)
+		{
+			m_AnimTimeMax = SmoothTime;
+			m_AnimTime = m_AnimTimeMax;
+			m_AnimInitScrollY = m_ScrollY;
+			m_AnimTargetScrollY = TargetScrollY;
+		}
+		else
+		{
+			m_AnimTargetScrollY = TargetScrollY;
+			m_AnimTime = 0.0f;
+		}
 	}
 
 	m_AnimTargetScrollY = std::clamp(m_AnimTargetScrollY, 0.0f, MaxScroll);

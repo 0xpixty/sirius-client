@@ -167,7 +167,7 @@ void CMenus::RenderSettingsModuleSearchBar(CScrollRegion &ScrollRegion, CUIRect 
 	CUIRect SearchBar, EditBox, Status;
 	constexpr float StatusFontSize = 9.0f;
 	MainView.HSplitTop(LineSize + Margin * 2.0f + StatusFontSize * 0.5f, &SearchBar, &MainView);
-	if(ScrollRegion.AddRect(SearchBar))
+	ScrollRegion.AddRect(SearchBar);
 	{
 		const float SearchWidth = TextRender()->TextWidth(EditBoxFontSize, FontIcon::MAGNIFYING_GLASS) + 5.0f;
 
@@ -185,6 +185,7 @@ void CMenus::RenderSettingsModuleSearchBar(CScrollRegion &ScrollRegion, CUIRect 
 		{
 			Ui()->SetActiveItem(&SearchInput);
 			SearchInput.SelectAll();
+			ScrollRegion.ScrollHere(CScrollRegion::EScrollOption::SCROLLHERE_TOP);
 		}
 		SearchInput.SetEmptyText(Localize("Search"));
 		Ui()->DoClearableEditBox(&SearchInput, &EditBox, EditBoxFontSize);
