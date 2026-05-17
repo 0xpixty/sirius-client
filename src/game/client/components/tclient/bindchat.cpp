@@ -217,7 +217,7 @@ void CBindChat::OnConsoleInit()
 	AddDefaultBind("votekick", "votekick");
 	AddDefaultBind("onlineinfo", "OnlineInfo");
 	AddDefaultBind("playerinfo", "PlayerInfo");
-	AddBindDefault(".github", "view_link github.com/FoxNet-DDNet/Entity-Client-DDNet");
+	AddBindDefault(".github", "view_link https://github.com/FoxNet-DDNet/Entity-Client-DDNet");
 	AddDefaultBind("r", "reply_last");
 
 	AddDefaultBind("friend", "add_friend");
