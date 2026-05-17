@@ -229,8 +229,6 @@ void CBindChat::OnConsoleInit()
 	AddDefaultBind("restore", "restoreskin");
 	AddDefaultBind("save", "saveskin");
 
-	AddDefaultBind("tempmute", "addtempmute");
-
 	AddDefaultBind("tempwar", "war_name_index 1 1");
 	AddDefaultBind("war", "war_name_index 0 1");
 	AddDefaultBind("delwar", "remove_war_name_index 1");

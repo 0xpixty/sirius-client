@@ -40,11 +40,11 @@ void CWarList::OnConsoleInit()
 	Console()->Register("remove_war_clan_index", "s[group_index] s[name]", CFGFLAG_CLIENT, ConRemoveClanIndex, this, "Remove a clan war entry");
 
 	// EClient [Mutes]
-	Console()->Register("addmute", "i[temp] s[name]", CFGFLAG_CLIENT, ConAddMute, this, "Remove a clan war entry");
-	Console()->Register("delmute", "s[name]", CFGFLAG_CLIENT, ConDelMute, this, "Removes a Muted Name");
+	Console()->Register("addmute", "i[temp] r[name]", CFGFLAG_CLIENT, ConAddMute, this, "Remove a clan war entry");
+	Console()->Register("delmute", "r[name]", CFGFLAG_CLIENT, ConDelMute, this, "Removes a Muted Name");
 
-	Console()->Register("remove_entry_name", "s[name]", CFGFLAG_CLIENT, ConRemoveNameEntry, this, "Remove a clan war entry");
-	Console()->Register("remove_entry_clan", "s[clan]", CFGFLAG_CLIENT, ConRemoveClanEntry, this, "Removes a Muted Name");
+	Console()->Register("remove_entry_name", "r[name]", CFGFLAG_CLIENT, ConRemoveNameEntry, this, "Remove a clan war entry");
+	Console()->Register("remove_entry_clan", "r[clan]", CFGFLAG_CLIENT, ConRemoveClanEntry, this, "Removes a Muted Name");
 }
 
 void CWarList::RebuildWarMaps()
