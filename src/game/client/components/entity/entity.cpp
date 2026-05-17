@@ -428,8 +428,6 @@ void CEClient::OnShutdown()
 		g_Config.m_ClPlayerUseCustomColor = g_Config.m_ClSavedPlayerUseCustomColor;
 		g_Config.m_ClPlayerColorBody = g_Config.m_ClSavedPlayerColorBody;
 	}
-
-	g_Config.m_ClKillCounter = m_KillCount;
 }
 
 void CEClient::SetDDNetProcessPriority(bool Set)
@@ -537,9 +535,6 @@ void CEClient::OnInit()
 	// Dummy Rainbow
 	m_RainbowColor[1] = g_Config.m_ClDummyColorBody;
 
-	// Set Kill Counter
-	m_KillCount = g_Config.m_ClKillCounter;
-
 	// First Launch
 	if(g_Config.m_ClFirstLaunch)
 	{
@@ -578,6 +573,14 @@ void CEClient::OnStateChange(int NewState, int OldState)
 
 void CEClient::OnRender()
 {
+	// Every minute
+	static int64_t LastTime = 0;
+	if(time_freq() * 60 < time_get() - LastTime)
+	{
+		m_Playtime++;
+		LastTime = time_get();
+	}
+
 	const int64_t DiscordPriorityDelay = m_DiscordPriorityDelay.load();
 	if(g_Config.m_ClDiscordNormalProcessPriority && !m_DiscordPriorityThreadRunning.load() && DiscordPriorityDelay < time_get())
 	{
@@ -598,7 +601,7 @@ void CEClient::OnRender()
 
 void CEClient::OnSelfDeath()
 {
-	m_KillCount++;
+	m_DeathCounter++;
 }
 
 void CEClient::OnFocusChange(bool IsFocused)

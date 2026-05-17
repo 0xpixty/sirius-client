@@ -318,8 +318,6 @@ MACRO_CONFIG_INT(ClRainbowSpeed, ec_rainbow_speed, 25, 0, 10000, CFGFLAG_CLIENT 
 // Flags
 MACRO_CONFIG_INT(ClEClientSettingsTabs, ec_eclient_settings_tabs, 0, 0, 65536, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Bit flags to disable settings tabs")
 
-// Kill Counter
-MACRO_CONFIG_INT(ClKillCounter, ec_self_murder_count, 0, 0, 100000, CFGFLAG_CLIENT | CFGFLAG_SAVE, "If you wish to fake the amount of deaths then this is the config to edit")
 // Silent Messages
 MACRO_CONFIG_INT(ClSilentMessages, ec_silent_messages, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "When sending a Silent Message to the chat it will still show what you typed")
 MACRO_CONFIG_COL(ClSilentColor, ec_silent_color, 8924078, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Client message color of warlist cmds")

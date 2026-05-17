@@ -5183,6 +5183,11 @@ try
 		pConsole->ExecuteFile(AUTOEXEC_FILE, IConsole::CLIENT_ID_UNSPECIFIED);
 	}
 
+	// EClient
+	pConsole->Deregister("ec_self_murder_count");
+	pConsole->Deregister("death_counter");
+	pConsole->Deregister("playtime");
+
 	if(g_Config.m_ClConfigVersion < 1)
 	{
 		if(g_Config.m_ClAntiPing == 0)

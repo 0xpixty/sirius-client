@@ -72,6 +72,7 @@ public:
 		virtual ~IResult() = default;
 
 		virtual int GetInteger(unsigned Index) const = 0;
+		virtual int64_t GetInteger64(unsigned Index) const = 0; // EClient
 		virtual float GetFloat(unsigned Index) const = 0;
 		virtual const char *GetString(unsigned Index) const = 0;
 		virtual ColorHSLA GetColor(unsigned Index, float DarkestLighting) const = 0;
@@ -115,6 +116,7 @@ public:
 	virtual void ParseArguments(int NumArgs, const char **ppArguments) = 0;
 
 	virtual void Register(const char *pName, const char *pParams, int Flags, FCommandCallback pfnFunc, void *pUser, const char *pHelp) = 0;
+	virtual void Deregister(const char *pName) = 0; // EClient
 	virtual void RegisterTemp(const char *pName, const char *pParams, int Flags, const char *pHelp) = 0;
 	virtual void DeregisterTemp(const char *pName) = 0;
 	virtual void DeregisterTempAll() = 0;

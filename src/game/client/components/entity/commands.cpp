@@ -3,7 +3,6 @@
 
 #include <base/log.h>
 #include <base/str.h>
-#include <base/system.h>
 
 #include <engine/client.h>
 #include <engine/client/enums.h>
@@ -17,6 +16,8 @@
 #include <game/client/components/tclient/warlist.h>
 #include <game/client/gameclient.h>
 
+#include <cinttypes>
+#include <cstdint>
 #include <cstdlib>
 #include <vector>
 
@@ -187,6 +188,18 @@ void CEClient::ConViewLink(IConsole::IResult *pResult, void *pUserData)
 {
 	CEClient *pSelf = (CEClient *)pUserData;
 	pSelf->Client()->ViewLink(pResult->GetString(0));
+}
+
+void CEClient::ConSetDeathCounter(IConsole::IResult *pResult, void *pUserData)
+{
+	CEClient *pSelf = (CEClient *)pUserData;
+	pSelf->m_DeathCounter = pResult->GetInteger64(0);
+}
+
+void CEClient::ConSetPlaytime(IConsole::IResult *pResult, void *pUserData)
+{
+	CEClient *pSelf = (CEClient *)pUserData;
+	pSelf->m_Playtime = pResult->GetInteger64(0);
 }
 
 void CEClient::RestoreSkin()
@@ -515,6 +528,10 @@ void CEClient::OnConsoleInit()
 	Console()->Register("specid", "i[id]", CFGFLAG_CLIENT, ConSpectateId, this, "Spectate Id");
 	Console()->Register("crash", "", CFGFLAG_CLIENT, ConCrash, this, "Crash your own client");
 
+	Console()->Register("ec_self_murder_count", "l[amount]", CFGFLAG_CLIENT, ConSetDeathCounter, this, "Legacy alias for death_counter");
+	Console()->Register("playtime", "l[amount]", CFGFLAG_CLIENT, ConSetPlaytime, this, "Crash your own client");
+	Console()->Register("death_counter", "l[amount]", CFGFLAG_CLIENT, ConSetDeathCounter, this, "Crash your own client");
+
 	Console()->Chain("ec_fast_input", ConchainFastInputs, this);
 	Console()->Chain("ec_fast_input_amount", ConchainFastInputs, this);
 
@@ -567,6 +584,11 @@ void CEClient::ConfigSaveCallback(IConfigManager *pConfigManager, void *pUserDat
 	CEClient *pThis = (CEClient *)pUserData;
 
 	char aBuf[128];
+
+	str_format(aBuf, sizeof(aBuf), "playtime %" PRIi64, pThis->m_Playtime);
+	pConfigManager->WriteLine(aBuf, ConfigDomain::ENTITY);
+	str_format(aBuf, sizeof(aBuf), "death_counter %" PRIi64, pThis->m_DeathCounter);
+	pConfigManager->WriteLine(aBuf, ConfigDomain::ENTITY);
 
 	str_format(aBuf, sizeof(aBuf), "server_rainbow_speed %d", pThis->m_RainbowSpeed);
 	pConfigManager->WriteLine(aBuf, ConfigDomain::ENTITY);

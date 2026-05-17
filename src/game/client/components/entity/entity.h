@@ -51,8 +51,6 @@ class CEClient : public CComponent
 
 	static void ConPlayerInfo(IConsole::IResult *pResult, void *pUserData);
 
-	static void ConViewLink(IConsole::IResult *pResult, void *pUserData);
-
 	static void ConSaveSkin(IConsole::IResult *pResult, void *pUserData);
 	static void ConRestoreSkin(IConsole::IResult *pResult, void *pUserData);
 
@@ -62,6 +60,11 @@ class CEClient : public CComponent
 
 	static void ConCrash(IConsole::IResult *pResult, void *pUserData);
 
+	static void ConViewLink(IConsole::IResult *pResult, void *pUserData);
+
+	static void ConSetDeathCounter(IConsole::IResult *pResult, void *pUserData);
+	static void ConSetPlaytime(IConsole::IResult *pResult, void *pUserData);
+
 	static void ConchainFastInputs(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 	static void ConchainDiscordUpdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 
@@ -70,9 +73,13 @@ class CEClient : public CComponent
 
 	static void DiscordPriorityThread(void *pUserData);
 
+	int64_t m_DeathCounter;
+	int64_t m_Playtime; // Minutes
 public:
+	int64_t DeathCount() const { return m_DeathCounter; }
+	int64_t Playtime() const { return m_Playtime; }
+
 	bool m_WeaponsGot;
-	int m_KillCount;
 
 	void Votekick(const char *pName, const char *pReason);
 

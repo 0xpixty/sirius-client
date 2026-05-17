@@ -28,6 +28,7 @@
 #include <game/client/ui_scrollregion.h>
 #include <game/localization.h>
 
+#include <cstdint>
 #include <functional>
 #include <string>
 #include <string_view>
@@ -641,7 +642,6 @@ void CMenus::RenderEClientInfoPage(CUIRect MainView)
 
 	LeftView.HSplitTop(HeadlineHeight, &Label, &LeftView);
 	Ui()->DoLabel(&Label, "Hide Settings Tabs", LineSize, TEXTALIGN_ML);
-	LeftView.HSplitTop(LineSize, &LeftView, &LeftView);
 
 	static int s_ShowSettings = IsFlagSet(g_Config.m_ClEClientSettingsTabs, SettingTab::SETTINGS);
 	DoButton_CheckBoxAutoVMarginAndSet(&s_ShowSettings, EcLocalize("Settings"), &s_ShowSettings, &LeftView, LineSize);
@@ -667,10 +667,32 @@ void CMenus::RenderEClientInfoPage(CUIRect MainView)
 	DoButton_CheckBoxAutoVMarginAndSet(&s_ShowQuickActions, EcLocalize("Quick Actions"), &s_ShowQuickActions, &LeftView, LineSize);
 	SetFlag(g_Config.m_ClEClientSettingsTabs, SettingTab::QUICKACTION, s_ShowQuickActions);
 
-	char DeathCounter[32];
-	str_format(DeathCounter, sizeof(DeathCounter), "%d death%s (all time)", GameClient()->m_EClient.m_KillCount, GameClient()->m_EClient.m_KillCount == 1 ? "" : "s");
-	LeftView.HSplitTop(LineSize, &LeftView, &LeftView);
-	Ui()->DoLabel(&LeftView, DeathCounter, FontSize, TEXTALIGN_ML);
+	char aDeathBuf[32];
+	str_format(aDeathBuf, sizeof(aDeathBuf), "Deaths: %" PRId64, GameClient()->m_EClient.DeathCount());
+
+	Ui()->DoLabel(&LeftView, aDeathBuf, FontSize, TEXTALIGN_ML);
+
+	auto FormatPlaytime = [](int64_t Time) -> const char * {
+		// playtime is saved in minutes
+		static char aBuf[64];
+
+		if(Time < 0)
+			Time = 0;
+
+		int64_t Hours = Time / 60;
+		int64_t Minutes = Time % 60;
+
+		if(Hours > 0)
+			str_format(aBuf, sizeof(aBuf), "%" PRId64 " hour%s %" PRId64 " min%s", Hours, Hours == 1 ? "" : "s", Minutes, Minutes == 1 ? "" : "s");
+		else
+			str_format(aBuf, sizeof(aBuf), "%" PRId64 " min%s", Minutes, Minutes == 1 ? "" : "s");
+
+		return aBuf;
+	};
+	LeftView.HSplitTop(LineSize + FontSize * 0.5f, &LeftView, &LeftView);
+	char aPlaytimeBuf[48];
+	str_format(aPlaytimeBuf, sizeof(aPlaytimeBuf), "Playtime: %s", FormatPlaytime(GameClient()->m_EClient.Playtime()));
+	Ui()->DoLabel(&LeftView, aPlaytimeBuf, FontSize, TEXTALIGN_ML);
 
 	// Right Side
 	RightView.HSplitTop(HeadlineHeight, &Label, &RightView);

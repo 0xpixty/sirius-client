@@ -111,6 +111,7 @@ class CConsole : public IConsole
 
 		const char *GetString(unsigned Index) const override;
 		int GetInteger(unsigned Index) const override;
+		int64_t GetInteger64(unsigned Index) const override; // EClient
 		float GetFloat(unsigned Index) const override;
 		ColorHSLA GetColor(unsigned Index, float DarkestLighting) const override;
 
@@ -180,6 +181,7 @@ public:
 
 	void ParseArguments(int NumArgs, const char **ppArguments) override;
 	void Register(const char *pName, const char *pParams, int Flags, FCommandCallback pfnFunc, void *pUser, const char *pHelp) override;
+	void Deregister(const char *pName) override; // EClient
 	void RegisterTemp(const char *pName, const char *pParams, int Flags, const char *pHelp) override;
 	void DeregisterTemp(const char *pName) override;
 	void DeregisterTempAll() override;

@@ -139,6 +139,11 @@ void CInfoMessages::AddInfoMsg(const CInfoMsg &InfoMsg)
 	DeleteTextContainers(m_aInfoMsgs[m_InfoMsgCurrent]);
 	m_aInfoMsgs[m_InfoMsgCurrent] = InfoMsg;
 	CreateTextContainersIfNotCreated(m_aInfoMsgs[m_InfoMsgCurrent]);
+	if(!str_comp(InfoMsg.m_aVictimName, g_Config.m_ClDummy ? g_Config.m_ClDummyName : g_Config.m_PlayerName))
+	{
+		// Could be abused by servers
+		GameClient()->OnSelfDeath();
+	}
 
 	Graphics()->MapScreen(ScreenX0, ScreenY0, ScreenX1, ScreenY1);
 }
@@ -150,11 +155,6 @@ void CInfoMessages::CreateTextContainersIfNotCreated(CInfoMsg &InfoMsg)
 		if(ClientId == GameClient()->m_Snap.m_LocalClientId)
 		{
 			Color = g_Config.m_ClKillMessageHighlightColor;
-			if(!str_comp(InfoMsg.m_aVictimName, g_Config.m_ClDummy ? g_Config.m_ClDummyName : g_Config.m_PlayerName))
-			{
-				// Could be abused by servers
-				GameClient()->OnSelfDeath();
-			}
 		}
 		else
 		{
