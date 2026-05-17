@@ -2520,14 +2520,19 @@ void CMenus::RenderSettingsEClient(CUIRect MainView)
 		{"automation", "reply", "mute", "tab", "notify", "join", "message", "execute", "before", "join", "connect", "spawn", "show", "last", "name", "moved", "anti", "block"},
 		[](bool HasSearch) {
 			int OffSet = 0;
-			if(g_Config.m_ClNotifyOnJoin)
+			if(g_Config.m_ClNotifyOnJoin || HasSearch)
 				OffSet += 20.0f;
-			if(g_Config.m_ClNotifyWhenLast)
-				OffSet += 20.0f;
-			if(g_Config.m_ClAutoAddOnNameChange)
+			if(g_Config.m_ClNotifyWhenLast || HasSearch)
 				OffSet += 20.0f;
 
-			return 245.0f + OffSet;
+			if(g_Config.m_ClWarList || HasSearch)
+			{
+				OffSet += 22.5f;
+				if(g_Config.m_ClAutoAddOnNameChange || HasSearch)
+					OffSet += 22.5f;
+			}
+
+			return 225.0f + OffSet;
 		},
 		[&](CUIRect ModuleRect, bool HasSearch) {
 			ModuleRect.Draw(BackgroundColor, IGraphics::CORNER_ALL, CornerRoundness);
@@ -2549,7 +2554,7 @@ void CMenus::RenderSettingsEClient(CUIRect MainView)
 					if(DoButton_CheckBox(pConfigValue, pLabel, *pConfigValue, &ModuleRect))
 						*pConfigValue ^= 1;
 
-					if(*pConfigValue)
+					if(*pConfigValue || HasSearch)
 						Ui()->DoEditBox(pLineInput, &Button, EditBoxFontSize);
 				};
 
@@ -2593,7 +2598,7 @@ void CMenus::RenderSettingsEClient(CUIRect MainView)
 					RenderToggleEditBox(Name, &g_Config.m_ClNotifyOnJoin, &s_NotifyName, g_Config.m_ClAutoNotifyName, sizeof(g_Config.m_ClAutoNotifyName), "qxdFox", Length);
 				}
 
-				if(g_Config.m_ClNotifyOnJoin)
+				if(g_Config.m_ClNotifyOnJoin || HasSearch)
 				{
 					float Length = TextRender()->TextBoundingBox(12.5f, "Notify Message").m_W + 3.5f; // Give it some breathing room
 
@@ -2627,7 +2632,7 @@ void CMenus::RenderSettingsEClient(CUIRect MainView)
 					if(DoButton_CheckBox(&g_Config.m_ClNotifyWhenLast, "Show when you're the last player", g_Config.m_ClNotifyWhenLast, &ModuleRect))
 						g_Config.m_ClNotifyWhenLast ^= 1;
 
-					if(g_Config.m_ClNotifyWhenLast)
+					if(g_Config.m_ClNotifyWhenLast || HasSearch)
 					{
 						static CLineInput s_LastMessage;
 						s_LastMessage.SetBuffer(g_Config.m_ClNotifyWhenLastText, sizeof(g_Config.m_ClNotifyWhenLastText));
@@ -2656,25 +2661,28 @@ void CMenus::RenderSettingsEClient(CUIRect MainView)
 				}
 				ModuleRect.HSplitTop(20.0f, &Button, &ModuleRect);
 
-				ModuleRect.HSplitTop(2.5f, &Button, &ModuleRect);
-				ModuleRect.HSplitTop(LineSize, &Button, &ModuleRect);
-				if(DoButton_CheckBox(&g_Config.m_ClAutoAddOnNameChange, EcLocalize("Auto Add to Default Lists on Name Change"), g_Config.m_ClAutoAddOnNameChange, &Button))
+				if(g_Config.m_ClWarList || HasSearch)
 				{
-					g_Config.m_ClAutoAddOnNameChange = g_Config.m_ClAutoAddOnNameChange ? 0 : 1;
-				}
-				if(g_Config.m_ClAutoAddOnNameChange)
-				{
+					ModuleRect.HSplitTop(2.5f, &Button, &ModuleRect);
 					ModuleRect.HSplitTop(LineSize, &Button, &ModuleRect);
-					static int s_NamePlatesStrong = 0;
-					if(DoButton_CheckBox(&s_NamePlatesStrong, "Notify you everytime someone gets auto added", g_Config.m_ClAutoAddOnNameChange == 2, &Button))
-						g_Config.m_ClAutoAddOnNameChange = g_Config.m_ClAutoAddOnNameChange != 2 ? 2 : 1;
+					if(DoButton_CheckBox(&g_Config.m_ClAutoAddOnNameChange, EcLocalize("Auto Add to Warlist on Name Change"), g_Config.m_ClAutoAddOnNameChange, &Button))
+						g_Config.m_ClAutoAddOnNameChange = g_Config.m_ClAutoAddOnNameChange ? 0 : 1;
+
+					GameClient()->m_Tooltips.DoToolTip(&g_Config.m_ClAutoAddOnNameChange, &Button, "Automatically adds players that change their name to the warlist again");
+					if(g_Config.m_ClAutoAddOnNameChange || HasSearch)
+					{
+						ModuleRect.HSplitTop(LineSize, &Button, &ModuleRect);
+						static int s_NamePlatesStrong = 0;
+						if(DoButton_CheckBox(&s_NamePlatesStrong, "Notify you everytime someone gets auto added", g_Config.m_ClAutoAddOnNameChange == 2, &Button))
+							g_Config.m_ClAutoAddOnNameChange = g_Config.m_ClAutoAddOnNameChange != 2 ? 2 : 1;
+					}
 				}
 				ModuleRect.HSplitTop(2.5f, &Button, &ModuleRect);
 
 				DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClNotifyOnMove, "Notify When Player is Being Moved", &g_Config.m_ClNotifyOnMove, &ModuleRect, LineSize);
 
 				DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClAntiSpawnBlock, "Anti Spawn Block", &g_Config.m_ClAntiSpawnBlock, &ModuleRect, LineSize);
-				GameClient()->m_Tooltips.DoToolTip(&g_Config.m_ClAntiSpawnBlock, &Button, "Puts you into a random Team when you Kill and get frozen");
+				GameClient()->m_Tooltips.DoToolTip(&g_Config.m_ClAntiSpawnBlock, &Button, "Puts you into a random Team when you respawn and back to team 0 when close to start line");
 			}
 		},
 	});
