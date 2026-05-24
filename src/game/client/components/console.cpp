@@ -1677,6 +1677,19 @@ void CGameConsole::Toggle(int Type)
 	m_ConsoleType = Type;
 }
 
+void CGameConsole::SetRemoteConsoleInput(const char *pText, bool Open)
+{
+	if(Open && (m_ConsoleType != CONSOLETYPE_REMOTE || (m_ConsoleState != CONSOLE_OPEN && m_ConsoleState != CONSOLE_OPENING)))
+		Toggle(CONSOLETYPE_REMOTE);
+
+	if(m_RemoteConsole.m_Searching)
+		m_RemoteConsole.SetSearching(false);
+
+	m_RemoteConsole.m_Input.Set(pText);
+	m_RemoteConsole.m_Input.SetCursorOffset(m_RemoteConsole.m_Input.GetLength());
+	m_RemoteConsole.m_Input.SelectNothing();
+}
+
 void CGameConsole::ConToggleLocalConsole(IConsole::IResult *pResult, void *pUserData)
 {
 	((CGameConsole *)pUserData)->Toggle(CONSOLETYPE_LOCAL);

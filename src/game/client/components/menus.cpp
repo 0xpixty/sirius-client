@@ -825,6 +825,24 @@ void CMenus::RenderMenubar(CUIRect Box, IClient::EClientState ClientState)
 			m_ControlPageOpening = true;
 		}
 
+		if(Client()->RconAuthed() && Box.w >= 10.0f + 33.0f + 10.0f)
+		{
+			TextRender()->SetFontPreset(EFontPreset::ICON_FONT);
+			TextRender()->SetRenderFlags(ETextRenderFlags::TEXT_RENDER_FLAG_ONLY_ADVANCE_WIDTH | ETextRenderFlags::TEXT_RENDER_FLAG_NO_X_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_Y_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_PIXEL_ALIGNMENT | ETextRenderFlags::TEXT_RENDER_FLAG_NO_OVERSIZE);
+
+			Box.VSplitRight(10.0f, &Box, nullptr);
+			Box.VSplitRight(33.0f, &Box, &Button);
+			static CButtonContainer s_ModMenuButton;
+			if(DoButton_MenuTab(&s_ModMenuButton, FontIcon::BAN, ActivePage == PAGE_MODERATION, &Button, IGraphics::CORNER_T, &m_aAnimatorsSmallPage[SMALL_TAB_MODERATION]))
+			{
+				NewPage = PAGE_MODERATION;
+			}
+			GameClient()->m_Tooltips.DoToolTip(&s_ModMenuButton, &Button, Localize("Mod menu"));
+
+			TextRender()->SetRenderFlags(0);
+			TextRender()->SetFontPreset(EFontPreset::DEFAULT_FONT);
+		}
+
 		if(Box.w >= 10.0f + 33.0f + 10.0f)
 		{
 			TextRender()->SetFontPreset(EFontPreset::ICON_FONT);
@@ -863,7 +881,6 @@ void CMenus::RenderMenubar(CUIRect Box, IClient::EClientState ClientState)
 				g_Config.m_EcUnreadNews = false;
 			}
 			GameClient()->m_Tooltips.DoToolTip(&s_EClientButton, &Button, Localize("News"));
-			Box.VSplitRight(10.0f, &Box, nullptr);
 
 			TextRender()->SetRenderFlags(0);
 			TextRender()->SetFontPreset(EFontPreset::DEFAULT_FONT);
@@ -1329,6 +1346,10 @@ void CMenus::Render()
 			else if(m_GamePage == PAGE_ECLIENTNEWS)
 			{
 				RenderEClientNewsPage(MainView);
+			}
+			else if(m_GamePage == PAGE_MODERATION)
+			{
+				RenderModerationMenu(MainView);
 			}
 			else
 			{
