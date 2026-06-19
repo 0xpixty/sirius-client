@@ -15,7 +15,7 @@ typedef enum EDiscordResult(DISCORD_API *FDiscordCreate)(DiscordVersion, struct 
 
 #if defined(CONF_DISCORD_DYNAMIC)
 #include <dlfcn.h>
-FDiscordCreate GetDiscordCreate()
+static FDiscordCreate GetDiscordCreate()
 {
 	void *pSdk = dlopen("discord_game_sdk.so", RTLD_NOW);
 	if(!pSdk)
@@ -25,7 +25,7 @@ FDiscordCreate GetDiscordCreate()
 	return (FDiscordCreate)dlsym(pSdk, "DiscordCreate");
 }
 #else
-FDiscordCreate GetDiscordCreate()
+static FDiscordCreate GetDiscordCreate()
 {
 	return DiscordCreate;
 }
@@ -68,7 +68,7 @@ public:
 		mem_zero(&m_ActivityEvents, sizeof(m_ActivityEvents));
 
 		m_ActivityEvents.on_activity_join = &CDiscord::OnActivityJoin;
-		m_pActivityManager = 0;
+		m_pActivityManager = nullptr;
 
 		DiscordCreateParams Params;
 		DiscordCreateParamsSetDefault(&Params);
@@ -112,7 +112,7 @@ public:
 				m_UpdateActivity = false;
 				m_LastActivityUpdate = time_get();
 
-				m_pActivityManager->update_activity(m_pActivityManager, &m_Activity, 0, 0);
+				m_pActivityManager->update_activity(m_pActivityManager, &m_Activity, nullptr, nullptr);
 			}
 
 			m_pCore->run_callbacks(m_pCore);
@@ -125,9 +125,9 @@ public:
 
 		mem_zero(&m_Activity, sizeof(DiscordActivity));
 
-		str_copy(m_Activity.assets.large_image, "m_ghost", sizeof(m_Activity.assets.large_image));
-		str_copy(m_Activity.assets.large_text, "entityclient.net", sizeof(m_Activity.assets.large_text));
-		str_copy(m_Activity.details, pDetail, sizeof(m_Activity.details));
+		str_copy(m_Activity.assets.large_image, "m_ghost");
+		str_copy(m_Activity.assets.large_text, "entityclient.net");
+		str_copy(m_Activity.details, pDetail);
 
 		m_Activity.timestamps.start = m_TimeStamp;
 
@@ -143,14 +143,14 @@ public:
 		mem_zero(&m_Activity, sizeof(DiscordActivity));
 
 		// EClient
-		str_copy(m_Activity.assets.large_image, "m_ghost", sizeof(m_Activity.assets.large_image));
-		str_copy(m_Activity.assets.large_text, "entityclient.net", sizeof(m_Activity.assets.large_text));
+		str_copy(m_Activity.assets.large_image, "m_ghost");
+		str_copy(m_Activity.assets.large_text, "entityclient.net");
 		m_ShowMap = ShowMap;
 		m_Activity.instance = true;
 		m_Activity.timestamps.start = m_TimeStamp;
 		if(m_ShowMap)
-			str_copy(m_Activity.state, ServerInfo.m_aMap, sizeof(m_Activity.state));
-		str_copy(m_Activity.details, pDetail, sizeof(m_Activity.details));
+			str_copy(m_Activity.state, ServerInfo.m_aMap);
+		str_copy(m_Activity.details, pDetail);
 
 		m_Activity.party.size.current_size = ServerInfo.m_NumClients;
 		m_Activity.party.size.max_size = ServerInfo.m_MaxClients;
@@ -162,7 +162,7 @@ public:
 			// private parties have random id to not leak the server ip
 			char aPartyId[sizeof(m_Activity.party.id)];
 			secure_random_password(aPartyId, sizeof(aPartyId), 64);
-			str_copy(m_Activity.party.id, aPartyId, sizeof(m_Activity.party.id));
+			str_copy(m_Activity.party.id, aPartyId);
 		}
 		UpdateServerIp(ServerInfo);
 
@@ -178,10 +178,10 @@ public:
 
 		UpdateServerIp(ServerInfo);
 
-		str_copy(m_Activity.details, ServerInfo.m_aName, sizeof(m_Activity.details));
+		str_copy(m_Activity.details, ServerInfo.m_aName);
 		if(m_ShowMap)
-			str_copy(m_Activity.state, ServerInfo.m_aMap, sizeof(m_Activity.state));
-		str_copy(m_Activity.details, pDetail, sizeof(m_Activity.details));
+			str_copy(m_Activity.state, ServerInfo.m_aMap);
+		str_copy(m_Activity.details, pDetail);
 		m_Activity.party.size.max_size = ServerInfo.m_MaxClients;
 		m_UpdateActivity = true;
 	}
@@ -206,13 +206,13 @@ public:
 		// secret is only shared when player is joining the game, or when they are invited for private games
 		if(str_length(ServerInfo.m_aAddress) < (int)sizeof(m_Activity.secrets.join))
 		{
-			str_copy(m_Activity.secrets.join, ServerInfo.m_aAddress, sizeof(m_Activity.secrets.join));
+			str_copy(m_Activity.secrets.join, ServerInfo.m_aAddress);
 		}
 		else
 		{
 			char aAddr[NETADDR_MAXSTRSIZE];
 			net_addr_str(&ServerInfo.m_aAddresses[0], aAddr, sizeof(aAddr), true);
-			str_copy(m_Activity.secrets.join, aAddr, sizeof(m_Activity.secrets.join));
+			str_copy(m_Activity.secrets.join, aAddr);
 		}
 
 		if(m_Activity.party.privacy == DiscordActivityPartyPrivacy_Public)
@@ -221,15 +221,15 @@ public:
 			char aPartyId[SHA256_MAXSTRSIZE];
 			SHA256_DIGEST PartyIdSha256 = sha256(m_Activity.secrets.join, str_length(m_Activity.secrets.join));
 			sha256_str(PartyIdSha256, aPartyId, sizeof(aPartyId));
-			str_copy(m_Activity.party.id, aPartyId, sizeof(m_Activity.party.id));
+			str_copy(m_Activity.party.id, aPartyId);
 		}
 	}
 
 	static void DISCORD_CALLBACK OnActivityJoin(void *pEventData, const char *pSecret)
 	{
 		CDiscord *pSelf = static_cast<CDiscord *>(pEventData);
-		IClient *m_pClient = pSelf->Kernel()->RequestInterface<IClient>();
-		m_pClient->Connect(pSecret);
+		IClient *pClient = pSelf->Kernel()->RequestInterface<IClient>();
+		pClient->Connect(pSecret);
 	}
 
 	~CDiscord()
@@ -244,13 +244,13 @@ static IDiscord *CreateDiscordImpl()
 	FDiscordCreate pfnDiscordCreate = GetDiscordCreate();
 	if(!pfnDiscordCreate)
 	{
-		return 0;
+		return nullptr;
 	}
 	CDiscord *pDiscord = new CDiscord();
 	if(pDiscord->Init(pfnDiscordCreate))
 	{
 		delete pDiscord;
-		return 0;
+		return nullptr;
 	}
 	return pDiscord;
 }

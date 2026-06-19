@@ -338,7 +338,9 @@ int CMenus::DoButton_CheckBox_Common(const void *pId, const char *pText, const c
 		TextRender()->SetFontPreset(EFontPreset::DEFAULT_FONT);
 	}
 	else
+	{
 		Ui()->DoLabel(&Box, pBoxText, Box.h * CUi::ms_FontmodHeight, TEXTALIGN_MC);
+	}
 
 	TextRender()->SetRenderFlags(0);
 	Ui()->DoLabel(&Label, pText, Box.h * CUi::ms_FontmodHeight, TEXTALIGN_ML);
@@ -736,7 +738,7 @@ void CMenus::RenderMenubar(CUIRect Box, IClient::EClientState ClientState)
 		}
 		GameClient()->m_Tooltips.DoToolTip(&s_FavoritesButton, &Button, Localize("Favorites"));
 
-		int MaxPage = PAGE_FAVORITES + ServerBrowser()->FavoriteCommunities().size();
+		const int MaxPage = PAGE_FAVORITES + ServerBrowser()->FavoriteCommunities().size();
 		if(
 			!Ui()->IsPopupOpen() &&
 			CLineInput::GetActiveInput() == nullptr &&
@@ -2636,7 +2638,9 @@ void CMenus::OnStateChange(int NewState, int OldState)
 				Ui()->SetActiveItem(&m_PasswordInput);
 			}
 			else
+			{
 				m_Popup = POPUP_DISCONNECTED;
+			}
 		}
 	}
 	else if(NewState == IClient::STATE_LOADING)
@@ -2690,10 +2694,14 @@ void CMenus::OnRender()
 
 	Ui()->Update();
 
+	if(IsActive())
+		Ui()->DoBackButton();
+
 	Render();
 
 	if(IsActive())
 	{
+		Ui()->RenderBackButton();
 		RenderTools()->RenderCursor(Ui()->MousePos(), 24.0f);
 	}
 

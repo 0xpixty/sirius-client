@@ -234,7 +234,7 @@ void CUi::Update(bool IsChat)
 			{
 				if(m_pHotScrollRegion != nullptr)
 				{
-					m_pHotScrollRegion->ScrollRelativeDirect(-m_TouchState.m_ScrollAmount.y * pScreen->h);
+					m_pHotScrollRegion->ScrollRelativeDirect(-m_TouchState.m_ScrollAmount * pScreen->Size());
 				}
 				m_TouchState.m_ScrollAmount = vec2(0.0f, 0.0f);
 			}
@@ -403,6 +403,13 @@ void CUi::UpdateTouchState(CTouchState &State) const
 			{
 				// Accumulate average delta of the two fingers
 				State.m_ScrollAmount.y += (Delta0.y + Delta1.y) / 2.0f;
+			}
+			else if(absolute(Delta0.x) > DirectionThreshold * absolute(Delta0.y) && // Horizontal scrolling (x-delta must be larger than y-delta)
+				absolute(Delta1.x) > DirectionThreshold * absolute(Delta1.y) &&
+				Delta0.x * Delta1.x > 0.0f) // Same x direction required
+			{
+				// Accumulate average delta of the two fingers
+				State.m_ScrollAmount.x += (Delta0.x + Delta1.x) / 2.0f;
 			}
 		}
 	}
@@ -1918,6 +1925,103 @@ void CUi::RenderProgressSpinner(vec2 Center, float OuterRadius, const SProgressS
 	Graphics()->QuadsEnd();
 }
 
+void CUi::DoBackButton()
+{
+	if(!g_Config.m_ClBackButton)
+		return;
+
+	MapScreen();
+	const CUIRect *pScreen = Screen();
+	const float Size = pScreen->h * 0.1f;
+	constexpr float PositionScale = 1000000.0f;
+	const auto ClampPos = [&](vec2 Pos) {
+		Pos.x = std::clamp(Pos.x, 0.0f, pScreen->w - Size);
+		Pos.y = std::clamp(Pos.y, 0.0f, pScreen->h - Size);
+		return Pos;
+	};
+
+	vec2 ButtonPos = ClampPos({g_Config.m_ClBackButtonX / PositionScale * pScreen->w, g_Config.m_ClBackButtonY / PositionScale * pScreen->h});
+	CUIRect ButtonRect{ButtonPos.x, ButtonPos.y, Size, Size};
+
+	bool Clicked = false;
+	bool Abrupted = false;
+	const int Result = DoDraggableButtonLogic(&m_BackButtonId, 0, &ButtonRect, &Clicked, &Abrupted);
+
+	// Detect the press transition. DoDraggableButtonLogic sets the active item on the
+	// press frame but returns 0 there, so check CheckActiveItem to catch it.
+	if(m_BackButtonOp == EBackButtonOp::NONE && CheckActiveItem(&m_BackButtonId))
+	{
+		m_BackButtonInitialMouse = MousePos();
+		m_BackButtonDragOffset = ButtonPos - MousePos();
+		m_BackButtonOp = EBackButtonOp::CLICKED;
+		if(m_OnBackButtonPressedFunction)
+			m_OnBackButtonPressedFunction();
+	}
+
+	if(m_BackButtonOp == EBackButtonOp::CLICKED && length(MousePos() - m_BackButtonInitialMouse) > 5.0f)
+	{
+		m_BackButtonOp = EBackButtonOp::DRAGGING;
+	}
+
+	if(m_BackButtonOp == EBackButtonOp::DRAGGING)
+	{
+		ButtonPos = ClampPos(MousePos() + m_BackButtonDragOffset);
+		g_Config.m_ClBackButtonX = round_to_int(ButtonPos.x / pScreen->w * PositionScale);
+		g_Config.m_ClBackButtonY = round_to_int(ButtonPos.y / pScreen->h * PositionScale);
+		ButtonRect.x = ButtonPos.x;
+		ButtonRect.y = ButtonPos.y;
+	}
+
+	if(Result && Clicked)
+	{
+		if(m_BackButtonOp == EBackButtonOp::CLICKED && m_DispatchInputFunction)
+		{
+			IInput::CEvent Event;
+			Event.m_Key = KEY_ESCAPE;
+			Event.m_InputCount = 0;
+			Event.m_aText[0] = '\0';
+			Event.m_Flags = IInput::FLAG_PRESS;
+			m_DispatchInputFunction(Event);
+			Event.m_Flags = IInput::FLAG_RELEASE;
+			m_DispatchInputFunction(Event);
+		}
+		m_BackButtonOp = EBackButtonOp::NONE;
+	}
+	else if(Result && Abrupted)
+	{
+		m_BackButtonOp = EBackButtonOp::NONE;
+	}
+
+	m_BackButtonRect = ButtonRect;
+}
+
+void CUi::RenderBackButton()
+{
+	if(!g_Config.m_ClBackButton)
+		return;
+
+	MapScreen();
+
+	// Override hot/active claims made by UI rendered between DoBackButton and RenderBackButton.
+	if(m_BackButtonOp != EBackButtonOp::NONE)
+		SetActiveItem(&m_BackButtonId);
+	else if(MouseHovered(&m_BackButtonRect) && !MouseButton(0) && !MouseButton(1) && !MouseButton(2))
+		SetHotItem(&m_BackButtonId);
+
+	const bool Pressed = m_BackButtonOp != EBackButtonOp::NONE;
+	const bool Hovered = !Pressed && HotItem() == &m_BackButtonId;
+	const float Alpha = Pressed ? 0.9f : (Hovered ? 0.35f : 0.5f);
+	m_BackButtonRect.Draw({0.0f, 0.0f, 0.0f, Alpha}, IGraphics::CORNER_ALL, 12.0f);
+
+	TextRender()->SetFontPreset(EFontPreset::ICON_FONT);
+	TextRender()->SetRenderFlags(ETextRenderFlags::TEXT_RENDER_FLAG_ONLY_ADVANCE_WIDTH |
+				     ETextRenderFlags::TEXT_RENDER_FLAG_NO_X_BEARING |
+				     ETextRenderFlags::TEXT_RENDER_FLAG_NO_Y_BEARING);
+	DoLabel(&m_BackButtonRect, FontIcon::CHEVRON_LEFT, m_BackButtonRect.w * 0.5f, TEXTALIGN_MC);
+	TextRender()->SetRenderFlags(0);
+	TextRender()->SetFontPreset(EFontPreset::DEFAULT_FONT);
+}
+
 void CUi::DoPopupMenu(const SPopupMenuId *pId, float X, float Y, float Width, float Height, void *pContext, FPopupMenuFunction pfnFunc, const SPopupMenuProperties &Props)
 {
 	constexpr float Margin = SPopupMenu::POPUP_BORDER + SPopupMenu::POPUP_MARGIN;
@@ -1994,7 +2098,7 @@ void CUi::RenderPopupMenus()
 
 void CUi::ClosePopupMenu(const SPopupMenuId *pId, bool IncludeDescendants)
 {
-	auto PopupMenuToClose = std::find_if(m_vPopupMenus.begin(), m_vPopupMenus.end(), [pId](const SPopupMenu PopupMenu) { return PopupMenu.m_pId == pId; });
+	auto PopupMenuToClose = std::find_if(m_vPopupMenus.begin(), m_vPopupMenus.end(), [pId](const SPopupMenu &PopupMenu) { return PopupMenu.m_pId == pId; });
 	if(PopupMenuToClose != m_vPopupMenus.end())
 	{
 		if(IncludeDescendants)
@@ -2155,9 +2259,9 @@ CUi::EPopupMenuFunctionResult CUi::PopupSelection(void *pContext, CUIRect View, 
 	CScrollRegion *pScrollRegion = pSelectionPopup->m_pScrollRegion;
 
 	CScrollRegionParams ScrollParams;
-	ScrollParams.m_ScrollbarWidth = 10.0f;
+	ScrollParams.m_ScrollbarThickness = 10.0f;
 	ScrollParams.m_ScrollbarMargin = SPopupMenu::POPUP_MARGIN;
-	ScrollParams.m_ScrollbarNoMarginRight = true;
+	ScrollParams.m_ScrollbarNoOuterMargin = true;
 	ScrollParams.m_ScrollUnit = 3 * (pSelectionPopup->m_EntryHeight + pSelectionPopup->m_EntrySpacing);
 	pScrollRegion->Begin(&View, &ScrollParams);
 

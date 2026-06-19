@@ -26,6 +26,8 @@ public:
 	// EClient>
 
 	bool IsActive() const;
+	bool HasPendingKeyReader() const { return m_pKeyReaderId != nullptr; }
+	bool AbortPendingKey();
 
 private:
 	const CButtonContainer *m_pKeyReaderId = nullptr;

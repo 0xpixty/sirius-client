@@ -2236,7 +2236,7 @@ void CEditor::RenderLayers(CUIRect LayersBox)
 	CUIRect UnscrolledLayersBox = LayersBox;
 
 	CScrollRegionParams ScrollParams;
-	ScrollParams.m_ScrollbarWidth = 10.0f;
+	ScrollParams.m_ScrollbarThickness = 10.0f;
 	ScrollParams.m_ScrollbarMargin = 3.0f;
 	ScrollParams.m_ScrollUnit = RowHeight * 5.0f;
 	State.m_ScrollRegion.Begin(&LayersBox, &ScrollParams);
@@ -3123,7 +3123,7 @@ void CEditor::RenderImagesList(CUIRect ToolBox)
 
 	static CScrollRegion s_ScrollRegion;
 	CScrollRegionParams ScrollParams;
-	ScrollParams.m_ScrollbarWidth = 10.0f;
+	ScrollParams.m_ScrollbarThickness = 10.0f;
 	ScrollParams.m_ScrollbarMargin = 3.0f;
 	ScrollParams.m_ScrollUnit = RowHeight * 5;
 	s_ScrollRegion.Begin(&ToolBox, &ScrollParams);
@@ -3256,7 +3256,7 @@ void CEditor::RenderSounds(CUIRect ToolBox)
 
 	static CScrollRegion s_ScrollRegion;
 	CScrollRegionParams ScrollParams;
-	ScrollParams.m_ScrollbarWidth = 10.0f;
+	ScrollParams.m_ScrollbarThickness = 10.0f;
 	ScrollParams.m_ScrollbarMargin = 3.0f;
 	ScrollParams.m_ScrollUnit = RowHeight * 5;
 	s_ScrollRegion.Begin(&ToolBox, &ScrollParams);
@@ -3373,7 +3373,7 @@ void CEditor::RenderModebar(CUIRect View)
 	CUIRect Mentions, IngameMoved, ModeButtons, ModeButton;
 	View.HSplitTop(12.0f, &Mentions, &View);
 	View.HSplitTop(12.0f, &IngameMoved, &View);
-	View.HSplitTop(8.0f, nullptr, &ModeButtons);
+	View.HSplitBottom(22.0f, nullptr, &ModeButtons);
 	const float Width = m_ToolBoxWidth - 5.0f;
 	ModeButtons.VSplitLeft(Width, &ModeButtons, nullptr);
 	const float ButtonWidth = Width / 3;
@@ -3477,157 +3477,6 @@ void CEditor::RenderTooltip(CUIRect TooltipRect)
 	Props.m_MaxWidth = TooltipRect.w;
 	Props.m_EllipsisAtEnd = true;
 	Ui()->DoLabel(&TooltipRect, aBuf, 10.0f, TEXTALIGN_ML, Props);
-}
-
-void CEditor::RenderEditorHistory(CUIRect View)
-{
-	enum EHistoryType
-	{
-		EDITOR_HISTORY,
-		ENVELOPE_HISTORY,
-		SERVER_SETTINGS_HISTORY
-	};
-
-	static EHistoryType s_HistoryType = EDITOR_HISTORY;
-	static int s_ActionSelectedIndex = 0;
-	static CListBox s_ListBox;
-	s_ListBox.SetActive(m_Dialog == DIALOG_NONE && !Ui()->IsPopupOpen());
-
-	const bool GotSelection = s_ListBox.Active() && s_ActionSelectedIndex >= 0 && (size_t)s_ActionSelectedIndex < Map()->m_vSettings.size();
-
-	CUIRect ToolBar, Button, Label, List, DragBar;
-	View.HSplitTop(22.0f, &DragBar, nullptr);
-	DragBar.y -= 2.0f;
-	DragBar.w += 2.0f;
-	DragBar.h += 4.0f;
-	DoEditorDragBar(View, &DragBar, EDragSide::TOP, &m_aExtraEditorSplits[EXTRAEDITOR_HISTORY]);
-	View.HSplitTop(20.0f, &ToolBar, &View);
-	View.HSplitTop(2.0f, nullptr, &List);
-	ToolBar.HMargin(2.0f, &ToolBar);
-
-	CUIRect TypeButtons, HistoryTypeButton;
-	const int HistoryTypeBtnSize = 70.0f;
-	ToolBar.VSplitLeft(3 * HistoryTypeBtnSize, &TypeButtons, &Label);
-
-	// history type buttons
-	{
-		TypeButtons.VSplitLeft(HistoryTypeBtnSize, &HistoryTypeButton, &TypeButtons);
-		static int s_EditorHistoryButton = 0;
-		if(DoButton_Ex(&s_EditorHistoryButton, "Editor", s_HistoryType == EDITOR_HISTORY, &HistoryTypeButton, BUTTONFLAG_LEFT, "Show map editor history.", IGraphics::CORNER_L))
-		{
-			s_HistoryType = EDITOR_HISTORY;
-		}
-
-		TypeButtons.VSplitLeft(HistoryTypeBtnSize, &HistoryTypeButton, &TypeButtons);
-		static int s_EnvelopeEditorHistoryButton = 0;
-		if(DoButton_Ex(&s_EnvelopeEditorHistoryButton, "Envelope", s_HistoryType == ENVELOPE_HISTORY, &HistoryTypeButton, BUTTONFLAG_LEFT, "Show envelope editor history.", IGraphics::CORNER_NONE))
-		{
-			s_HistoryType = ENVELOPE_HISTORY;
-		}
-
-		TypeButtons.VSplitLeft(HistoryTypeBtnSize, &HistoryTypeButton, &TypeButtons);
-		static int s_ServerSettingsHistoryButton = 0;
-		if(DoButton_Ex(&s_ServerSettingsHistoryButton, "Settings", s_HistoryType == SERVER_SETTINGS_HISTORY, &HistoryTypeButton, BUTTONFLAG_LEFT, "Show server settings editor history.", IGraphics::CORNER_R))
-		{
-			s_HistoryType = SERVER_SETTINGS_HISTORY;
-		}
-	}
-
-	SLabelProperties InfoProps;
-	InfoProps.m_MaxWidth = ToolBar.w - 60.f;
-	InfoProps.m_EllipsisAtEnd = true;
-	Label.VSplitLeft(8.0f, nullptr, &Label);
-	Ui()->DoLabel(&Label, "Editor history. Click on an action to undo all actions above.", 10.0f, TEXTALIGN_ML, InfoProps);
-
-	CEditorHistory *pCurrentHistory;
-	if(s_HistoryType == EDITOR_HISTORY)
-		pCurrentHistory = &Map()->m_EditorHistory;
-	else if(s_HistoryType == ENVELOPE_HISTORY)
-		pCurrentHistory = &Map()->m_EnvelopeEditorHistory;
-	else if(s_HistoryType == SERVER_SETTINGS_HISTORY)
-		pCurrentHistory = &Map()->m_ServerSettingsHistory;
-	else
-		return;
-
-	// delete button
-	ToolBar.VSplitRight(25.0f, &ToolBar, &Button);
-	ToolBar.VSplitRight(5.0f, &ToolBar, nullptr);
-	static int s_DeleteButton = 0;
-	if(DoButton_FontIcon(&s_DeleteButton, FontIcon::TRASH, (!pCurrentHistory->m_vpUndoActions.empty() || !pCurrentHistory->m_vpRedoActions.empty()) ? 0 : -1, &Button, BUTTONFLAG_LEFT, "Clear the history.", IGraphics::CORNER_ALL, 9.0f) || (GotSelection && CLineInput::GetActiveInput() == nullptr && m_Dialog == DIALOG_NONE && Ui()->ConsumeHotkey(CUi::HOTKEY_DELETE)))
-	{
-		pCurrentHistory->Clear();
-		s_ActionSelectedIndex = 0;
-	}
-
-	// actions list
-	int RedoSize = (int)pCurrentHistory->m_vpRedoActions.size();
-	int UndoSize = (int)pCurrentHistory->m_vpUndoActions.size();
-	s_ActionSelectedIndex = RedoSize;
-	s_ListBox.DoStart(15.0f, RedoSize + UndoSize, 1, 3, s_ActionSelectedIndex, &List);
-
-	for(int i = 0; i < RedoSize; i++)
-	{
-		const CListboxItem Item = s_ListBox.DoNextItem(&pCurrentHistory->m_vpRedoActions[i], s_ActionSelectedIndex >= 0 && s_ActionSelectedIndex == i);
-		if(!Item.m_Visible)
-			continue;
-
-		Item.m_Rect.VMargin(5.0f, &Label);
-
-		SLabelProperties Props;
-		Props.m_MaxWidth = Label.w;
-		Props.m_EllipsisAtEnd = true;
-		TextRender()->TextColor({.5f, .5f, .5f});
-		TextRender()->TextOutlineColor(TextRender()->DefaultTextOutlineColor());
-		Ui()->DoLabel(&Label, pCurrentHistory->m_vpRedoActions[i]->DisplayText(), 10.0f, TEXTALIGN_ML, Props);
-		TextRender()->TextColor(TextRender()->DefaultTextColor());
-	}
-
-	for(int i = 0; i < UndoSize; i++)
-	{
-		const CListboxItem Item = s_ListBox.DoNextItem(&pCurrentHistory->m_vpUndoActions[UndoSize - i - 1], s_ActionSelectedIndex >= RedoSize && s_ActionSelectedIndex == (i + RedoSize));
-		if(!Item.m_Visible)
-			continue;
-
-		Item.m_Rect.VMargin(5.0f, &Label);
-
-		SLabelProperties Props;
-		Props.m_MaxWidth = Label.w;
-		Props.m_EllipsisAtEnd = true;
-		Ui()->DoLabel(&Label, pCurrentHistory->m_vpUndoActions[UndoSize - i - 1]->DisplayText(), 10.0f, TEXTALIGN_ML, Props);
-	}
-
-	{ // Base action "Loaded map" that cannot be undone
-		static int s_BaseAction;
-		const CListboxItem Item = s_ListBox.DoNextItem(&s_BaseAction, s_ActionSelectedIndex == RedoSize + UndoSize);
-		if(Item.m_Visible)
-		{
-			Item.m_Rect.VMargin(5.0f, &Label);
-
-			Ui()->DoLabel(&Label, "Loaded map", 10.0f, TEXTALIGN_ML);
-		}
-	}
-
-	const int NewSelected = s_ListBox.DoEnd();
-	if(s_ActionSelectedIndex != NewSelected)
-	{
-		// Figure out if we should undo or redo some actions
-		// Undo everything until the selected index
-		if(NewSelected > s_ActionSelectedIndex)
-		{
-			for(int i = 0; i < (NewSelected - s_ActionSelectedIndex); i++)
-			{
-				pCurrentHistory->Undo();
-			}
-		}
-		else
-		{
-			for(int i = 0; i < (s_ActionSelectedIndex - NewSelected); i++)
-			{
-				pCurrentHistory->Redo();
-			}
-		}
-		s_ActionSelectedIndex = NewSelected;
-	}
 }
 
 void CEditor::DoEditorDragBar(CUIRect View, CUIRect *pDragBar, EDragSide Side, float *pValue, float MinValue, float MaxValue)
@@ -3799,7 +3648,7 @@ void CEditor::Render()
 	CUIRect MenuBar, ModeBar, ToolBar, StatusBar, ExtraEditor, ToolBox;
 	if(m_GuiActive)
 	{
-		View.HSplitTop(16.0f, &MenuBar, &View);
+		View.HSplitTop(20.0f, &MenuBar, &View);
 		View.HSplitTop(53.0f, &ToolBar, &View);
 		View.VSplitLeft(m_ToolBoxWidth, &ToolBox, &View);
 
@@ -4082,15 +3931,16 @@ void CEditor::Render()
 
 			if(Input()->ShiftIsPressed())
 			{
+				const int AdjustModifiers = Input()->ModifierIsPressed() ? (Input()->AltIsPressed() ? 2 : 1) : 0;
 				if(Input()->KeyPress(KEY_MOUSE_WHEEL_DOWN))
-					AdjustBrushSpecialTiles(false, -1);
+					AdjustBrushSpecialTiles(false, AdjustModifiers, -1);
 				if(Input()->KeyPress(KEY_MOUSE_WHEEL_UP))
-					AdjustBrushSpecialTiles(false, 1);
+					AdjustBrushSpecialTiles(false, AdjustModifiers, 1);
 			}
 
 			// Use ctrl+f to replace number in brush with next free
 			if(Input()->ModifierIsPressed() && Input()->KeyPress(KEY_F))
-				AdjustBrushSpecialTiles(true);
+				AdjustBrushSpecialTiles(true, 0, 0);
 		}
 	}
 
@@ -4121,6 +3971,7 @@ void CEditor::Render()
 	if(m_GuiActive)
 		RenderTooltip(TooltipRect);
 
+	Ui()->RenderBackButton();
 	RenderMousePointer();
 }
 
@@ -4614,6 +4465,9 @@ void CEditor::Init()
 	m_UI.SetPopupMenuClosedCallback([this]() {
 		m_PopupEventWasActivated = false;
 	});
+	m_UI.SetDispatchInputCallback([this](const IInput::CEvent &Event) {
+		OnInput(Event);
+	});
 	m_RenderMap.Init(m_pGraphics, m_pTextRender);
 	m_ZoomEnvelopeX.OnInit(this);
 	m_ZoomEnvelopeY.OnInit(this);
@@ -4779,26 +4633,7 @@ void CEditor::OnUpdate()
 
 	// handle key presses
 	Input()->ConsumeEvents([&](const IInput::CEvent &Event) {
-		if(m_Dialog == DIALOG_NONE &&
-			CLineInput::GetActiveInput() == nullptr &&
-			Event.m_Key == KEY_F1)
-		{
-			if((Event.m_Flags & IInput::FLAG_PRESS) != 0 &&
-				(Event.m_Flags & IInput::FLAG_REPEAT) == 0)
-			{
-				m_QuickActionShowHelp.Call();
-			}
-			return;
-		}
-
-		for(CEditorComponent &Component : m_vComponents)
-		{
-			// Events with flag `FLAG_RELEASE` must always be forwarded to all components so keys being
-			// released can be handled in all components also after some components have been disabled.
-			if(Component.OnInput(Event) && (Event.m_Flags & ~IInput::FLAG_RELEASE) != 0)
-				return;
-		}
-		Ui()->OnInput(Event);
+		OnInput(Event);
 	});
 
 	MapView()->UpdateMouseWorld();
@@ -4808,6 +4643,27 @@ void CEditor::OnUpdate()
 
 	for(CEditorComponent &Component : m_vComponents)
 		Component.OnUpdate();
+}
+
+void CEditor::OnInput(const IInput::CEvent &Event)
+{
+	if(m_Dialog == DIALOG_NONE && CLineInput::GetActiveInput() == nullptr && Event.m_Key == KEY_F1)
+	{
+		if((Event.m_Flags & IInput::FLAG_PRESS) != 0 && (Event.m_Flags & IInput::FLAG_REPEAT) == 0)
+		{
+			m_QuickActionShowHelp.Call();
+		}
+		return;
+	}
+
+	for(CEditorComponent &Component : m_vComponents)
+	{
+		// Events with flag `FLAG_RELEASE` must always be forwarded to all components so keys being
+		// released can be handled in all components also after some components have been disabled.
+		if(Component.OnInput(Event) && (Event.m_Flags & ~IInput::FLAG_RELEASE) != 0)
+			return;
+	}
+	Ui()->OnInput(Event);
 }
 
 void CEditor::OnRender()
@@ -4830,6 +4686,8 @@ void CEditor::OnRender()
 	Ui()->StartCheck();
 
 	Ui()->Update();
+
+	Ui()->DoBackButton();
 
 	Render();
 
@@ -4968,15 +4826,15 @@ CEditorHistory &CEditor::ActiveHistory()
 	}
 }
 
-void CEditor::AdjustBrushSpecialTiles(bool UseNextFree, int Adjust)
+void CEditor::AdjustBrushSpecialTiles(bool UseNextFree, int AdjustModifiers, int AdjustValue)
 {
 	// Adjust m_Angle of speedup or m_Number field of tune, switch and tele tiles by `Adjust` if `UseNextFree` is false
-	// If `Adjust` is 0 and `UseNextFree` is false, then update numbers of brush tiles to global values
+	// If `AdjustValue` is 0 and `UseNextFree` is false, then update numbers of brush tiles to global values
 	// If true, then use the next free number instead
 
-	dbg_assert(Adjust == -1 || Adjust == 0 || Adjust == 1, "Invalid Adjust: %d", Adjust);
-	auto &&AdjustNumber = [Adjust](auto &Number, int Min, int Max) {
-		const int NumberInt = Number + Adjust; // Cast to int so this does not overflow unsigned char for some tiles
+	dbg_assert(AdjustValue == -1 || AdjustValue == 0 || AdjustValue == 1, "Invalid AdjustValue: %d", AdjustValue);
+	auto &&AdjustNumber = [AdjustValue](auto &Number, int Min, int Max) {
+		const int NumberInt = Number + AdjustValue; // Cast to int so this does not overflow unsigned char for some tiles
 		if(NumberInt < Min)
 		{
 			Number = Max;
@@ -5018,15 +4876,16 @@ void CEditor::AdjustBrushSpecialTiles(bool UseNextFree, int Adjust)
 						else if(IsTeleTileNumberUsedAny(pTeleLayer->m_pTiles[i].m_Index))
 							pTeleLayer->m_pTeleTile[i].m_Number = NextFreeTeleNumber;
 					}
-					else
-						AdjustNumber(pTeleLayer->m_pTeleTile[i].m_Number, 1, 255);
-
-					if(!UseNextFree && Adjust == 0 && IsTeleTileNumberUsedAny(pTeleLayer->m_pTiles[i].m_Index))
+					else if(AdjustValue == 0)
 					{
 						if(IsTeleTileCheckpoint(pTeleLayer->m_pTiles[i].m_Index))
 							pTeleLayer->m_pTeleTile[i].m_Number = m_TeleCheckpointNumber;
-						else
+						else if(IsTeleTileNumberUsedAny(pTeleLayer->m_pTiles[i].m_Index))
 							pTeleLayer->m_pTeleTile[i].m_Number = m_TeleNumber;
+					}
+					else if(AdjustModifiers == 0)
+					{
+						AdjustNumber(pTeleLayer->m_pTeleTile[i].m_Number, 1, 255);
 					}
 				}
 			}
@@ -5044,9 +4903,13 @@ void CEditor::AdjustBrushSpecialTiles(bool UseNextFree, int Adjust)
 						continue;
 
 					if(UseNextFree)
+					{
 						pTuneLayer->m_pTuneTile[i].m_Number = NextFreeNumber;
-					else
+					}
+					else if(AdjustModifiers == 0)
+					{
 						AdjustNumber(pTuneLayer->m_pTuneTile[i].m_Number, 1, 255);
+					}
 				}
 			}
 		}
@@ -5063,9 +4926,17 @@ void CEditor::AdjustBrushSpecialTiles(bool UseNextFree, int Adjust)
 						continue;
 
 					if(UseNextFree)
+					{
 						pSwitchLayer->m_pSwitchTile[i].m_Number = NextFreeNumber;
-					else
+					}
+					else if(AdjustModifiers == 0)
+					{
 						AdjustNumber(pSwitchLayer->m_pSwitchTile[i].m_Number, 1, 255);
+					}
+					else if(AdjustModifiers == 1)
+					{
+						AdjustNumber(pSwitchLayer->m_pSwitchTile[i].m_Delay, 0, 255);
+					}
 				}
 			}
 		}
@@ -5080,14 +4951,22 @@ void CEditor::AdjustBrushSpecialTiles(bool UseNextFree, int Adjust)
 					if(!IsValidSpeedupTile(pSpeedupLayer->m_pTiles[i].m_Index))
 						continue;
 
-					if(Adjust != 0)
-					{
-						AdjustNumber(pSpeedupLayer->m_pSpeedupTile[i].m_Angle, 0, 359);
-					}
-					else
+					if(AdjustValue == 0)
 					{
 						pSpeedupLayer->m_pSpeedupTile[i].m_Angle = m_SpeedupAngle;
 						pSpeedupLayer->m_SpeedupAngle = m_SpeedupAngle;
+					}
+					else if(AdjustModifiers == 0)
+					{
+						AdjustNumber(pSpeedupLayer->m_pSpeedupTile[i].m_Angle, 0, 359);
+					}
+					else if(AdjustModifiers == 1)
+					{
+						AdjustNumber(pSpeedupLayer->m_pSpeedupTile[i].m_Force, 1, 255);
+					}
+					else if(AdjustModifiers == 2)
+					{
+						AdjustNumber(pSpeedupLayer->m_pSpeedupTile[i].m_MaxSpeed, 0, 255);
 					}
 				}
 			}

@@ -648,7 +648,9 @@ bool CChat::OnInput(const IInput::CEvent &Event)
 				m_pHistoryEntry = pTest;
 		}
 		else
+		{
 			m_pHistoryEntry = m_History.Last();
+		}
 
 		if(m_pHistoryEntry)
 			m_Input.Set(m_pHistoryEntry->m_aText);
@@ -916,7 +918,9 @@ void CChat::AddLine(int ClientId, int Team, const char *pLine)
 			pEnd = nullptr;
 		}
 		else if(pEnd == nullptr)
+		{
 			pEnd = pStrOld;
+		}
 
 		if(++Length >= MAX_LINE_LENGTH)
 		{
