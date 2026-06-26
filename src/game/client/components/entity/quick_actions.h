@@ -30,7 +30,7 @@ class CQuickActions : public CComponent
 
 	int m_SelectedBind;
 
-	int GetClosetClientId(vec2 Pos);
+	int GetClosestClientId(vec2 Pos);
 
 	static void ConOpenQuickActionMenu(IConsole::IResult *pResult, void *pUserData);
 	static void ConAddQuickAction(IConsole::IResult *pResult, void *pUserData);

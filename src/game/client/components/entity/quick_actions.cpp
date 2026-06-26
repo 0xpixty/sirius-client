@@ -12,6 +12,7 @@
 
 #include <game/client/animstate.h>
 #include <game/client/gameclient.h>
+#include <game/client/prediction/gameworld.h>
 #include <game/client/render.h>
 #include <game/client/ui.h>
 
@@ -22,33 +23,68 @@ CQuickActions::CQuickActions()
 	OnReset();
 }
 
-int CQuickActions::GetClosetClientId(vec2 Pos)
+int CQuickActions::GetClosestClientId(vec2 Pos)
 {
 	int ClosestId = -1;
 	if(GameClient()->m_Snap.m_LocalClientId < 0)
 		return ClosestId;
 
+	if(GameClient()->m_Snap.m_SpecInfo.m_Active && GameClient()->m_Snap.m_SpecInfo.m_SpectatorId >= 0)
+		return GameClient()->m_Snap.m_SpecInfo.m_SpectatorId;
+
+	float ShowDistanceZoom = GameClient()->m_Camera.m_Zoom;
+	if(GameClient()->m_Camera.m_Zooming && GameClient()->m_Camera.m_ZoomSmoothingTarget > ShowDistanceZoom)
+		ShowDistanceZoom = GameClient()->m_Camera.m_ZoomSmoothingTarget;
+	float ShowDistanceX, ShowDistanceY;
+	Graphics()->CalcScreenParams(Graphics()->ScreenAspect(), ShowDistanceZoom, &ShowDistanceX, &ShowDistanceY);
+	const vec2 ViewPos = GameClient()->m_Camera.m_Center;
+
 	float ClosestDistance = std::numeric_limits<float>::max();
 
-	for(int ClientId = 0; ClientId < MAX_CLIENTS; ClientId++)
+	for(const auto &Client : GameClient()->m_aClients)
 	{
-		if(ClientId == GameClient()->m_Snap.m_LocalClientId)
+		if(Client.ClientId() == GameClient()->m_Snap.m_LocalClientId)
 			continue;
-		if(!GameClient()->m_Snap.m_aCharacters[ClientId].m_Active)
+		if(!Client.m_SpecCharPresent)
+			continue;
+		if(!Client.m_Active)
+			continue;
+		if(!Client.m_RenderInfo.Valid())
 			continue;
 
-		if(!GameClient()->m_aClients[ClientId].m_Active)
-			continue;
-		if(!GameClient()->m_aClients[ClientId].m_RenderInfo.Valid())
+		vec2 PlayerPos = Client.m_SpecChar;
+		if(absolute(ViewPos.x - PlayerPos.x) > ShowDistanceX || absolute(ViewPos.y - PlayerPos.y) > ShowDistanceY)
 			continue;
 
-		vec2 PlayerPos = GameClient()->m_aClients[ClientId].m_RenderPos;
 		float Distance = distance(Pos, PlayerPos);
 
 		if(Distance < ClosestDistance)
 		{
 			ClosestDistance = Distance;
-			ClosestId = ClientId;
+			ClosestId = Client.ClientId();
+		}
+	}
+
+	for(const auto &Client : GameClient()->m_aClients)
+	{
+		if(Client.ClientId() == GameClient()->m_Snap.m_LocalClientId)
+			continue;
+		if(!GameClient()->m_Snap.m_aCharacters[Client.ClientId()].m_Active)
+			continue;
+
+		if(!Client.m_Active)
+			continue;
+		if(!Client.m_RenderInfo.Valid())
+			continue;
+
+		vec2 PlayerPos = Client.m_RenderPos;
+
+		float Distance = distance(Pos, PlayerPos);
+
+		if(Distance < ClosestDistance)
+		{
+			ClosestDistance = Distance;
+			ClosestId = Client.ClientId();
 		}
 	}
 
@@ -78,7 +114,7 @@ void CQuickActions::ConOpenQuickActionMenu(IConsole::IResult *pResult, void *pUs
 	if(!pThis->m_Active)
 	{
 		const vec2 Pos = pThis->GameClient()->GetCursorWorldPos();
-		pThis->m_QuickActionId = pThis->GetClosetClientId(Pos);
+		pThis->m_QuickActionId = pThis->GetClosestClientId(Pos);
 		if(pThis->m_QuickActionId < 0 || pThis->m_QuickActionId >= MAX_CLIENTS)
 			pThis->m_QuickActionId = -1;
 		pThis->m_Active = true;
@@ -532,14 +568,20 @@ void CQuickActions::ExecuteBind(int Bind)
 
 void CQuickActions::DrawDebugLines()
 {
-	vec2 TargetPos = GameClient()->GetCursorWorldPos();
-	int Id = GetClosetClientId(TargetPos);
+	const vec2 TargetPos = GameClient()->GetCursorWorldPos();
+	const int Id = GetClosestClientId(TargetPos);
 	if(Id < 0 || Id >= MAX_CLIENTS)
 		return;
 
 	CGameClient::CClientData &Target = GameClient()->m_aClients[Id];
 
-	const IGraphics::CLineItem Test(Target.m_RenderPos.x, Target.m_RenderPos.y, TargetPos.x, TargetPos.y);
+	vec2 TeePos;
+	if(Target.m_SpecCharPresent)
+		TeePos = Target.m_SpecChar;
+	else
+		TeePos = Target.m_RenderPos;
+
+	const IGraphics::CLineItem Test(TeePos.x, TeePos.y, TargetPos.x, TargetPos.y);
 
 	Graphics()->TextureClear();
 	Graphics()->LinesBegin();
