@@ -218,6 +218,10 @@ static void RenderSettingsModules(CScrollRegion &ScrollRegion, CUIRect &ColumnRe
 		if(!SettingsModuleMatchesSearch(Module, pSearch))
 			continue;
 
+		float ModuleHeight = Module.m_GetHeight(HasSearch);
+		if(ModuleHeight <= 0.0f)
+			continue;
+
 		float TopMargin = Module.m_TopMargin;
 		if(HasRenderedModule && TopMargin <= 0.0f)
 			TopMargin = Margin;
@@ -225,7 +229,7 @@ static void RenderSettingsModules(CScrollRegion &ScrollRegion, CUIRect &ColumnRe
 			ColumnRect.HSplitTop(TopMargin, nullptr, &ColumnRect);
 
 		CUIRect ModuleRect;
-		ColumnRect.HSplitTop(Module.m_GetHeight(HasSearch), &ModuleRect, &ColumnRect);
+		ColumnRect.HSplitTop(ModuleHeight, &ModuleRect, &ColumnRect);
 		if(ScrollRegion.AddRect(ModuleRect))
 			Module.m_Render(ModuleRect, HasSearch);
 		HasRenderedModule = true;
@@ -3082,7 +3086,8 @@ void CMenus::RenderSettingsVisual(CUIRect MainView)
 	CUIRect Label, Button;
 
 	const bool RainbowOn = g_Config.m_ClRainbowHook || g_Config.m_ClRainbowTees || g_Config.m_ClRainbowWeapon || g_Config.m_ClRainbowOthers;
-	/* Cosmetics */ vModules.push_back({
+	/* Cosmetics */
+	vModules.push_back({
 		ESettingsModuleColumn::LEFT,
 		{"cosmetic", "settings", "small", "skin", "effects", "color", "others", "rainbow", "tees", "weapons", "hook", "others", "speed"},
 		[&](bool HasSearch) {
@@ -3945,47 +3950,50 @@ void CMenus::RenderSettingsVisual(CUIRect MainView)
 #endif
 
 	/* Sweat Mode */
-	if(g_Config.m_ClWarList)
-	{
-		vModules.push_back({
-			ESettingsModuleColumn::LEFT,
-			{"warlist", "sweat", "skin"},
-			[&](bool HasSearch) {
-				return 130.0f;
-			},
-			[&](CUIRect ModuleRect, bool HasSearch) {
-				ModuleRect.Draw(BackgroundColor, IGraphics::CORNER_ALL, CornerRoundness);
-				ModuleRect.VMargin(Margin, &ModuleRect);
+	vModules.push_back({
+		ESettingsModuleColumn::LEFT,
+		{"warlist", "sweat", "skin"},
+		[&](bool HasSearch) {
+			if(!g_Config.m_ClWarList && !HasSearch)
+				return 0.0f;
 
-				ModuleRect.HSplitTop(HeaderHeight, &Button, &ModuleRect);
-				Ui()->DoLabel(&Button, EcLocalize("Warlist Sweat Mode"), HeaderSize, HeaderAlignment);
+			return 130.0f;
+		},
+		[&](CUIRect ModuleRect, bool HasSearch) {
+			if(!g_Config.m_ClWarList && !HasSearch)
+				return;
 
-				ModuleRect.HSplitTop(5, &Button, &ModuleRect);
-				DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClSweatMode, ("Sweat Mode"), &g_Config.m_ClSweatMode, &ModuleRect, LineMargin);
-				DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClSweatModeOnlyOthers, ("Don't Change Own Skin"), &g_Config.m_ClSweatModeOnlyOthers, &ModuleRect, LineMargin);
-				DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClSweatModeSelfColor, ("Don't Change Own Color"), &g_Config.m_ClSweatModeSelfColor, &ModuleRect, LineMargin);
+			ModuleRect.Draw(BackgroundColor, IGraphics::CORNER_ALL, CornerRoundness);
+			ModuleRect.VMargin(Margin, &ModuleRect);
 
-				static CLineInput s_Name;
-				s_Name.SetBuffer(g_Config.m_ClSweatModeSkinName, sizeof(g_Config.m_ClSweatModeSkinName));
-				s_Name.SetEmptyText("x_ninja");
+			ModuleRect.HSplitTop(HeaderHeight, &Button, &ModuleRect);
+			Ui()->DoLabel(&Button, EcLocalize("Warlist Sweat Mode"), HeaderSize, HeaderAlignment);
 
-				ModuleRect.HSplitTop(2.4f, &Label, &ModuleRect);
-				ModuleRect.VSplitLeft(25.0f, &ModuleRect, &ModuleRect);
-				Ui()->DoLabel(&ModuleRect, "Skin Name:", 13.0f, TEXTALIGN_LEFT);
+			ModuleRect.HSplitTop(5, &Button, &ModuleRect);
+			DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClSweatMode, ("Sweat Mode"), &g_Config.m_ClSweatMode, &ModuleRect, LineMargin);
+			DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClSweatModeOnlyOthers, ("Don't Change Own Skin"), &g_Config.m_ClSweatModeOnlyOthers, &ModuleRect, LineMargin);
+			DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClSweatModeSelfColor, ("Don't Change Own Color"), &g_Config.m_ClSweatModeSelfColor, &ModuleRect, LineMargin);
 
-				ModuleRect.HSplitTop(-1, &Button, &ModuleRect);
-				ModuleRect.HSplitTop(18.9f, &Button, &ModuleRect);
+			static CLineInput s_Name;
+			s_Name.SetBuffer(g_Config.m_ClSweatModeSkinName, sizeof(g_Config.m_ClSweatModeSkinName));
+			s_Name.SetEmptyText("x_ninja");
 
-				float Length = TextRender()->TextBoundingBox(FontSize, "Skin Name").m_W + 3.5f;
+			ModuleRect.HSplitTop(2.4f, &Label, &ModuleRect);
+			ModuleRect.VSplitLeft(25.0f, &ModuleRect, &ModuleRect);
+			Ui()->DoLabel(&ModuleRect, "Skin Name:", 13.0f, TEXTALIGN_LEFT);
 
-				Button.VSplitLeft(0.0f, 0, &ModuleRect);
-				Button.VSplitLeft(Length, &Label, &Button);
-				Button.VSplitLeft(150.0f, &Button, 0);
+			ModuleRect.HSplitTop(-1, &Button, &ModuleRect);
+			ModuleRect.HSplitTop(18.9f, &Button, &ModuleRect);
 
-				Ui()->DoEditBox(&s_Name, &Button, EditBoxFontSize);
-			},
-		});
-	}
+			float Length = TextRender()->TextBoundingBox(FontSize, "Skin Name").m_W + 3.5f;
+
+			Button.VSplitLeft(0.0f, 0, &ModuleRect);
+			Button.VSplitLeft(Length, &Label, &Button);
+			Button.VSplitLeft(150.0f, &Button, 0);
+
+			Ui()->DoEditBox(&s_Name, &Button, EditBoxFontSize);
+		},
+	});
 
 	/* Chat Bubbles */
 	vModules.push_back({
