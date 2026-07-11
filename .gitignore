@@ -27,7 +27,9 @@ Makefile
 Release
 SAN.*
 _CPack_Packages/
+bin/
 build.ninja
+ccache/
 checksummed_*
 cmake_install.cmake
 debug
@@ -40,9 +42,11 @@ gtest.pc
 gtest_main.pc
 install_manifest*.txt
 ninja_package
+obj/
 pack_*/
 release
 rules.ninja
+sccache/
 testrunner\[1\]_include.cmake
 # tidy-alphabetical-end
 
@@ -154,3 +158,5 @@ tags
 # tidy-alphabetical-end
 
 !steam_api.dll
+
+.codex/
