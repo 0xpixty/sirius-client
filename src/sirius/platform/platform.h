@@ -4,6 +4,13 @@
 
 #include "platform_configuration.h"
 
+#include <memory>
+
+namespace sirius::core::runtime
+{
+	class CCoreRuntime;
+}
+
 namespace sirius::platform
 {
 
@@ -20,6 +27,7 @@ namespace sirius::platform
 
 	private:
 		CPlatformConfiguration m_Configuration;
+		std::unique_ptr<core::runtime::CCoreRuntime> m_pCoreRuntime;
 	};
 
 } // namespace sirius::platform
