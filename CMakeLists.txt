@@ -2731,6 +2731,7 @@ if(CLIENT)
     render_map.h
     # tidy-alphabetical-end
   )
+  add_subdirectory(src/sirius)
   set(GAME_GENERATED_CLIENT
     # tidy-alphabetical-start
     src/generated/checksum.cpp
@@ -2740,7 +2741,7 @@ if(CLIENT)
     src/generated/client_data7.h
     # tidy-alphabetical-end
   )
-  set(CLIENT_SRC ${ENGINE_CLIENT} ${PLATFORM_CLIENT} ${GAME_CLIENT} ${GAME_EDITOR} ${GAME_MAP} ${GAME_GENERATED_CLIENT})
+  set(CLIENT_SRC ${ENGINE_CLIENT} ${PLATFORM_CLIENT} ${GAME_CLIENT} ${GAME_EDITOR} ${GAME_MAP} ${SIRIUS_CLIENT} ${GAME_GENERATED_CLIENT})
 
   set(DEPS_CLIENT ${DEPS} ${GLEW_DEP} ${WAVPACK_DEP})
 

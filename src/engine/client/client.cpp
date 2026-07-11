@@ -3229,6 +3229,7 @@ void CClient::Run()
 	Graphics()->AddWindowResizeListener([this] { OnWindowResize(); });
 
 	GameClient()->OnInit();
+	m_SiriusPlatformHost.Start();
 
 	m_Fifo.Init(m_pConsole, g_Config.m_ClInputFifo, CFGFLAG_CLIENT);
 
@@ -3480,6 +3481,7 @@ void CClient::Run()
 
 	GameClient()->RenderShutdownMessage();
 	Disconnect();
+	m_SiriusPlatformHost.Stop();
 
 	if(!m_pConfigManager->Save())
 	{
