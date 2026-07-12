@@ -15,6 +15,8 @@ namespace sirius::platform::commands
 		virtual ~ICommand() = default;
 
 		virtual const CCommandId &Id() const noexcept = 0;
+		virtual bool Initialize(CCommandContext &Context) = 0;
+		virtual void Shutdown(CCommandContext &Context) noexcept = 0;
 		virtual bool Execute(CCommandContext &Context) = 0;
 	};
 
