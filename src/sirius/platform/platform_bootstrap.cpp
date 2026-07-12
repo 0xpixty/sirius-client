@@ -23,7 +23,13 @@ namespace sirius::platform
 			return;
 		}
 
-		m_pPlatform = std::make_unique<CPlatform>(std::move(Configuration));
+		auto pPlatform = std::make_unique<CPlatform>(std::move(Configuration));
+		if(!pPlatform->Start())
+		{
+			return;
+		}
+
+		m_pPlatform = std::move(pPlatform);
 	}
 
 	void CPlatformBootstrap::Stop() noexcept
