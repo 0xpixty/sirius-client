@@ -8,6 +8,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   core/runtime/core_runtime.h
   core/runtime/core_runtime_configuration.h
   core/runtime/core_runtime_state.h
+  core/runtime/runtime_component_registry.cpp
+  core/runtime/runtime_component_registry.h
   core/services/service_registry.cpp
   core/services/service_registry.h
   platform/platform.cpp
