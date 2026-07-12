@@ -34,6 +34,7 @@ namespace sirius::core::runtime
 		}
 
 		m_Services.Clear();
+		m_Components.Clear();
 		m_State = ECoreRuntimeState::Stopped;
 	}
 
@@ -50,6 +51,16 @@ namespace sirius::core::runtime
 	const services::CServiceRegistry &CCoreRuntime::Services() const noexcept
 	{
 		return m_Services;
+	}
+
+	CRuntimeComponentRegistry &CCoreRuntime::Components() noexcept
+	{
+		return m_Components;
+	}
+
+	const CRuntimeComponentRegistry &CCoreRuntime::Components() const noexcept
+	{
+		return m_Components;
 	}
 
 } // namespace sirius::core::runtime
