@@ -21,7 +21,7 @@ namespace sirius::core::logging
 		const CLogMessage &Message() const noexcept;
 
 	private:
-		CLogMessage m_Message;
+		const CLogMessage m_Message;
 	};
 
 	class CLogger final

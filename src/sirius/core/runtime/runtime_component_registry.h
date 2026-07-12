@@ -84,7 +84,7 @@ namespace sirius::core::runtime
 		}
 
 		void Clear() noexcept;
-		const std::vector<interfaces::IRuntimeComponent *> &ComponentsInRegistrationOrder() noexcept;
+		const std::vector<interfaces::IRuntimeComponent *> &ComponentsInRegistrationOrder() const noexcept;
 
 	private:
 		std::unordered_map<std::type_index, std::unique_ptr<interfaces::IRuntimeComponent>> m_Components;

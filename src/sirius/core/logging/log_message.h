@@ -19,8 +19,8 @@ namespace sirius::core::logging
 		const std::string &Text() const noexcept;
 
 	private:
-		ELogLevel m_Level;
-		std::string m_Text;
+		const ELogLevel m_Level;
+		const std::string m_Text;
 	};
 
 } // namespace sirius::core::logging

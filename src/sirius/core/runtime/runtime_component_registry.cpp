@@ -12,7 +12,7 @@ namespace sirius::core::runtime
 		m_Components.clear();
 	}
 
-	const std::vector<interfaces::IRuntimeComponent *> &CRuntimeComponentRegistry::ComponentsInRegistrationOrder() noexcept
+	const std::vector<interfaces::IRuntimeComponent *> &CRuntimeComponentRegistry::ComponentsInRegistrationOrder() const noexcept
 	{
 		return m_ComponentsInRegistrationOrder;
 	}
