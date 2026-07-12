@@ -67,6 +67,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/modules/services/module_service_context.cpp
   platform/modules/services/module_service_context.h
   platform/modules/services/module_service_id.h
+  platform/modules/services/module_service_lifecycle.cpp
+  platform/modules/services/module_service_lifecycle.h
   platform/modules/services/module_service_registry.cpp
   platform/modules/services/module_service_registry.h
   # tidy-alphabetical-end

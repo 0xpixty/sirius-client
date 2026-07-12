@@ -7,12 +7,16 @@
 namespace sirius::platform::modules::services
 {
 
+	class CModuleServiceContext;
+
 	class IModuleService
 	{
 	public:
 		virtual ~IModuleService() = default;
 
 		virtual const CModuleServiceId &Id() const noexcept = 0;
+		virtual bool Initialize(CModuleServiceContext &Context) = 0;
+		virtual void Shutdown(CModuleServiceContext &Context) noexcept = 0;
 	};
 
 } // namespace sirius::platform::modules::services

@@ -35,6 +35,8 @@ namespace sirius::platform::modules::services
 		bool IsSealed() const noexcept;
 
 	private:
+		friend class CModuleServiceLifecycle;
+
 		void Seal() noexcept;
 		void Unseal() noexcept;
 

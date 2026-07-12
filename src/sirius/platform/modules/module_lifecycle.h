@@ -4,6 +4,7 @@
 
 #include <sirius/platform/commands/command_lifecycle.h>
 #include <sirius/platform/features/feature_lifecycle.h>
+#include <sirius/platform/modules/services/module_service_lifecycle.h>
 
 #include <cstddef>
 #include <memory>
@@ -33,6 +34,7 @@ namespace sirius::platform::modules
 	private:
 		void ShutdownInitializedModules(CModuleRegistry &Registry, CModuleContext &Context) noexcept;
 
+		std::vector<std::unique_ptr<services::CModuleServiceLifecycle>> m_ModuleServiceLifecycles;
 		std::vector<std::unique_ptr<commands::CCommandLifecycle>> m_CommandLifecycles;
 		std::vector<std::unique_ptr<features::CFeatureLifecycle>> m_FeatureLifecycles;
 		bool m_Initialized = false;
