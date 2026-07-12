@@ -5,6 +5,10 @@
 #include "module_context.h"
 #include "module_registry.h"
 
+#include <sirius/platform/features/feature_context.h>
+
+#include <memory>
+
 namespace sirius::platform::modules
 {
 
@@ -21,9 +25,12 @@ namespace sirius::platform::modules
 
 		try
 		{
+			features::CFeatureContext FeatureContext(Context);
 			const auto &Modules = Registry.ModulesInRegistrationOrder();
+			m_FeatureLifecycles.reserve(Modules.size());
 			for(auto *pModule : Modules)
 			{
+				auto pFeatureLifecycle = std::make_unique<features::CFeatureLifecycle>();
 				if(!pModule->Initialize(Context))
 				{
 					ShutdownInitializedModules(Registry, Context);
@@ -32,6 +39,13 @@ namespace sirius::platform::modules
 				}
 
 				++m_InitializedModuleCount;
+				m_FeatureLifecycles.push_back(std::move(pFeatureLifecycle));
+				if(!m_FeatureLifecycles.back()->Initialize(pModule->Features(), FeatureContext))
+				{
+					ShutdownInitializedModules(Registry, Context);
+					Registry.Unseal();
+					return false;
+				}
 			}
 		}
 		catch(...)
@@ -64,13 +78,18 @@ namespace sirius::platform::modules
 
 	void CModuleLifecycle::ShutdownInitializedModules(CModuleRegistry &Registry, CModuleContext &Context) noexcept
 	{
+		features::CFeatureContext FeatureContext(Context);
 		const auto &Modules = Registry.ModulesInRegistrationOrder();
 		while(m_InitializedModuleCount > 0)
 		{
 			--m_InitializedModuleCount;
-			Modules[m_InitializedModuleCount]->Shutdown(Context);
+			auto *pModule = Modules[m_InitializedModuleCount];
+			m_FeatureLifecycles[m_InitializedModuleCount]->Shutdown(pModule->Features(), FeatureContext);
+			pModule->Shutdown(Context);
+			m_FeatureLifecycles.pop_back();
 		}
 
+		m_FeatureLifecycles.clear();
 		m_Initialized = false;
 	}
 

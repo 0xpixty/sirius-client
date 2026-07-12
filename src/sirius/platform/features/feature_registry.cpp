@@ -37,6 +37,11 @@ namespace sirius::platform::features
 
 	bool CFeatureRegistry::Register(std::unique_ptr<IFeature> &pFeature)
 	{
+		if(m_Sealed)
+		{
+			return false;
+		}
+
 		if(!pFeature || pFeature->Id().IsEmpty())
 		{
 			return false;
@@ -81,6 +86,11 @@ namespace sirius::platform::features
 		return Iter->second.get();
 	}
 
+	const std::vector<IFeature *> &CFeatureRegistry::FeaturesInRegistrationOrder() const noexcept
+	{
+		return m_FeaturesInRegistrationOrder;
+	}
+
 	std::size_t CFeatureRegistry::Count() const noexcept
 	{
 		return m_Features.size();
@@ -88,8 +98,28 @@ namespace sirius::platform::features
 
 	void CFeatureRegistry::Clear() noexcept
 	{
+		if(m_Sealed)
+		{
+			return;
+		}
+
 		m_FeaturesInRegistrationOrder.clear();
 		m_Features.clear();
+	}
+
+	void CFeatureRegistry::Seal() noexcept
+	{
+		m_Sealed = true;
+	}
+
+	void CFeatureRegistry::Unseal() noexcept
+	{
+		m_Sealed = false;
+	}
+
+	bool CFeatureRegistry::IsSealed() const noexcept
+	{
+		return m_Sealed;
 	}
 
 } // namespace sirius::platform::features
