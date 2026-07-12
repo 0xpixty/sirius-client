@@ -4,6 +4,11 @@
 
 #include "module_id.h"
 
+namespace sirius::platform::features
+{
+	class CFeatureRegistry;
+} // namespace sirius::platform::features
+
 namespace sirius::platform::modules
 {
 
@@ -15,6 +20,8 @@ namespace sirius::platform::modules
 		virtual ~IModule() = default;
 
 		virtual const CModuleId &Id() const noexcept = 0;
+		virtual features::CFeatureRegistry &Features() noexcept = 0;
+		virtual const features::CFeatureRegistry &Features() const noexcept = 0;
 		virtual bool Initialize(CModuleContext &Context) = 0;
 		virtual void Shutdown(CModuleContext &Context) noexcept = 0;
 	};
