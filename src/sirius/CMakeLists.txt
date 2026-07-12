@@ -2,6 +2,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   # tidy-alphabetical-start
   adapters/ddnet/ddnet_platform_host.cpp
   adapters/ddnet/ddnet_platform_host.h
+  adapters/ddnet/input/ddnet_input_collector.cpp
+  adapters/ddnet/input/ddnet_input_collector.h
   adapters/ddnet/input/ddnet_input_event_adapter.cpp
   adapters/ddnet/input/ddnet_input_event_adapter.h
   core/config/config_changed_event.h
