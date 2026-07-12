@@ -4,9 +4,12 @@
 
 #include "platform_configuration.h"
 
+#include <sirius/platform/modules/module_context.h>
+#include <sirius/platform/modules/module_lifecycle.h>
 #include <sirius/platform/modules/module_registry.h>
 
 #include <memory>
+#include <optional>
 
 namespace sirius::core::runtime
 {
@@ -27,6 +30,8 @@ namespace sirius::platform
 		CPlatform(CPlatform &&Other) = delete;
 		CPlatform &operator=(CPlatform &&Other) = delete;
 
+		bool Start();
+		void Stop() noexcept;
 		modules::CModuleRegistry &Modules() noexcept;
 		const modules::CModuleRegistry &Modules() const noexcept;
 
@@ -34,6 +39,8 @@ namespace sirius::platform
 		CPlatformConfiguration m_Configuration;
 		modules::CModuleRegistry m_Modules;
 		std::unique_ptr<core::runtime::CCoreRuntime> m_pCoreRuntime;
+		std::optional<modules::CModuleContext> m_ModuleContext;
+		modules::CModuleLifecycle m_ModuleLifecycle;
 	};
 
 } // namespace sirius::platform

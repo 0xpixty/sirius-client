@@ -37,6 +37,11 @@ namespace sirius::platform::modules
 
 	bool CModuleRegistry::Register(std::unique_ptr<IModule> &pModule)
 	{
+		if(m_Sealed)
+		{
+			return false;
+		}
+
 		if(!pModule || pModule->Id().IsEmpty())
 		{
 			return false;
@@ -81,6 +86,11 @@ namespace sirius::platform::modules
 		return Iter->second.get();
 	}
 
+	const std::vector<IModule *> &CModuleRegistry::ModulesInRegistrationOrder() const noexcept
+	{
+		return m_ModulesInRegistrationOrder;
+	}
+
 	std::size_t CModuleRegistry::Count() const noexcept
 	{
 		return m_Modules.size();
@@ -88,9 +98,28 @@ namespace sirius::platform::modules
 
 	void CModuleRegistry::Clear() noexcept
 	{
+		if(m_Sealed)
+		{
+			return;
+		}
+
 		m_ModulesInRegistrationOrder.clear();
 		m_Modules.clear();
 	}
 
-} // namespace sirius::platform::modules
+	void CModuleRegistry::Seal() noexcept
+	{
+		m_Sealed = true;
+	}
 
+	void CModuleRegistry::Unseal() noexcept
+	{
+		m_Sealed = false;
+	}
+
+	bool CModuleRegistry::IsSealed() const noexcept
+	{
+		return m_Sealed;
+	}
+
+} // namespace sirius::platform::modules
