@@ -42,4 +42,22 @@ namespace sirius::platform
 		return m_pPlatform != nullptr;
 	}
 
+	input::CBufferedInputSource *CPlatformBootstrap::InputSource() noexcept
+	{
+		return m_pPlatform ? &m_pPlatform->InputSource() : nullptr;
+	}
+
+	const input::CBufferedInputSource *CPlatformBootstrap::InputSource() const noexcept
+	{
+		return m_pPlatform ? &m_pPlatform->InputSource() : nullptr;
+	}
+
+	void CPlatformBootstrap::ForwardInput()
+	{
+		if(m_pPlatform)
+		{
+			m_pPlatform->ForwardInput();
+		}
+	}
+
 } // namespace sirius::platform

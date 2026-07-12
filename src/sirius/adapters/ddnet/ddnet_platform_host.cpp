@@ -8,6 +8,11 @@
 namespace sirius::adapters::ddnet
 {
 
+	CDdnetPlatformHost::CDdnetPlatformHost() noexcept :
+		m_InputCollector(m_InputAdapter)
+	{
+	}
+
 	CDdnetPlatformHost::~CDdnetPlatformHost() noexcept
 	{
 		Stop();
@@ -22,6 +27,18 @@ namespace sirius::adapters::ddnet
 	void CDdnetPlatformHost::Stop() noexcept
 	{
 		m_Bootstrap.Stop();
+	}
+
+	void CDdnetPlatformHost::ProcessInput(IInput &Input)
+	{
+		auto *pInputSource = m_Bootstrap.InputSource();
+		if(!pInputSource)
+		{
+			return;
+		}
+
+		m_InputCollector.Collect(Input, *pInputSource);
+		m_Bootstrap.ForwardInput();
 	}
 
 	bool CDdnetPlatformHost::IsStarted() const noexcept

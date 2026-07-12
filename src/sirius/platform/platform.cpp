@@ -11,10 +11,10 @@ namespace sirius::platform
 {
 
 	CPlatform::CPlatform(CPlatformConfiguration Configuration) :
-		m_Configuration(std::move(Configuration))
+		m_Configuration(std::move(Configuration)),
+		m_pCoreRuntime(std::make_unique<core::runtime::CCoreRuntime>(core::runtime::CCoreRuntimeConfiguration())),
+		m_InputForwarder(m_pCoreRuntime->Events())
 	{
-		core::runtime::CCoreRuntimeConfiguration RuntimeConfiguration;
-		m_pCoreRuntime = std::make_unique<core::runtime::CCoreRuntime>(std::move(RuntimeConfiguration));
 		m_ModuleContext.emplace(*m_pCoreRuntime, m_pCoreRuntime->Events(), m_pCoreRuntime->Config(), m_pCoreRuntime->Logger(), m_pCoreRuntime->Tasks());
 	}
 
@@ -65,6 +65,21 @@ namespace sirius::platform
 		{
 			m_pCoreRuntime->Stop();
 		}
+	}
+
+	input::CBufferedInputSource &CPlatform::InputSource() noexcept
+	{
+		return m_InputSource;
+	}
+
+	const input::CBufferedInputSource &CPlatform::InputSource() const noexcept
+	{
+		return m_InputSource;
+	}
+
+	void CPlatform::ForwardInput()
+	{
+		m_InputForwarder.Forward(m_InputSource);
 	}
 
 	modules::CModuleRegistry &CPlatform::Modules() noexcept
