@@ -7,7 +7,8 @@ namespace sirius::core::runtime
 {
 
 	CCoreRuntime::CCoreRuntime(CCoreRuntimeConfiguration Configuration) :
-		m_Configuration(std::move(Configuration))
+		m_Configuration(std::move(Configuration)),
+		m_Context(*this, m_Services, m_Components)
 	{
 	}
 
@@ -61,6 +62,16 @@ namespace sirius::core::runtime
 	const CRuntimeComponentRegistry &CCoreRuntime::Components() const noexcept
 	{
 		return m_Components;
+	}
+
+	CRuntimeContext &CCoreRuntime::Context() noexcept
+	{
+		return m_Context;
+	}
+
+	const CRuntimeContext &CCoreRuntime::Context() const noexcept
+	{
+		return m_Context;
 	}
 
 } // namespace sirius::core::runtime

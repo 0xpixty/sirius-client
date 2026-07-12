@@ -5,6 +5,7 @@
 #include "core_runtime_configuration.h"
 #include "core_runtime_state.h"
 #include "runtime_component_registry.h"
+#include "runtime_context.h"
 
 #include <sirius/core/services/service_registry.h>
 
@@ -30,11 +31,14 @@ namespace sirius::core::runtime
 		const services::CServiceRegistry &Services() const noexcept;
 		CRuntimeComponentRegistry &Components() noexcept;
 		const CRuntimeComponentRegistry &Components() const noexcept;
+		CRuntimeContext &Context() noexcept;
+		const CRuntimeContext &Context() const noexcept;
 
 	private:
 		CCoreRuntimeConfiguration m_Configuration;
 		services::CServiceRegistry m_Services;
 		CRuntimeComponentRegistry m_Components;
+		CRuntimeContext m_Context;
 		ECoreRuntimeState m_State = ECoreRuntimeState::Stopped;
 	};
 
