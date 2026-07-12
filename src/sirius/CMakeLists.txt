@@ -61,6 +61,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/input/input_event.h
   platform/input/input_key.h
   platform/input/input_state.h
+  platform/input/source/buffered_input_source.cpp
+  platform/input/source/buffered_input_source.h
   platform/input/source/input_source.h
   platform/modules/module.h
   platform/modules/module_context.cpp
