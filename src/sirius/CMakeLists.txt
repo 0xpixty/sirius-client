@@ -62,6 +62,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/input/bindings/activation/binding_activation.h
   platform/input/bindings/activation/binding_activation_handler.h
   platform/input/bindings/activation/binding_activation_id.h
+  platform/input/bindings/activation/binding_activation_registry.cpp
+  platform/input/bindings/activation/binding_activation_registry.h
   platform/input/bindings/binding_condition.h
   platform/input/bindings/binding_id.h
   platform/input/bindings/binding_matcher.cpp
