@@ -2,6 +2,7 @@
 #ifndef SIRIUS_PLATFORM_MODULES_MODULE_LIFECYCLE_H
 #define SIRIUS_PLATFORM_MODULES_MODULE_LIFECYCLE_H
 
+#include <sirius/platform/commands/command_lifecycle.h>
 #include <sirius/platform/features/feature_lifecycle.h>
 
 #include <cstddef>
@@ -32,6 +33,7 @@ namespace sirius::platform::modules
 	private:
 		void ShutdownInitializedModules(CModuleRegistry &Registry, CModuleContext &Context) noexcept;
 
+		std::vector<std::unique_ptr<commands::CCommandLifecycle>> m_CommandLifecycles;
 		std::vector<std::unique_ptr<features::CFeatureLifecycle>> m_FeatureLifecycles;
 		bool m_Initialized = false;
 		std::size_t m_InitializedModuleCount = 0;
