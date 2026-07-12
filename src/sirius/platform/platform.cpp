@@ -20,4 +20,14 @@ namespace sirius::platform
 
 	CPlatform::~CPlatform() noexcept = default;
 
+	modules::CModuleRegistry &CPlatform::Modules() noexcept
+	{
+		return m_Modules;
+	}
+
+	const modules::CModuleRegistry &CPlatform::Modules() const noexcept
+	{
+		return m_Modules;
+	}
+
 } // namespace sirius::platform

@@ -37,6 +37,10 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/platform_bootstrap.cpp
   platform/platform_bootstrap.h
   platform/platform_configuration.h
+  platform/modules/module.h
+  platform/modules/module_id.h
+  platform/modules/module_registry.cpp
+  platform/modules/module_registry.h
   # tidy-alphabetical-end
 )
 
