@@ -4,6 +4,8 @@
 
 #include "platform_configuration.h"
 
+#include <sirius/platform/input/dispatch/input_event_forwarder.h>
+#include <sirius/platform/input/source/buffered_input_source.h>
 #include <sirius/platform/modules/module_context.h>
 #include <sirius/platform/modules/module_lifecycle.h>
 #include <sirius/platform/modules/module_registry.h>
@@ -32,6 +34,9 @@ namespace sirius::platform
 
 		bool Start();
 		void Stop() noexcept;
+		input::CBufferedInputSource &InputSource() noexcept;
+		const input::CBufferedInputSource &InputSource() const noexcept;
+		void ForwardInput();
 		modules::CModuleRegistry &Modules() noexcept;
 		const modules::CModuleRegistry &Modules() const noexcept;
 
@@ -39,6 +44,8 @@ namespace sirius::platform
 		CPlatformConfiguration m_Configuration;
 		modules::CModuleRegistry m_Modules;
 		std::unique_ptr<core::runtime::CCoreRuntime> m_pCoreRuntime;
+		input::CBufferedInputSource m_InputSource;
+		input::CInputEventForwarder m_InputForwarder;
 		std::optional<modules::CModuleContext> m_ModuleContext;
 		modules::CModuleLifecycle m_ModuleLifecycle;
 	};

@@ -11,6 +11,11 @@ namespace sirius::platform
 
 	class CPlatform;
 
+	namespace input
+	{
+		class CBufferedInputSource;
+	} // namespace input
+
 	class CPlatformBootstrap final
 	{
 	public:
@@ -25,6 +30,9 @@ namespace sirius::platform
 		void Start(CPlatformConfiguration Configuration);
 		void Stop() noexcept;
 		bool IsStarted() const noexcept;
+		input::CBufferedInputSource *InputSource() noexcept;
+		const input::CBufferedInputSource *InputSource() const noexcept;
+		void ForwardInput();
 
 	private:
 		std::unique_ptr<CPlatform> m_pPlatform;
