@@ -5,6 +5,8 @@
 #include "core_runtime_configuration.h"
 #include "core_runtime_state.h"
 
+#include <sirius/core/services/service_registry.h>
+
 namespace sirius::core::runtime
 {
 
@@ -23,8 +25,12 @@ namespace sirius::core::runtime
 		void Stop() noexcept;
 		bool IsRunning() const noexcept;
 
+		services::CServiceRegistry &Services() noexcept;
+		const services::CServiceRegistry &Services() const noexcept;
+
 	private:
 		CCoreRuntimeConfiguration m_Configuration;
+		services::CServiceRegistry m_Services;
 		ECoreRuntimeState m_State = ECoreRuntimeState::Stopped;
 	};
 

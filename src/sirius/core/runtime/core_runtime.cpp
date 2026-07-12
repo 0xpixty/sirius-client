@@ -33,12 +33,23 @@ namespace sirius::core::runtime
 			return;
 		}
 
+		m_Services.Clear();
 		m_State = ECoreRuntimeState::Stopped;
 	}
 
 	bool CCoreRuntime::IsRunning() const noexcept
 	{
 		return m_State == ECoreRuntimeState::Running;
+	}
+
+	services::CServiceRegistry &CCoreRuntime::Services() noexcept
+	{
+		return m_Services;
+	}
+
+	const services::CServiceRegistry &CCoreRuntime::Services() const noexcept
+	{
+		return m_Services;
 	}
 
 } // namespace sirius::core::runtime
