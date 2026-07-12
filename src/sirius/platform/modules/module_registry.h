@@ -29,12 +29,20 @@ namespace sirius::platform::modules
 		bool Has(const CModuleId &Id) const;
 		IModule *Get(const CModuleId &Id);
 		const IModule *Get(const CModuleId &Id) const;
+		const std::vector<IModule *> &ModulesInRegistrationOrder() const noexcept;
 		std::size_t Count() const noexcept;
 		void Clear() noexcept;
+		bool IsSealed() const noexcept;
 
 	private:
+		friend class CModuleLifecycle;
+
+		void Seal() noexcept;
+		void Unseal() noexcept;
+
 		std::unordered_map<std::string, std::unique_ptr<IModule>> m_Modules;
 		std::vector<IModule *> m_ModulesInRegistrationOrder;
+		bool m_Sealed = false;
 	};
 
 } // namespace sirius::platform::modules

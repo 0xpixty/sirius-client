@@ -7,12 +7,16 @@
 namespace sirius::platform::modules
 {
 
+	class CModuleContext;
+
 	class IModule
 	{
 	public:
 		virtual ~IModule() = default;
 
 		virtual const CModuleId &Id() const noexcept = 0;
+		virtual bool Initialize(CModuleContext &Context) = 0;
+		virtual void Shutdown(CModuleContext &Context) noexcept = 0;
 	};
 
 } // namespace sirius::platform::modules

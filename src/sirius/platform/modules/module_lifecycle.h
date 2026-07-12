@@ -1,0 +1,37 @@
+/* (c) Sirius Client contributors. See licence.txt in the root of the distribution for more information. */
+#ifndef SIRIUS_PLATFORM_MODULES_MODULE_LIFECYCLE_H
+#define SIRIUS_PLATFORM_MODULES_MODULE_LIFECYCLE_H
+
+#include <cstddef>
+
+namespace sirius::platform::modules
+{
+
+	class CModuleContext;
+	class CModuleRegistry;
+
+	class CModuleLifecycle final
+	{
+	public:
+		CModuleLifecycle() = default;
+		~CModuleLifecycle() noexcept;
+
+		CModuleLifecycle(const CModuleLifecycle &Other) = delete;
+		CModuleLifecycle &operator=(const CModuleLifecycle &Other) = delete;
+		CModuleLifecycle(CModuleLifecycle &&Other) = delete;
+		CModuleLifecycle &operator=(CModuleLifecycle &&Other) = delete;
+
+		bool Initialize(CModuleRegistry &Registry, CModuleContext &Context);
+		void Shutdown(CModuleRegistry &Registry, CModuleContext &Context) noexcept;
+		bool IsInitialized() const noexcept;
+
+	private:
+		void ShutdownInitializedModules(CModuleRegistry &Registry, CModuleContext &Context) noexcept;
+
+		bool m_Initialized = false;
+		std::size_t m_InitializedModuleCount = 0;
+	};
+
+} // namespace sirius::platform::modules
+
+#endif
