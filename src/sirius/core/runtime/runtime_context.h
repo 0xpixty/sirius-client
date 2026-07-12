@@ -17,6 +17,11 @@ namespace sirius::core::config
 	class CConfigRegistry;
 } // namespace sirius::core::config
 
+namespace sirius::core::logging
+{
+	class CLogger;
+} // namespace sirius::core::logging
+
 namespace sirius::core::runtime
 {
 
@@ -26,7 +31,7 @@ namespace sirius::core::runtime
 	class CRuntimeContext final
 	{
 	public:
-		CRuntimeContext(CCoreRuntime &Runtime, events::CEventDispatcher &Events, config::CConfigRegistry &Config, services::CServiceRegistry &Services, CRuntimeComponentRegistry &Components) noexcept;
+		CRuntimeContext(CCoreRuntime &Runtime, events::CEventDispatcher &Events, config::CConfigRegistry &Config, logging::CLogger &Logger, services::CServiceRegistry &Services, CRuntimeComponentRegistry &Components) noexcept;
 		~CRuntimeContext() noexcept;
 
 		CRuntimeContext(const CRuntimeContext &Other) = delete;
@@ -40,6 +45,8 @@ namespace sirius::core::runtime
 		const events::CEventDispatcher &Events() const noexcept;
 		config::CConfigRegistry &Config() noexcept;
 		const config::CConfigRegistry &Config() const noexcept;
+		logging::CLogger &Logger() noexcept;
+		const logging::CLogger &Logger() const noexcept;
 		services::CServiceRegistry &Services() noexcept;
 		const services::CServiceRegistry &Services() const noexcept;
 		CRuntimeComponentRegistry &Components() noexcept;
@@ -49,6 +56,7 @@ namespace sirius::core::runtime
 		CCoreRuntime &m_Runtime;
 		events::CEventDispatcher &m_Events;
 		config::CConfigRegistry &m_Config;
+		logging::CLogger &m_Logger;
 		services::CServiceRegistry &m_Services;
 		CRuntimeComponentRegistry &m_Components;
 	};

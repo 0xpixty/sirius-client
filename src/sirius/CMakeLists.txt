@@ -11,6 +11,10 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   core/events/event_subscription.h
   core/interfaces/runtime_component.h
   core/interfaces/service.h
+  core/logging/log_level.h
+  core/logging/log_message.h
+  core/logging/logger.cpp
+  core/logging/logger.h
   core/runtime/core_runtime.cpp
   core/runtime/core_runtime.h
   core/runtime/core_runtime_configuration.h
