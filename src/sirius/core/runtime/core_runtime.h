@@ -6,7 +6,9 @@
 #include "core_runtime_state.h"
 #include "runtime_component_registry.h"
 #include "runtime_context.h"
+#include "runtime_lifecycle.h"
 
+#include <sirius/core/events/event_dispatcher.h>
 #include <sirius/core/services/service_registry.h>
 
 namespace sirius::core::runtime
@@ -27,6 +29,8 @@ namespace sirius::core::runtime
 		void Stop() noexcept;
 		bool IsRunning() const noexcept;
 
+		events::CEventDispatcher &Events() noexcept;
+		const events::CEventDispatcher &Events() const noexcept;
 		services::CServiceRegistry &Services() noexcept;
 		const services::CServiceRegistry &Services() const noexcept;
 		CRuntimeComponentRegistry &Components() noexcept;
@@ -36,9 +40,11 @@ namespace sirius::core::runtime
 
 	private:
 		CCoreRuntimeConfiguration m_Configuration;
+		events::CEventDispatcher m_Events;
 		services::CServiceRegistry m_Services;
 		CRuntimeComponentRegistry m_Components;
 		CRuntimeContext m_Context;
+		CRuntimeLifecycle m_Lifecycle;
 		ECoreRuntimeState m_State = ECoreRuntimeState::Stopped;
 	};
 

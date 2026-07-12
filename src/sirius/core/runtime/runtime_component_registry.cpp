@@ -8,7 +8,13 @@ namespace sirius::core::runtime
 
 	void CRuntimeComponentRegistry::Clear() noexcept
 	{
+		m_ComponentsInRegistrationOrder.clear();
 		m_Components.clear();
+	}
+
+	const std::vector<interfaces::IRuntimeComponent *> &CRuntimeComponentRegistry::ComponentsInRegistrationOrder() noexcept
+	{
+		return m_ComponentsInRegistrationOrder;
 	}
 
 } // namespace sirius::core::runtime

@@ -9,6 +9,7 @@
 #include <typeindex>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 namespace sirius::core::runtime
 {
@@ -40,7 +41,9 @@ namespace sirius::core::runtime
 				return false;
 			}
 
+			auto *pRegisteredComponent = pComponent.get();
 			m_Components.emplace(Type, std::move(pComponent));
+			m_ComponentsInRegistrationOrder.push_back(pRegisteredComponent);
 			return true;
 		}
 
@@ -81,9 +84,11 @@ namespace sirius::core::runtime
 		}
 
 		void Clear() noexcept;
+		const std::vector<interfaces::IRuntimeComponent *> &ComponentsInRegistrationOrder() noexcept;
 
 	private:
 		std::unordered_map<std::type_index, std::unique_ptr<interfaces::IRuntimeComponent>> m_Components;
+		std::vector<interfaces::IRuntimeComponent *> m_ComponentsInRegistrationOrder;
 	};
 
 } // namespace sirius::core::runtime

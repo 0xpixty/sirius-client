@@ -6,8 +6,9 @@
 namespace sirius::core::runtime
 {
 
-	CRuntimeContext::CRuntimeContext(CCoreRuntime &Runtime, services::CServiceRegistry &Services, CRuntimeComponentRegistry &Components) noexcept :
+	CRuntimeContext::CRuntimeContext(CCoreRuntime &Runtime, events::CEventDispatcher &Events, services::CServiceRegistry &Services, CRuntimeComponentRegistry &Components) noexcept :
 		m_Runtime(Runtime),
+		m_Events(Events),
 		m_Services(Services),
 		m_Components(Components)
 	{
@@ -23,6 +24,16 @@ namespace sirius::core::runtime
 	const CCoreRuntime &CRuntimeContext::Runtime() const noexcept
 	{
 		return m_Runtime;
+	}
+
+	events::CEventDispatcher &CRuntimeContext::Events() noexcept
+	{
+		return m_Events;
+	}
+
+	const events::CEventDispatcher &CRuntimeContext::Events() const noexcept
+	{
+		return m_Events;
 	}
 
 	services::CServiceRegistry &CRuntimeContext::Services() noexcept
