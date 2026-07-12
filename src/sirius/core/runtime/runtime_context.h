@@ -7,6 +7,11 @@ namespace sirius::core::services
 	class CServiceRegistry;
 } // namespace sirius::core::services
 
+namespace sirius::core::events
+{
+	class CEventDispatcher;
+} // namespace sirius::core::events
+
 namespace sirius::core::runtime
 {
 
@@ -16,7 +21,7 @@ namespace sirius::core::runtime
 	class CRuntimeContext final
 	{
 	public:
-		CRuntimeContext(CCoreRuntime &Runtime, services::CServiceRegistry &Services, CRuntimeComponentRegistry &Components) noexcept;
+		CRuntimeContext(CCoreRuntime &Runtime, events::CEventDispatcher &Events, services::CServiceRegistry &Services, CRuntimeComponentRegistry &Components) noexcept;
 		~CRuntimeContext() noexcept;
 
 		CRuntimeContext(const CRuntimeContext &Other) = delete;
@@ -26,6 +31,8 @@ namespace sirius::core::runtime
 
 		CCoreRuntime &Runtime() noexcept;
 		const CCoreRuntime &Runtime() const noexcept;
+		events::CEventDispatcher &Events() noexcept;
+		const events::CEventDispatcher &Events() const noexcept;
 		services::CServiceRegistry &Services() noexcept;
 		const services::CServiceRegistry &Services() const noexcept;
 		CRuntimeComponentRegistry &Components() noexcept;
@@ -33,6 +40,7 @@ namespace sirius::core::runtime
 
 	private:
 		CCoreRuntime &m_Runtime;
+		events::CEventDispatcher &m_Events;
 		services::CServiceRegistry &m_Services;
 		CRuntimeComponentRegistry &m_Components;
 	};

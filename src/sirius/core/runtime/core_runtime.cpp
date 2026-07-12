@@ -8,7 +8,7 @@ namespace sirius::core::runtime
 
 	CCoreRuntime::CCoreRuntime(CCoreRuntimeConfiguration Configuration) :
 		m_Configuration(std::move(Configuration)),
-		m_Context(*this, m_Services, m_Components)
+		m_Context(*this, m_Events, m_Services, m_Components)
 	{
 	}
 
@@ -24,6 +24,11 @@ namespace sirius::core::runtime
 			return;
 		}
 
+		if(!m_Lifecycle.Initialize(m_Context))
+		{
+			return;
+		}
+
 		m_State = ECoreRuntimeState::Running;
 	}
 
@@ -34,6 +39,7 @@ namespace sirius::core::runtime
 			return;
 		}
 
+		m_Lifecycle.Shutdown(m_Context);
 		m_Services.Clear();
 		m_Components.Clear();
 		m_State = ECoreRuntimeState::Stopped;
@@ -42,6 +48,16 @@ namespace sirius::core::runtime
 	bool CCoreRuntime::IsRunning() const noexcept
 	{
 		return m_State == ECoreRuntimeState::Running;
+	}
+
+	events::CEventDispatcher &CCoreRuntime::Events() noexcept
+	{
+		return m_Events;
+	}
+
+	const events::CEventDispatcher &CCoreRuntime::Events() const noexcept
+	{
+		return m_Events;
 	}
 
 	services::CServiceRegistry &CCoreRuntime::Services() noexcept

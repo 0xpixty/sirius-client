@@ -2,6 +2,10 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   # tidy-alphabetical-start
   adapters/ddnet/ddnet_platform_host.cpp
   adapters/ddnet/ddnet_platform_host.h
+  core/events/event_channel.h
+  core/events/event_dispatcher.cpp
+  core/events/event_dispatcher.h
+  core/events/event_subscription.h
   core/interfaces/runtime_component.h
   core/interfaces/service.h
   core/runtime/core_runtime.cpp
@@ -12,6 +16,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   core/runtime/runtime_component_registry.h
   core/runtime/runtime_context.cpp
   core/runtime/runtime_context.h
+  core/runtime/runtime_lifecycle.cpp
+  core/runtime/runtime_lifecycle.h
   core/services/service_registry.cpp
   core/services/service_registry.h
   platform/platform.cpp

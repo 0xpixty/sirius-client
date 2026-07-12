@@ -6,6 +6,7 @@ data/
 # Doxygen output
 docs/warn.log
 docs/html
+docs/SiriusFrameworkSpec
 
 bundle/
 !/other/bundle/
