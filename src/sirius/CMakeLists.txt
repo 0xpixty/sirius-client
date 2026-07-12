@@ -37,6 +37,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/platform_bootstrap.cpp
   platform/platform_bootstrap.h
   platform/platform_configuration.h
+  platform/commands/command_context.cpp
+  platform/commands/command_context.h
   platform/commands/command.h
   platform/commands/command_id.h
   platform/commands/command_registry.cpp
