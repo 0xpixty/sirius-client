@@ -4,6 +4,11 @@
 
 #include "module_id.h"
 
+namespace sirius::platform::commands
+{
+	class CCommandRegistry;
+} // namespace sirius::platform::commands
+
 namespace sirius::platform::features
 {
 	class CFeatureRegistry;
@@ -22,6 +27,8 @@ namespace sirius::platform::modules
 		virtual const CModuleId &Id() const noexcept = 0;
 		virtual features::CFeatureRegistry &Features() noexcept = 0;
 		virtual const features::CFeatureRegistry &Features() const noexcept = 0;
+		virtual commands::CCommandRegistry &Commands() noexcept = 0;
+		virtual const commands::CCommandRegistry &Commands() const noexcept = 0;
 		virtual bool Initialize(CModuleContext &Context) = 0;
 		virtual void Shutdown(CModuleContext &Context) noexcept = 0;
 	};

@@ -5,6 +5,7 @@
 #include "module_context.h"
 #include "module_registry.h"
 
+#include <sirius/platform/commands/command_context.h>
 #include <sirius/platform/features/feature_context.h>
 
 #include <memory>
@@ -25,11 +26,14 @@ namespace sirius::platform::modules
 
 		try
 		{
+			commands::CCommandContext CommandContext(Context);
 			features::CFeatureContext FeatureContext(Context);
 			const auto &Modules = Registry.ModulesInRegistrationOrder();
+			m_CommandLifecycles.reserve(Modules.size());
 			m_FeatureLifecycles.reserve(Modules.size());
 			for(auto *pModule : Modules)
 			{
+				auto pCommandLifecycle = std::make_unique<commands::CCommandLifecycle>();
 				auto pFeatureLifecycle = std::make_unique<features::CFeatureLifecycle>();
 				if(!pModule->Initialize(Context))
 				{
@@ -39,8 +43,16 @@ namespace sirius::platform::modules
 				}
 
 				++m_InitializedModuleCount;
+				m_CommandLifecycles.push_back(std::move(pCommandLifecycle));
 				m_FeatureLifecycles.push_back(std::move(pFeatureLifecycle));
 				if(!m_FeatureLifecycles.back()->Initialize(pModule->Features(), FeatureContext))
+				{
+					ShutdownInitializedModules(Registry, Context);
+					Registry.Unseal();
+					return false;
+				}
+
+				if(!m_CommandLifecycles.back()->Initialize(pModule->Commands(), CommandContext))
 				{
 					ShutdownInitializedModules(Registry, Context);
 					Registry.Unseal();
@@ -78,17 +90,21 @@ namespace sirius::platform::modules
 
 	void CModuleLifecycle::ShutdownInitializedModules(CModuleRegistry &Registry, CModuleContext &Context) noexcept
 	{
+		commands::CCommandContext CommandContext(Context);
 		features::CFeatureContext FeatureContext(Context);
 		const auto &Modules = Registry.ModulesInRegistrationOrder();
 		while(m_InitializedModuleCount > 0)
 		{
 			--m_InitializedModuleCount;
 			auto *pModule = Modules[m_InitializedModuleCount];
+			m_CommandLifecycles[m_InitializedModuleCount]->Shutdown(pModule->Commands(), CommandContext);
 			m_FeatureLifecycles[m_InitializedModuleCount]->Shutdown(pModule->Features(), FeatureContext);
 			pModule->Shutdown(Context);
+			m_CommandLifecycles.pop_back();
 			m_FeatureLifecycles.pop_back();
 		}
 
+		m_CommandLifecycles.clear();
 		m_FeatureLifecycles.clear();
 		m_Initialized = false;
 	}
