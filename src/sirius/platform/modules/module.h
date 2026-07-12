@@ -19,6 +19,11 @@ namespace sirius::platform::modules
 
 	class CModuleContext;
 
+	namespace services
+	{
+		class CModuleServiceRegistry;
+	} // namespace services
+
 	class IModule
 	{
 	public:
@@ -29,6 +34,8 @@ namespace sirius::platform::modules
 		virtual const features::CFeatureRegistry &Features() const noexcept = 0;
 		virtual commands::CCommandRegistry &Commands() noexcept = 0;
 		virtual const commands::CCommandRegistry &Commands() const noexcept = 0;
+		virtual services::CModuleServiceRegistry &ModuleServices() noexcept = 0;
+		virtual const services::CModuleServiceRegistry &ModuleServices() const noexcept = 0;
 		virtual bool Initialize(CModuleContext &Context) = 0;
 		virtual void Shutdown(CModuleContext &Context) noexcept = 0;
 	};
