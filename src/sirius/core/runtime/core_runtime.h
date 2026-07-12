@@ -8,6 +8,7 @@
 #include "runtime_context.h"
 #include "runtime_lifecycle.h"
 
+#include <sirius/core/config/config_registry.h>
 #include <sirius/core/events/event_dispatcher.h>
 #include <sirius/core/services/service_registry.h>
 
@@ -31,6 +32,8 @@ namespace sirius::core::runtime
 
 		events::CEventDispatcher &Events() noexcept;
 		const events::CEventDispatcher &Events() const noexcept;
+		config::CConfigRegistry &Config() noexcept;
+		const config::CConfigRegistry &Config() const noexcept;
 		services::CServiceRegistry &Services() noexcept;
 		const services::CServiceRegistry &Services() const noexcept;
 		CRuntimeComponentRegistry &Components() noexcept;
@@ -41,6 +44,7 @@ namespace sirius::core::runtime
 	private:
 		CCoreRuntimeConfiguration m_Configuration;
 		events::CEventDispatcher m_Events;
+		config::CConfigRegistry m_Config;
 		services::CServiceRegistry m_Services;
 		CRuntimeComponentRegistry m_Components;
 		CRuntimeContext m_Context;
