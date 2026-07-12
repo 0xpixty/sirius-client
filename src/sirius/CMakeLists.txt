@@ -53,12 +53,15 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/commands/command_registry.h
   platform/features/feature_context.cpp
   platform/features/feature_context.h
+  platform/features/activation/feature_activation_handler.cpp
+  platform/features/activation/feature_activation_handler.h
   platform/features/feature.h
   platform/features/feature_id.h
   platform/features/feature_lifecycle.cpp
   platform/features/feature_lifecycle.h
   platform/features/feature_registry.cpp
   platform/features/feature_registry.h
+  platform/input/bindings/activation/activation_resolver.h
   platform/input/bindings/activation/binding_activation_dispatcher.cpp
   platform/input/bindings/activation/binding_activation_dispatcher.h
   platform/input/bindings/activation/binding_activation.h

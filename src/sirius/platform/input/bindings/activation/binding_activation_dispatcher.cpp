@@ -10,6 +10,8 @@
 #include <sirius/platform/input/bindings/input_binding.h>
 #include <sirius/platform/input/input_event.h>
 
+#include <vector>
+
 namespace sirius::platform::input
 {
 
@@ -30,6 +32,9 @@ namespace sirius::platform::input
 	void CBindingActivationDispatcher::Dispatch(const CInputEvent &Event) const
 	{
 		const auto MatchingBindings = m_Matcher.Match(m_Bindings, Event);
+		std::vector<CBindingActivationId> ActivationIds;
+		ActivationIds.reserve(MatchingBindings.size());
+
 		for(const auto *pBinding : MatchingBindings)
 		{
 			const auto *pActivation = m_Activations.Get(pBinding->Id());
@@ -38,7 +43,12 @@ namespace sirius::platform::input
 				continue;
 			}
 
-			m_Handler.Activate(pActivation->ActivationId());
+			ActivationIds.push_back(pActivation->ActivationId());
+		}
+
+		for(const auto &ActivationId : ActivationIds)
+		{
+			m_Handler.Activate(ActivationId);
 		}
 	}
 
