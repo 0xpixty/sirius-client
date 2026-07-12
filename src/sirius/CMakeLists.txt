@@ -55,6 +55,10 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/features/feature_lifecycle.h
   platform/features/feature_registry.cpp
   platform/features/feature_registry.h
+  platform/input/input_action.h
+  platform/input/input_event.h
+  platform/input/input_key.h
+  platform/input/input_state.h
   platform/modules/module.h
   platform/modules/module_context.cpp
   platform/modules/module_context.h
