@@ -10,7 +10,7 @@ namespace sirius::core::runtime
 		m_Configuration(std::move(Configuration)),
 		m_Config(m_Events),
 		m_Logger(m_Events),
-		m_Context(*this, m_Events, m_Config, m_Logger, m_Services, m_Components)
+		m_Context(*this, m_Events, m_Config, m_Logger, m_Tasks, m_Services, m_Components)
 	{
 	}
 
@@ -80,6 +80,16 @@ namespace sirius::core::runtime
 	const logging::CLogger &CCoreRuntime::Logger() const noexcept
 	{
 		return m_Logger;
+	}
+
+	tasks::CTaskDispatcher &CCoreRuntime::Tasks() noexcept
+	{
+		return m_Tasks;
+	}
+
+	const tasks::CTaskDispatcher &CCoreRuntime::Tasks() const noexcept
+	{
+		return m_Tasks;
 	}
 
 	services::CServiceRegistry &CCoreRuntime::Services() noexcept

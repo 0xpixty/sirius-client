@@ -12,6 +12,7 @@
 #include <sirius/core/events/event_dispatcher.h>
 #include <sirius/core/logging/logger.h>
 #include <sirius/core/services/service_registry.h>
+#include <sirius/core/tasks/task_dispatcher.h>
 
 namespace sirius::core::runtime
 {
@@ -37,6 +38,8 @@ namespace sirius::core::runtime
 		const config::CConfigRegistry &Config() const noexcept;
 		logging::CLogger &Logger() noexcept;
 		const logging::CLogger &Logger() const noexcept;
+		tasks::CTaskDispatcher &Tasks() noexcept;
+		const tasks::CTaskDispatcher &Tasks() const noexcept;
 		services::CServiceRegistry &Services() noexcept;
 		const services::CServiceRegistry &Services() const noexcept;
 		CRuntimeComponentRegistry &Components() noexcept;
@@ -49,6 +52,7 @@ namespace sirius::core::runtime
 		events::CEventDispatcher m_Events;
 		config::CConfigRegistry m_Config;
 		logging::CLogger m_Logger;
+		tasks::CTaskDispatcher m_Tasks;
 		services::CServiceRegistry m_Services;
 		CRuntimeComponentRegistry m_Components;
 		CRuntimeContext m_Context;

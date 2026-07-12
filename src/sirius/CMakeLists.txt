@@ -27,6 +27,11 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   core/runtime/runtime_lifecycle.h
   core/services/service_registry.cpp
   core/services/service_registry.h
+  core/tasks/task.h
+  core/tasks/task_dispatcher.cpp
+  core/tasks/task_dispatcher.h
+  core/tasks/task_queue.cpp
+  core/tasks/task_queue.h
   platform/platform.cpp
   platform/platform.h
   platform/platform_bootstrap.cpp

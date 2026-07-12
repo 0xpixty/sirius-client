@@ -6,11 +6,12 @@
 namespace sirius::core::runtime
 {
 
-	CRuntimeContext::CRuntimeContext(CCoreRuntime &Runtime, events::CEventDispatcher &Events, config::CConfigRegistry &Config, logging::CLogger &Logger, services::CServiceRegistry &Services, CRuntimeComponentRegistry &Components) noexcept :
+	CRuntimeContext::CRuntimeContext(CCoreRuntime &Runtime, events::CEventDispatcher &Events, config::CConfigRegistry &Config, logging::CLogger &Logger, tasks::CTaskDispatcher &Tasks, services::CServiceRegistry &Services, CRuntimeComponentRegistry &Components) noexcept :
 		m_Runtime(Runtime),
 		m_Events(Events),
 		m_Config(Config),
 		m_Logger(Logger),
+		m_Tasks(Tasks),
 		m_Services(Services),
 		m_Components(Components)
 	{
@@ -56,6 +57,16 @@ namespace sirius::core::runtime
 	const logging::CLogger &CRuntimeContext::Logger() const noexcept
 	{
 		return m_Logger;
+	}
+
+	tasks::CTaskDispatcher &CRuntimeContext::Tasks() noexcept
+	{
+		return m_Tasks;
+	}
+
+	const tasks::CTaskDispatcher &CRuntimeContext::Tasks() const noexcept
+	{
+		return m_Tasks;
 	}
 
 	services::CServiceRegistry &CRuntimeContext::Services() noexcept
