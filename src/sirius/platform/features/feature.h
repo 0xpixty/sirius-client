@@ -7,12 +7,16 @@
 namespace sirius::platform::features
 {
 
+	class CFeatureContext;
+
 	class IFeature
 	{
 	public:
 		virtual ~IFeature() = default;
 
 		virtual const CFeatureId &Id() const noexcept = 0;
+		virtual bool Initialize(CFeatureContext &Context) = 0;
+		virtual void Shutdown(CFeatureContext &Context) noexcept = 0;
 	};
 
 } // namespace sirius::platform::features

@@ -29,12 +29,20 @@ namespace sirius::platform::features
 		bool Has(const CFeatureId &Id) const;
 		IFeature *Get(const CFeatureId &Id);
 		const IFeature *Get(const CFeatureId &Id) const;
+		const std::vector<IFeature *> &FeaturesInRegistrationOrder() const noexcept;
 		std::size_t Count() const noexcept;
 		void Clear() noexcept;
+		bool IsSealed() const noexcept;
 
 	private:
+		friend class CFeatureLifecycle;
+
+		void Seal() noexcept;
+		void Unseal() noexcept;
+
 		std::unordered_map<std::string, std::unique_ptr<IFeature>> m_Features;
 		std::vector<IFeature *> m_FeaturesInRegistrationOrder;
+		bool m_Sealed = false;
 	};
 
 } // namespace sirius::platform::features

@@ -2,7 +2,11 @@
 #ifndef SIRIUS_PLATFORM_MODULES_MODULE_LIFECYCLE_H
 #define SIRIUS_PLATFORM_MODULES_MODULE_LIFECYCLE_H
 
+#include <sirius/platform/features/feature_lifecycle.h>
+
 #include <cstddef>
+#include <memory>
+#include <vector>
 
 namespace sirius::platform::modules
 {
@@ -28,6 +32,7 @@ namespace sirius::platform::modules
 	private:
 		void ShutdownInitializedModules(CModuleRegistry &Registry, CModuleContext &Context) noexcept;
 
+		std::vector<std::unique_ptr<features::CFeatureLifecycle>> m_FeatureLifecycles;
 		bool m_Initialized = false;
 		std::size_t m_InitializedModuleCount = 0;
 	};

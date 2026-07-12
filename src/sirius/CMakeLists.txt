@@ -41,6 +41,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/features/feature_context.h
   platform/features/feature.h
   platform/features/feature_id.h
+  platform/features/feature_lifecycle.cpp
+  platform/features/feature_lifecycle.h
   platform/features/feature_registry.cpp
   platform/features/feature_registry.h
   platform/modules/module.h
