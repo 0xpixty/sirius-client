@@ -7,12 +7,15 @@
 namespace sirius::platform::commands
 {
 
+	class CCommandContext;
+
 	class ICommand
 	{
 	public:
 		virtual ~ICommand() = default;
 
 		virtual const CCommandId &Id() const noexcept = 0;
+		virtual bool Execute(CCommandContext &Context) = 0;
 	};
 
 } // namespace sirius::platform::commands
