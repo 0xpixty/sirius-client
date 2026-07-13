@@ -110,6 +110,7 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/input/source/buffered_input_source.cpp
   platform/input/source/buffered_input_source.h
   platform/input/source/input_source.h
+  platform/modules/module.cpp
   platform/modules/module.h
   platform/modules/module_context.cpp
   platform/modules/module_context.h

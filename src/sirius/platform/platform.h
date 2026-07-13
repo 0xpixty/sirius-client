@@ -64,6 +64,7 @@ namespace sirius::platform
 		void ConfigureInputBindings();
 		void ConfigureBindings(const input::CBindingActivationId &ActivationId, const input::CBindingId &BindingId);
 		void ConfigureFeatureActivations(const activation::CActivationId &ActivationId, const features::CFeatureId &FeatureId);
+		void ConfigureTechnicalModule();
 		void ConfigureCommandActivations(const activation::CActivationId &ActivationId, const commands::CCommandId &CommandId);
 
 		CPlatformConfiguration m_Configuration;
@@ -81,8 +82,7 @@ namespace sirius::platform
 		features::CFeatureActivationController m_FeatureActivationController;
 		features::CFeatureActivationResolver m_FeatureActivationResolver;
 		features::CFeatureActivationHandler m_FeatureActivationHandler;
-		commands::CCommandRegistry m_ActivationCommandRegistry;
-		commands::CCommandDispatcher m_ActivationCommandDispatcher;
+		std::optional<commands::CCommandDispatcher> m_ActivationCommandDispatcher;
 		commands::CCommandActivationResolver m_CommandActivationResolver;
 		std::optional<commands::CCommandActivationHandler> m_CommandActivationHandler;
 		input::CBindingActivationAdapter m_BindingActivationAdapter;
