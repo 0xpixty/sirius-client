@@ -120,16 +120,6 @@ namespace sirius::platform
 		m_BindingActivationDispatcher.Dispatch(Event);
 	}
 
-	modules::CModuleRegistry &CPlatform::Modules() noexcept
-	{
-		return m_Modules;
-	}
-
-	const modules::CModuleRegistry &CPlatform::Modules() const noexcept
-	{
-		return m_Modules;
-	}
-
 	void CPlatform::Activate(const activation::CActivationId &ActivationId)
 	{
 		if(!m_pCoreRuntime || !m_pCoreRuntime->IsRunning() || !m_ModuleLifecycle.IsInitialized())

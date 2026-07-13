@@ -56,8 +56,6 @@ namespace sirius::platform
 		const input::CBufferedInputSource &InputSource() const noexcept;
 		void ForwardInput();
 		void ProcessInputEvent(const input::CInputEvent &Event);
-		modules::CModuleRegistry &Modules() noexcept;
-		const modules::CModuleRegistry &Modules() const noexcept;
 
 	private:
 		friend class CPlatformActivationLifecycleTestPeer;
