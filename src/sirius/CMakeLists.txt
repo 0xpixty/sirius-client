@@ -162,6 +162,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/modules/status/sirius_status_module.h
   ui/property/property_dependency_graph.cpp
   ui/property/property_dependency_graph.h
+  ui/property/property_evaluation.cpp
+  ui/property/property_evaluation.h
   ui/property/property_diagnostic.cpp
   ui/property/property_diagnostic.h
   ui/property/property_generation.cpp
