@@ -4,6 +4,14 @@
 
 #include "platform_configuration.h"
 
+#include <sirius/platform/features/activation/feature_activation_handler.h>
+#include <sirius/platform/features/activation/feature_activation_resolver.h>
+#include <sirius/platform/features/feature_activation_controller.h>
+#include <sirius/platform/features/feature_activation_registry.h>
+#include <sirius/platform/input/bindings/activation/binding_activation_dispatcher.h>
+#include <sirius/platform/input/bindings/activation/binding_activation_registry.h>
+#include <sirius/platform/input/bindings/binding_matcher.h>
+#include <sirius/platform/input/bindings/binding_registry.h>
 #include <sirius/platform/input/dispatch/input_event_forwarder.h>
 #include <sirius/platform/input/source/buffered_input_source.h>
 #include <sirius/platform/modules/module_context.h>
@@ -48,6 +56,14 @@ namespace sirius::platform
 		input::CInputEventForwarder m_InputForwarder;
 		std::optional<modules::CModuleContext> m_ModuleContext;
 		modules::CModuleLifecycle m_ModuleLifecycle;
+		input::CBindingRegistry m_Bindings;
+		input::CBindingActivationRegistry m_BindingActivations;
+		input::CBindingMatcher m_BindingMatcher;
+		features::CFeatureActivationRegistry m_FeatureActivations;
+		features::CFeatureActivationController m_FeatureActivationController;
+		features::CFeatureActivationResolver m_FeatureActivationResolver;
+		features::CFeatureActivationHandler m_FeatureActivationHandler;
+		input::CBindingActivationDispatcher m_BindingActivationDispatcher;
 	};
 
 } // namespace sirius::platform

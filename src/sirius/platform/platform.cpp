@@ -13,7 +13,10 @@ namespace sirius::platform
 	CPlatform::CPlatform(CPlatformConfiguration Configuration) :
 		m_Configuration(std::move(Configuration)),
 		m_pCoreRuntime(std::make_unique<core::runtime::CCoreRuntime>(core::runtime::CCoreRuntimeConfiguration())),
-		m_InputForwarder(m_pCoreRuntime->Events())
+		m_InputForwarder(m_pCoreRuntime->Events()),
+		m_FeatureActivationController(m_FeatureActivations),
+		m_FeatureActivationHandler(m_FeatureActivationResolver, m_FeatureActivationController),
+		m_BindingActivationDispatcher(m_BindingMatcher, m_Bindings, m_BindingActivations, m_FeatureActivationHandler)
 	{
 		m_ModuleContext.emplace(*m_pCoreRuntime, m_pCoreRuntime->Events(), m_pCoreRuntime->Config(), m_pCoreRuntime->Logger(), m_pCoreRuntime->Tasks());
 	}
