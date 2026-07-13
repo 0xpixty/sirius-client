@@ -9,6 +9,7 @@
 #include <sirius/platform/features/feature_activation.h>
 #include <sirius/platform/features/feature_activation_state.h>
 #include <sirius/platform/features/feature_id.h>
+#include <sirius/platform/features/status/sirius_status_feature.h>
 #include <sirius/platform/input/bindings/activation/binding_activation.h>
 #include <sirius/platform/input/bindings/activation/binding_activation_id.h>
 #include <sirius/platform/input/bindings/binding_id.h>
@@ -130,6 +131,23 @@ namespace sirius::platform
 	void CPlatform::ProcessInputEvent(const input::CInputEvent &Event)
 	{
 		m_BindingActivationDispatcher.Dispatch(Event);
+	}
+
+	std::optional<features::CSiriusStatusSnapshot> CPlatform::SiriusStatusSnapshot() const noexcept
+	{
+		const auto *pStatusModule = m_Modules.Get(modules::status::SiriusStatusModuleId());
+		if(!pStatusModule || !modules::status::IsSiriusStatusModuleComplete(*pStatusModule))
+		{
+			return std::nullopt;
+		}
+
+		const auto *pFeature = dynamic_cast<const features::CSiriusStatusFeature *>(pStatusModule->Features().Get(modules::status::SiriusStatusFeatureId()));
+		if(!pFeature)
+		{
+			return std::nullopt;
+		}
+
+		return pFeature->Snapshot();
 	}
 
 	void CPlatform::Activate(const activation::CActivationId &ActivationId)

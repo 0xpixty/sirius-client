@@ -68,4 +68,14 @@ namespace sirius::platform
 		}
 	}
 
+	std::optional<features::CSiriusStatusSnapshot> CPlatformBootstrap::SiriusStatusSnapshot() const noexcept
+	{
+		if(!m_pPlatform)
+		{
+			return std::nullopt;
+		}
+
+		return m_pPlatform->SiriusStatusSnapshot();
+	}
+
 } // namespace sirius::platform

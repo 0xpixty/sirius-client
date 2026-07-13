@@ -4,7 +4,10 @@
 
 #include "platform_configuration.h"
 
+#include <sirius/platform/features/status/sirius_status_snapshot.h>
+
 #include <memory>
+#include <optional>
 
 namespace sirius::platform
 {
@@ -35,6 +38,7 @@ namespace sirius::platform
 		const input::CBufferedInputSource *InputSource() const noexcept;
 		void ForwardInput();
 		void ProcessInputEvent(const input::CInputEvent &Event);
+		std::optional<features::CSiriusStatusSnapshot> SiriusStatusSnapshot() const noexcept;
 
 	private:
 		std::unique_ptr<CPlatform> m_pPlatform;
