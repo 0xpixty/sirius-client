@@ -96,9 +96,23 @@ namespace sirius::platform::modules::status
 		return activation::CActivationId("activation.sirius.status.toggle");
 	}
 
+	CModuleDescriptor SiriusStatusModuleDescriptor()
+	{
+		return CModuleDescriptor(
+			SiriusStatusModuleId(),
+			{SiriusStatusFeatureId()},
+			{SiriusStatusOpenCommandId(), SiriusStatusCloseCommandId(), SiriusStatusToggleCommandId()},
+			{});
+	}
+
 	bool IsSiriusStatusModuleComplete(const IModule &Module) noexcept
 	{
-		return Module.Id() == SiriusStatusModuleId() &&
+		const auto &Descriptor = Module.Descriptor();
+		return Descriptor.Id() == SiriusStatusModuleId() &&
+			Descriptor.DeclaresFeature(SiriusStatusFeatureId()) &&
+			Descriptor.DeclaresCommand(SiriusStatusOpenCommandId()) &&
+			Descriptor.DeclaresCommand(SiriusStatusCloseCommandId()) &&
+			Descriptor.DeclaresCommand(SiriusStatusToggleCommandId()) &&
 			Module.Features().Has(SiriusStatusFeatureId()) &&
 			Module.Commands().Has(SiriusStatusOpenCommandId()) &&
 			Module.Commands().Has(SiriusStatusCloseCommandId()) &&
@@ -121,7 +135,7 @@ namespace sirius::platform::modules::status
 
 	std::unique_ptr<IModule> CreateSiriusStatusModule(features::CFeatureActivationBehaviorRegistry &FeatureActivationBehaviors)
 	{
-		auto pModule = std::make_unique<CModule>(SiriusStatusModuleId());
+		auto pModule = std::make_unique<CModule>(SiriusStatusModuleDescriptor());
 		auto pFeature = std::make_unique<features::CSiriusStatusFeature>();
 		auto *pStatusFeature = pFeature.get();
 
