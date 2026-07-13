@@ -90,6 +90,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/features/feature_registry.h
   platform/features/status/sirius_status_feature.cpp
   platform/features/status/sirius_status_feature.h
+  platform/features/status/sirius_status_snapshot.cpp
+  platform/features/status/sirius_status_snapshot.h
   platform/features/status/sirius_status_activation_behavior.cpp
   platform/features/status/sirius_status_activation_behavior.h
   platform/input/bindings/activation/binding_activation_adapter.cpp

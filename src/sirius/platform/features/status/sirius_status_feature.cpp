@@ -99,4 +99,9 @@ namespace sirius::platform::features
 		return m_CloseCount;
 	}
 
+	CSiriusStatusSnapshot CSiriusStatusFeature::Snapshot() const noexcept
+	{
+		return CSiriusStatusSnapshot(m_Initialized, m_Open, m_OpenCount, m_CloseCount);
+	}
+
 } // namespace sirius::platform::features
