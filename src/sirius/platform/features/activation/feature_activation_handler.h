@@ -2,19 +2,18 @@
 #ifndef SIRIUS_PLATFORM_FEATURES_ACTIVATION_FEATURE_ACTIVATION_HANDLER_H
 #define SIRIUS_PLATFORM_FEATURES_ACTIVATION_FEATURE_ACTIVATION_HANDLER_H
 
-#include <sirius/platform/input/bindings/activation/activation_resolver.h>
 #include <sirius/platform/input/bindings/activation/binding_activation_handler.h>
 
 namespace sirius::platform::features
 {
 
-	class CFeatureId;
-	class CFeatureRegistry;
+	class CFeatureActivationController;
+	class CFeatureActivationResolver;
 
 	class CFeatureActivationHandler final : public input::IBindingActivationHandler
 	{
 	public:
-		CFeatureActivationHandler(const input::IActivationResolver<CFeatureId> &Resolver, const CFeatureRegistry &Features) noexcept;
+		CFeatureActivationHandler(const CFeatureActivationResolver &Resolver, CFeatureActivationController &Controller) noexcept;
 		~CFeatureActivationHandler() noexcept override;
 
 		CFeatureActivationHandler(const CFeatureActivationHandler &Other) = delete;
@@ -25,8 +24,8 @@ namespace sirius::platform::features
 		void Activate(const input::CBindingActivationId &ActivationId) override;
 
 	private:
-		const input::IActivationResolver<CFeatureId> &m_Resolver;
-		const CFeatureRegistry &m_Features;
+		const CFeatureActivationResolver &m_Resolver;
+		CFeatureActivationController &m_Controller;
 	};
 
 } // namespace sirius::platform::features
