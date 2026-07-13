@@ -184,6 +184,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   ui/property/property_stored_value.h
   ui/property/property_type_descriptor.cpp
   ui/property/property_type_descriptor.h
+  ui/scene/scene_snapshot.cpp
+  ui/scene/scene_snapshot.h
   # tidy-alphabetical-end
 )
 
