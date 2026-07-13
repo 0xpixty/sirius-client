@@ -5,7 +5,7 @@ namespace sirius::platform::commands
 {
 
 	CTechnicalActivationCommand::CTechnicalActivationCommand() :
-		m_Id("command.test")
+		m_Id("command.sirius.technical.activation")
 	{
 	}
 

@@ -52,7 +52,7 @@ namespace sirius::platform
 		}
 
 		auto *pTechnicalModule = m_Modules.Get(modules::CModuleId("module.sirius.technical"));
-		if(!pTechnicalModule || !pTechnicalModule->Commands().Has(commands::CCommandId("command.test")))
+		if(!pTechnicalModule || !pTechnicalModule->Commands().Has(commands::CCommandId("command.sirius.technical.activation")))
 		{
 			return false;
 		}
@@ -160,10 +160,10 @@ namespace sirius::platform
 
 	void CPlatform::ConfigureInputBindings()
 	{
-		const activation::CActivationId ActivationId("activation.command.test");
-		const features::CFeatureId FeatureId("feature.activation.test");
-		const commands::CCommandId CommandId("command.test");
-		const input::CBindingId BindingId("binding.activation.test");
+		const activation::CActivationId ActivationId("activation.sirius.technical");
+		const features::CFeatureId FeatureId("feature.sirius.technical.activation");
+		const commands::CCommandId CommandId("command.sirius.technical.activation");
+		const input::CBindingId BindingId("binding.sirius.technical.activation");
 
 		ConfigureBindings(input::CBindingActivationId(ActivationId.Value()), BindingId);
 		ConfigureFeatureActivations(ActivationId, FeatureId);
@@ -174,7 +174,7 @@ namespace sirius::platform
 	{
 		auto pBinding = std::make_unique<input::CInputBinding>(
 			input::CBindingId(BindingId.Value()),
-			input::CBindingTrigger(input::CInputKey("input.activation.test"), input::EInputAction::Pressed));
+			input::CBindingTrigger(input::CInputKey("input.sirius.technical.activation"), input::EInputAction::Pressed));
 
 		m_Bindings.Register(pBinding);
 		m_BindingActivations.Register(input::CBindingActivation(input::CBindingId(BindingId.Value()), input::CBindingActivationId(ActivationId.Value())));
