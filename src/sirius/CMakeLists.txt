@@ -47,8 +47,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/commands/activation/command_activation_handler.h
   platform/commands/activation/command_activation_resolver.cpp
   platform/commands/activation/command_activation_resolver.h
-  platform/commands/activation/test_activation_command.cpp
-  platform/commands/activation/test_activation_command.h
+  platform/commands/activation/technical_activation_command.cpp
+  platform/commands/activation/technical_activation_command.h
   platform/commands/command_context.cpp
   platform/commands/command_context.h
   platform/commands/command_dispatcher.cpp
@@ -68,8 +68,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/features/activation/feature_activation_handler.h
   platform/features/activation/feature_activation_resolver.cpp
   platform/features/activation/feature_activation_resolver.h
-  platform/features/activation/test_activation_behavior.cpp
-  platform/features/activation/test_activation_behavior.h
+  platform/features/activation/technical_activation_behavior.cpp
+  platform/features/activation/technical_activation_behavior.h
   platform/features/feature_activation.h
   platform/features/feature_activation_controller.cpp
   platform/features/feature_activation_controller.h

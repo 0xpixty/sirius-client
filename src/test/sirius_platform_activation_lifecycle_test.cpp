@@ -1,6 +1,6 @@
-#include <sirius/platform/commands/activation/test_activation_command.h>
+#include <sirius/platform/commands/activation/technical_activation_command.h>
 #include <sirius/platform/commands/command_id.h>
-#include <sirius/platform/features/activation/test_activation_behavior.h>
+#include <sirius/platform/features/activation/technical_activation_behavior.h>
 #include <sirius/platform/features/feature_activation.h>
 #include <sirius/platform/features/feature_activation_state.h>
 #include <sirius/platform/features/feature_id.h>
@@ -24,9 +24,9 @@ namespace sirius::platform
 			return Platform.m_FeatureActivations.Get(TechnicalFeatureId());
 		}
 
-		static const features::CTestActivationBehavior *TechnicalBehavior(const CPlatform &Platform) noexcept
+		static const features::CTechnicalActivationBehavior *TechnicalBehavior(const CPlatform &Platform) noexcept
 		{
-			return dynamic_cast<const features::CTestActivationBehavior *>(Platform.m_FeatureActivationBehaviors.Get(TechnicalFeatureId()));
+			return dynamic_cast<const features::CTechnicalActivationBehavior *>(Platform.m_FeatureActivationBehaviors.Get(TechnicalFeatureId()));
 		}
 
 	private:
@@ -45,7 +45,7 @@ namespace
 		return input::CInputEvent(input::CInputState(input::CInputKey("input.activation.test"), input::EInputAction::Pressed));
 	}
 
-	commands::CTestActivationCommand *TechnicalCommand(CPlatform &Platform)
+	commands::CTechnicalActivationCommand *TechnicalCommand(CPlatform &Platform)
 	{
 		auto *pModule = Platform.Modules().Get(modules::CModuleId("module.sirius.technical"));
 		if(!pModule)
@@ -53,7 +53,7 @@ namespace
 			return nullptr;
 		}
 
-		return dynamic_cast<commands::CTestActivationCommand *>(pModule->Commands().Get(commands::CCommandId("command.test")));
+		return dynamic_cast<commands::CTechnicalActivationCommand *>(pModule->Commands().Get(commands::CCommandId("command.test")));
 	}
 
 	const features::CFeatureActivation *TechnicalActivation(const CPlatform &Platform)
@@ -61,7 +61,7 @@ namespace
 		return CPlatformActivationLifecycleTestPeer::TechnicalActivation(Platform);
 	}
 
-	const features::CTestActivationBehavior *TechnicalBehavior(const CPlatform &Platform)
+	const features::CTechnicalActivationBehavior *TechnicalBehavior(const CPlatform &Platform)
 	{
 		return CPlatformActivationLifecycleTestPeer::TechnicalBehavior(Platform);
 	}

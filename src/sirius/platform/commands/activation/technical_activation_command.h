@@ -1,6 +1,6 @@
 /* (c) Sirius Client contributors. See licence.txt in the root of the distribution for more information. */
-#ifndef SIRIUS_PLATFORM_COMMANDS_ACTIVATION_TEST_ACTIVATION_COMMAND_H
-#define SIRIUS_PLATFORM_COMMANDS_ACTIVATION_TEST_ACTIVATION_COMMAND_H
+#ifndef SIRIUS_PLATFORM_COMMANDS_ACTIVATION_TECHNICAL_ACTIVATION_COMMAND_H
+#define SIRIUS_PLATFORM_COMMANDS_ACTIVATION_TECHNICAL_ACTIVATION_COMMAND_H
 
 #include <sirius/platform/commands/command.h>
 
@@ -9,11 +9,11 @@
 namespace sirius::platform::commands
 {
 
-	class CTestActivationCommand final : public ICommand
+	class CTechnicalActivationCommand final : public ICommand
 	{
 	public:
-		CTestActivationCommand();
-		~CTestActivationCommand() noexcept override;
+		CTechnicalActivationCommand();
+		~CTechnicalActivationCommand() noexcept override;
 
 		const CCommandId &Id() const noexcept override;
 		bool Initialize(CCommandContext &Context) override;
