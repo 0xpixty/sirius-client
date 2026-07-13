@@ -133,5 +133,67 @@ namespace
 		EXPECT_FALSE(IsModuleDescriptorOwnershipValid(Module));
 	}
 
+	TEST(SiriusModuleDescriptorValidation, EquivalentDefinitionAndConstructedDescriptorsPass)
+	{
+		const CModuleDescriptor Expected(
+			CModuleId("module.sirius.validation.parity"),
+			{features::CFeatureId("feature.sirius.validation.parity")},
+			{commands::CCommandId("command.sirius.validation.parity")},
+			{services::CModuleServiceId("service.sirius.validation.parity")},
+			{CModuleId("module.sirius.validation.dependency")},
+			{CModuleContractImport(CModuleContractId("contract.sirius.validation.import"), CModuleContractVersion(1, 0), EModuleContractImportRequirement::Required)},
+			{CModuleContractExport(CModuleContractId("contract.sirius.validation.export"), CModuleContractVersion(1, 0))});
+		const CModuleDescriptor Actual(
+			CModuleId("module.sirius.validation.parity"),
+			{features::CFeatureId("feature.sirius.validation.parity")},
+			{commands::CCommandId("command.sirius.validation.parity")},
+			{services::CModuleServiceId("service.sirius.validation.parity")},
+			{CModuleId("module.sirius.validation.dependency")},
+			{CModuleContractImport(CModuleContractId("contract.sirius.validation.import"), CModuleContractVersion(1, 0), EModuleContractImportRequirement::Required)},
+			{CModuleContractExport(CModuleContractId("contract.sirius.validation.export"), CModuleContractVersion(1, 0))});
+
+		EXPECT_TRUE(AreModuleDescriptorsEquivalent(Expected, Actual));
+	}
+
+	TEST(SiriusModuleDescriptorValidation, DependencyMismatchFailsParity)
+	{
+		const CModuleDescriptor Expected(
+			CModuleId("module.sirius.validation.parity"),
+			{},
+			{},
+			{},
+			{CModuleId("module.sirius.validation.expected")});
+		const CModuleDescriptor Actual(
+			CModuleId("module.sirius.validation.parity"),
+			{},
+			{},
+			{},
+			{CModuleId("module.sirius.validation.actual")});
+
+		EXPECT_FALSE(AreModuleDescriptorsEquivalent(Expected, Actual));
+	}
+
+	TEST(SiriusModuleDescriptorValidation, ContractMismatchFailsParity)
+	{
+		const CModuleDescriptor Expected(
+			CModuleId("module.sirius.validation.parity"),
+			{},
+			{},
+			{},
+			{},
+			{CModuleContractImport(CModuleContractId("contract.sirius.validation.expected"), CModuleContractVersion(1, 0), EModuleContractImportRequirement::Required)},
+			{});
+		const CModuleDescriptor Actual(
+			CModuleId("module.sirius.validation.parity"),
+			{},
+			{},
+			{},
+			{},
+			{CModuleContractImport(CModuleContractId("contract.sirius.validation.actual"), CModuleContractVersion(1, 0), EModuleContractImportRequirement::Required)},
+			{});
+
+		EXPECT_FALSE(AreModuleDescriptorsEquivalent(Expected, Actual));
+	}
+
 } // namespace
 } // namespace sirius::platform::modules

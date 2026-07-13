@@ -286,7 +286,9 @@ namespace sirius::platform
 		for(const auto &Definition : Plan.DefinitionsInRegistrationOrder())
 		{
 			auto pModule = Definition.CreateModule();
-			if(!pModule || !modules::IsModuleDescriptorOwnershipValid(*pModule))
+			if(!pModule ||
+				!modules::AreModuleDescriptorsEquivalent(Definition.Descriptor(), pModule->Descriptor()) ||
+				!modules::IsModuleDescriptorOwnershipValid(*pModule))
 			{
 				throw std::runtime_error("failed to validate module descriptor ownership");
 			}

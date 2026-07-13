@@ -5,8 +5,10 @@
 namespace sirius::platform::modules
 {
 
+	class CModuleDescriptor;
 	class IModule;
 
+	bool AreModuleDescriptorsEquivalent(const CModuleDescriptor &Expected, const CModuleDescriptor &Actual) noexcept;
 	bool IsModuleDescriptorOwnershipValid(const IModule &Module) noexcept;
 
 } // namespace sirius::platform::modules
