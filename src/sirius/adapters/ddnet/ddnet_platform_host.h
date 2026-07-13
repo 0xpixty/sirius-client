@@ -7,6 +7,8 @@
 
 #include <sirius/platform/platform_bootstrap.h>
 
+#include <optional>
+
 class IInput;
 
 namespace sirius::adapters::ddnet
@@ -27,6 +29,7 @@ namespace sirius::adapters::ddnet
 		void Stop() noexcept;
 		void ProcessInput(IInput &Input);
 		bool IsStarted() const noexcept;
+		std::optional<platform::features::CSiriusStatusSnapshot> SiriusStatusSnapshot() const noexcept;
 
 	private:
 		platform::CPlatformBootstrap m_Bootstrap;

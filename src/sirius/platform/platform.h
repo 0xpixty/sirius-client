@@ -14,6 +14,7 @@
 #include <sirius/platform/features/activation/feature_activation_resolver.h>
 #include <sirius/platform/features/feature_activation_controller.h>
 #include <sirius/platform/features/feature_activation_registry.h>
+#include <sirius/platform/features/status/sirius_status_snapshot.h>
 #include <sirius/platform/input/bindings/activation/binding_activation_adapter.h>
 #include <sirius/platform/input/bindings/activation/binding_activation_dispatcher.h>
 #include <sirius/platform/input/bindings/activation/binding_activation_registry.h>
@@ -56,6 +57,7 @@ namespace sirius::platform
 		const input::CBufferedInputSource &InputSource() const noexcept;
 		void ForwardInput();
 		void ProcessInputEvent(const input::CInputEvent &Event);
+		std::optional<features::CSiriusStatusSnapshot> SiriusStatusSnapshot() const noexcept;
 
 	private:
 		friend class CPlatformActivationLifecycleTestPeer;

@@ -52,4 +52,9 @@ namespace sirius::adapters::ddnet
 		return m_Bootstrap.IsStarted();
 	}
 
+	std::optional<platform::features::CSiriusStatusSnapshot> CDdnetPlatformHost::SiriusStatusSnapshot() const noexcept
+	{
+		return m_Bootstrap.SiriusStatusSnapshot();
+	}
+
 } // namespace sirius::adapters::ddnet
