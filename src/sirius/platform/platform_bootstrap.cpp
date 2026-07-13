@@ -60,4 +60,12 @@ namespace sirius::platform
 		}
 	}
 
+	void CPlatformBootstrap::ProcessInputEvent(const input::CInputEvent &Event)
+	{
+		if(m_pPlatform)
+		{
+			m_pPlatform->ProcessInputEvent(Event);
+		}
+	}
+
 } // namespace sirius::platform

@@ -2,6 +2,7 @@
 #include "ddnet_platform_host.h"
 
 #include <sirius/platform/platform_configuration.h>
+#include <sirius/platform/input/source/buffered_input_source.h>
 
 #include <utility>
 
@@ -38,6 +39,11 @@ namespace sirius::adapters::ddnet
 		}
 
 		m_InputCollector.Collect(Input, *pInputSource);
+		for(const auto &Event : pInputSource->Events())
+		{
+			m_Bootstrap.ProcessInputEvent(Event);
+		}
+
 		m_Bootstrap.ForwardInput();
 	}
 
