@@ -7,6 +7,7 @@
 #include <sirius/platform/features/feature_id.h>
 #include <sirius/platform/modules/module_id.h>
 
+#include <array>
 #include <memory>
 
 namespace sirius::platform::features
@@ -22,6 +23,20 @@ namespace sirius::platform::modules
 namespace sirius::platform::modules::status
 {
 
+	class CSiriusStatusCommandActivation final
+	{
+	public:
+		CSiriusStatusCommandActivation(activation::CActivationId ActivationId, commands::CCommandId CommandId);
+		~CSiriusStatusCommandActivation() noexcept;
+
+		const activation::CActivationId &ActivationId() const noexcept;
+		const commands::CCommandId &CommandId() const noexcept;
+
+	private:
+		activation::CActivationId m_ActivationId;
+		commands::CCommandId m_CommandId;
+	};
+
 	CModuleId SiriusStatusModuleId();
 	features::CFeatureId SiriusStatusFeatureId();
 	activation::CActivationId SiriusStatusActivationId();
@@ -32,6 +47,7 @@ namespace sirius::platform::modules::status
 	activation::CActivationId SiriusStatusCloseCommandActivationId();
 	activation::CActivationId SiriusStatusToggleCommandActivationId();
 	bool IsSiriusStatusModuleComplete(const IModule &Module) noexcept;
+	std::array<CSiriusStatusCommandActivation, 3> SiriusStatusCommandActivations();
 	std::unique_ptr<IModule> CreateSiriusStatusModule(features::CFeatureActivationBehaviorRegistry &FeatureActivationBehaviors);
 
 } // namespace sirius::platform::modules::status
