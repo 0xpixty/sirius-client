@@ -3259,6 +3259,7 @@ if((GTEST_FOUND OR DOWNLOAD_GTEST) AND SERVER)
     serverbrowser_test.cpp
     serverinfo_test.cpp
     sirius_feature_activation_controller_test.cpp
+    sirius_module_dependency_graph_test.cpp
     sirius_module_definition_test.cpp
     sirius_module_descriptor_test.cpp
     sirius_module_descriptor_validation_test.cpp
@@ -3327,6 +3328,7 @@ if((GTEST_FOUND OR DOWNLOAD_GTEST) AND SERVER)
     src/sirius/platform/input/source/buffered_input_source.cpp
     src/sirius/platform/modules/module.cpp
     src/sirius/platform/modules/module_context.cpp
+    src/sirius/platform/modules/module_dependency_graph.cpp
     src/sirius/platform/modules/module_definition.cpp
     src/sirius/platform/modules/module_descriptor.cpp
     src/sirius/platform/modules/module_descriptor_validation.cpp
