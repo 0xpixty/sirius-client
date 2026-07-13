@@ -3,6 +3,7 @@
 #define SIRIUS_PLATFORM_FEATURES_STATUS_SIRIUS_STATUS_FEATURE_H
 
 #include <sirius/platform/features/feature.h>
+#include <sirius/platform/features/status/sirius_status_snapshot.h>
 
 #include <cstddef>
 
@@ -26,6 +27,7 @@ namespace sirius::platform::features
 		bool IsOpen() const noexcept;
 		std::size_t OpenCount() const noexcept;
 		std::size_t CloseCount() const noexcept;
+		CSiriusStatusSnapshot Snapshot() const noexcept;
 
 	private:
 		CFeatureId m_Id;
