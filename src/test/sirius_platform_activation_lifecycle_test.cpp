@@ -29,6 +29,22 @@ namespace sirius::platform
 			return dynamic_cast<const features::CTechnicalActivationBehavior *>(Platform.m_FeatureActivationBehaviors.Get(TechnicalFeatureId()));
 		}
 
+		static commands::CTechnicalActivationCommand *TechnicalCommand(CPlatform &Platform) noexcept
+		{
+			auto *pModule = Platform.m_Modules.Get(modules::CModuleId("module.sirius.technical"));
+			if(!pModule)
+			{
+				return nullptr;
+			}
+
+			return dynamic_cast<commands::CTechnicalActivationCommand *>(pModule->Commands().Get(commands::CCommandId("command.sirius.technical.activation")));
+		}
+
+		static void ClearModules(CPlatform &Platform) noexcept
+		{
+			Platform.m_Modules.Clear();
+		}
+
 	private:
 		static const features::CFeatureId &TechnicalFeatureId() noexcept
 		{
@@ -47,13 +63,7 @@ namespace
 
 	commands::CTechnicalActivationCommand *TechnicalCommand(CPlatform &Platform)
 	{
-		auto *pModule = Platform.Modules().Get(modules::CModuleId("module.sirius.technical"));
-		if(!pModule)
-		{
-			return nullptr;
-		}
-
-		return dynamic_cast<commands::CTechnicalActivationCommand *>(pModule->Commands().Get(commands::CCommandId("command.sirius.technical.activation")));
+		return CPlatformActivationLifecycleTestPeer::TechnicalCommand(Platform);
 	}
 
 	const features::CFeatureActivation *TechnicalActivation(const CPlatform &Platform)
@@ -139,7 +149,7 @@ namespace
 		ASSERT_NE(pActivation, nullptr);
 		ASSERT_NE(pBehavior, nullptr);
 
-		Platform.Modules().Clear();
+		CPlatformActivationLifecycleTestPeer::ClearModules(Platform);
 
 		EXPECT_FALSE(Platform.Start());
 		Platform.ProcessInputEvent(MakeTechnicalActivationEvent());
