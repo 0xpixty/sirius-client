@@ -11,6 +11,7 @@
 #include <sirius/platform/features/feature_activation.h>
 #include <sirius/platform/features/feature_activation_state.h>
 #include <sirius/platform/features/feature_id.h>
+#include <sirius/platform/features/status/sirius_status_activation_behavior.h>
 #include <sirius/platform/features/status/sirius_status_feature.h>
 #include <sirius/platform/input/bindings/activation/binding_activation.h>
 #include <sirius/platform/input/bindings/activation/binding_activation_id.h>
@@ -214,6 +215,24 @@ namespace sirius::platform
 		if(!pModule->Features().Register(pOwnedFeature))
 		{
 			throw std::runtime_error("failed to register Sirius status feature");
+		}
+
+		const activation::CActivationId ActivationId("activation.sirius.status");
+		const features::CFeatureId FeatureId(pStatusFeature->Id().Value());
+		if(!m_FeatureActivationResolver.Register(activation::CActivationId(ActivationId.Value()), features::CFeatureId(FeatureId.Value())))
+		{
+			throw std::runtime_error("failed to register Sirius status activation mapping");
+		}
+
+		if(!m_FeatureActivations.Register(features::CFeatureActivation(features::CFeatureId(FeatureId.Value()), features::EFeatureActivationState::Inactive)))
+		{
+			throw std::runtime_error("failed to register Sirius status feature activation");
+		}
+
+		std::unique_ptr<features::IFeatureActivationBehavior> pBehavior = std::make_unique<features::CSiriusStatusActivationBehavior>(*pStatusFeature);
+		if(!m_FeatureActivationBehaviors.Register(features::CFeatureId(FeatureId.Value()), pBehavior))
+		{
+			throw std::runtime_error("failed to register Sirius status activation behavior");
 		}
 
 		std::unique_ptr<commands::ICommand> pOpenCommand = std::make_unique<commands::COpenSiriusStatusCommand>(*pStatusFeature);
