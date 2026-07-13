@@ -3446,6 +3446,7 @@ if((GTEST_FOUND OR DOWNLOAD_GTEST) AND SERVER)
     sirius_module_lifecycle_graph_test.cpp
     sirius_module_lifecycle_order_test.cpp
     sirius_module_registration_plan_test.cpp
+    sirius_module_runtime_composition_test.cpp
     sirius_module_runtime_diagnostics_test.cpp
     sirius_platform_activation_lifecycle_test.cpp
     snapshot_test.cpp

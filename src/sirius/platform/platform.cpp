@@ -18,12 +18,10 @@
 #include <sirius/platform/input/input_action.h>
 #include <sirius/platform/input/input_key.h>
 #include <sirius/platform/modules/module.h>
-#include <sirius/platform/modules/module_contract_resolution.h>
 #include <sirius/platform/modules/module_definition.h>
-#include <sirius/platform/modules/module_dependency_graph.h>
 #include <sirius/platform/modules/module_descriptor_validation.h>
-#include <sirius/platform/modules/module_lifecycle_graph.h>
 #include <sirius/platform/modules/module_registration_plan.h>
+#include <sirius/platform/modules/module_runtime_composition.h>
 #include <sirius/platform/modules/module_runtime_diagnostics.h>
 #include <sirius/platform/modules/status/sirius_status_module.h>
 
@@ -80,7 +78,7 @@ namespace sirius::platform
 
 		try
 		{
-			if(!m_ModuleLifecycleGraph.has_value() || !m_ModuleLifecycle.Initialize(m_Modules, *m_ModuleContext, *m_ModuleLifecycleGraph))
+			if(!m_ModuleRuntimeComposition.has_value() || !m_ModuleLifecycle.Initialize(m_Modules, *m_ModuleContext, m_ModuleRuntimeComposition->LifecycleGraph()))
 			{
 				m_pCoreRuntime->Stop();
 				return false;
@@ -161,8 +159,8 @@ namespace sirius::platform
 		return modules::BuildModuleRuntimeDiagnosticsSnapshot(
 			m_Modules,
 			m_ModuleLifecycle,
-			m_ModuleLifecycleGraph.has_value() ? &*m_ModuleLifecycleGraph : nullptr,
-			m_ModuleContractResolution.has_value() ? &*m_ModuleContractResolution : nullptr);
+			m_ModuleRuntimeComposition.has_value() ? &m_ModuleRuntimeComposition->LifecycleGraph() : nullptr,
+			m_ModuleRuntimeComposition.has_value() ? &m_ModuleRuntimeComposition->ContractResolution() : nullptr);
 	}
 
 	void CPlatform::Activate(const activation::CActivationId &ActivationId)
@@ -279,22 +277,10 @@ namespace sirius::platform
 			throw std::runtime_error("failed to add Sirius status module definition");
 		}
 
-		auto DependencyGraph = modules::BuildModuleDependencyGraph(Plan);
-		if(!DependencyGraph.has_value())
+		auto Composition = modules::BuildModuleRuntimeComposition(Plan);
+		if(!Composition.has_value())
 		{
-			throw std::runtime_error("failed to build module dependency graph");
-		}
-
-		auto LifecycleGraph = modules::BuildModuleLifecycleGraph(*DependencyGraph);
-		if(!LifecycleGraph.has_value())
-		{
-			throw std::runtime_error("failed to build module lifecycle graph");
-		}
-
-		auto ContractResolution = modules::ResolveModuleContractImports(Plan);
-		if(!ContractResolution.has_value())
-		{
-			throw std::runtime_error("failed to resolve module contract imports");
+			throw std::runtime_error("failed to build module runtime composition");
 		}
 
 		for(const auto &Definition : Plan.DefinitionsInRegistrationOrder())
@@ -311,8 +297,7 @@ namespace sirius::platform
 			}
 		}
 
-		m_ModuleContractResolution.emplace(std::move(*ContractResolution));
-		m_ModuleLifecycleGraph.emplace(std::move(*LifecycleGraph));
+		m_ModuleRuntimeComposition.emplace(std::move(*Composition));
 		ConfigureStatusModuleActivations();
 	}
 
