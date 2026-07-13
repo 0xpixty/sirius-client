@@ -60,6 +60,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/features/activation/feature_activation_handler.h
   platform/features/activation/feature_activation_resolver.cpp
   platform/features/activation/feature_activation_resolver.h
+  platform/features/activation/test_activation_behavior.cpp
+  platform/features/activation/test_activation_behavior.h
   platform/features/feature_activation.h
   platform/features/feature_activation_controller.cpp
   platform/features/feature_activation_controller.h

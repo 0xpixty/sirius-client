@@ -3,6 +3,7 @@
 
 #include <sirius/core/runtime/core_runtime.h>
 #include <sirius/core/runtime/core_runtime_configuration.h>
+#include <sirius/platform/features/activation/test_activation_behavior.h>
 #include <sirius/platform/features/feature_activation.h>
 #include <sirius/platform/features/feature_activation_state.h>
 #include <sirius/platform/features/feature_id.h>
@@ -125,6 +126,9 @@ namespace sirius::platform
 		m_BindingActivations.Register(input::CBindingActivation(input::CBindingId(BindingId.Value()), input::CBindingActivationId(ActivationId.Value())));
 		m_FeatureActivationResolver.Register(input::CBindingActivationId(ActivationId.Value()), features::CFeatureId(FeatureId.Value()));
 		m_FeatureActivations.Register(features::CFeatureActivation(features::CFeatureId(FeatureId.Value()), features::EFeatureActivationState::Inactive));
+
+		std::unique_ptr<features::IFeatureActivationBehavior> pBehavior = std::make_unique<features::CTestActivationBehavior>();
+		m_FeatureActivationBehaviors.Register(features::CFeatureId(FeatureId.Value()), pBehavior);
 	}
 
 } // namespace sirius::platform
