@@ -6,7 +6,13 @@
 #include <sirius/platform/features/feature_activation.h>
 #include <sirius/platform/features/feature_activation_state.h>
 #include <sirius/platform/features/feature_id.h>
+#include <sirius/platform/input/bindings/activation/binding_activation.h>
 #include <sirius/platform/input/bindings/activation/binding_activation_id.h>
+#include <sirius/platform/input/bindings/binding_id.h>
+#include <sirius/platform/input/bindings/binding_trigger.h>
+#include <sirius/platform/input/bindings/input_binding.h>
+#include <sirius/platform/input/input_action.h>
+#include <sirius/platform/input/input_key.h>
 
 #include <memory>
 #include <utility>
@@ -109,7 +115,14 @@ namespace sirius::platform
 	{
 		const input::CBindingActivationId ActivationId("feature.activation.test");
 		const features::CFeatureId FeatureId("feature.activation.test");
+		const input::CBindingId BindingId("binding.activation.test");
 
+		auto pBinding = std::make_unique<input::CInputBinding>(
+			input::CBindingId(BindingId.Value()),
+			input::CBindingTrigger(input::CInputKey("input.activation.test"), input::EInputAction::Pressed));
+
+		m_Bindings.Register(pBinding);
+		m_BindingActivations.Register(input::CBindingActivation(input::CBindingId(BindingId.Value()), input::CBindingActivationId(ActivationId.Value())));
 		m_FeatureActivationResolver.Register(input::CBindingActivationId(ActivationId.Value()), features::CFeatureId(FeatureId.Value()));
 		m_FeatureActivations.Register(features::CFeatureActivation(features::CFeatureId(FeatureId.Value()), features::EFeatureActivationState::Inactive));
 	}
