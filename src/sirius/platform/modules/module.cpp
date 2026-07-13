@@ -7,15 +7,25 @@ namespace sirius::platform::modules
 {
 
 	CModule::CModule(CModuleId Id) :
-		m_Id(std::move(Id))
+		CModule(CModuleDescriptor(std::move(Id)))
+	{
+	}
+
+	CModule::CModule(CModuleDescriptor Descriptor) :
+		m_Descriptor(std::move(Descriptor))
 	{
 	}
 
 	CModule::~CModule() noexcept = default;
 
+	const CModuleDescriptor &CModule::Descriptor() const noexcept
+	{
+		return m_Descriptor;
+	}
+
 	const CModuleId &CModule::Id() const noexcept
 	{
-		return m_Id;
+		return m_Descriptor.Id();
 	}
 
 	features::CFeatureRegistry &CModule::Features() noexcept

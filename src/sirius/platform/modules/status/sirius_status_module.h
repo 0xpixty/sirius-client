@@ -5,6 +5,7 @@
 #include <sirius/platform/activation/activation_id.h>
 #include <sirius/platform/commands/command_id.h>
 #include <sirius/platform/features/feature_id.h>
+#include <sirius/platform/modules/module_descriptor.h>
 #include <sirius/platform/modules/module_id.h>
 
 #include <array>
@@ -60,6 +61,7 @@ namespace sirius::platform::modules::status
 	activation::CActivationId SiriusStatusOpenCommandActivationId();
 	activation::CActivationId SiriusStatusCloseCommandActivationId();
 	activation::CActivationId SiriusStatusToggleCommandActivationId();
+	CModuleDescriptor SiriusStatusModuleDescriptor();
 	bool IsSiriusStatusModuleComplete(const IModule &Module) noexcept;
 	CSiriusStatusFeatureActivation SiriusStatusFeatureActivation();
 	std::array<CSiriusStatusCommandActivation, 3> SiriusStatusCommandActivations();

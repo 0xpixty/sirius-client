@@ -2,6 +2,7 @@
 #ifndef SIRIUS_PLATFORM_MODULES_MODULE_H
 #define SIRIUS_PLATFORM_MODULES_MODULE_H
 
+#include "module_descriptor.h"
 #include "module_id.h"
 
 #include <sirius/platform/commands/command_registry.h>
@@ -33,6 +34,7 @@ namespace sirius::platform::modules
 	public:
 		virtual ~IModule() = default;
 
+		virtual const CModuleDescriptor &Descriptor() const noexcept = 0;
 		virtual const CModuleId &Id() const noexcept = 0;
 		virtual features::CFeatureRegistry &Features() noexcept = 0;
 		virtual const features::CFeatureRegistry &Features() const noexcept = 0;
@@ -48,6 +50,7 @@ namespace sirius::platform::modules
 	{
 	public:
 		explicit CModule(CModuleId Id);
+		explicit CModule(CModuleDescriptor Descriptor);
 		~CModule() noexcept override;
 
 		CModule(const CModule &Other) = delete;
@@ -55,6 +58,7 @@ namespace sirius::platform::modules
 		CModule(CModule &&Other) = delete;
 		CModule &operator=(CModule &&Other) = delete;
 
+		const CModuleDescriptor &Descriptor() const noexcept override;
 		const CModuleId &Id() const noexcept override;
 		features::CFeatureRegistry &Features() noexcept override;
 		const features::CFeatureRegistry &Features() const noexcept override;
@@ -66,7 +70,7 @@ namespace sirius::platform::modules
 		void Shutdown(CModuleContext &Context) noexcept override;
 
 	private:
-		const CModuleId m_Id;
+		const CModuleDescriptor m_Descriptor;
 		features::CFeatureRegistry m_Features;
 		commands::CCommandRegistry m_Commands;
 		services::CModuleServiceRegistry m_ModuleServices;
