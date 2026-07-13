@@ -27,8 +27,10 @@ namespace sirius::platform::modules::status
 	activation::CActivationId SiriusStatusActivationId();
 	commands::CCommandId SiriusStatusOpenCommandId();
 	commands::CCommandId SiriusStatusCloseCommandId();
+	commands::CCommandId SiriusStatusToggleCommandId();
 	activation::CActivationId SiriusStatusOpenCommandActivationId();
 	activation::CActivationId SiriusStatusCloseCommandActivationId();
+	activation::CActivationId SiriusStatusToggleCommandActivationId();
 	std::unique_ptr<IModule> CreateSiriusStatusModule(features::CFeatureActivationBehaviorRegistry &FeatureActivationBehaviors);
 
 } // namespace sirius::platform::modules::status

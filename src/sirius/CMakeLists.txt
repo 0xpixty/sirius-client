@@ -63,6 +63,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/commands/status/close_sirius_status_command.h
   platform/commands/status/open_sirius_status_command.cpp
   platform/commands/status/open_sirius_status_command.h
+  platform/commands/status/toggle_sirius_status_command.cpp
+  platform/commands/status/toggle_sirius_status_command.h
   platform/features/feature_context.cpp
   platform/features/feature_context.h
   platform/features/activation/feature_activation_behavior.h

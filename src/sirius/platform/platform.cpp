@@ -62,7 +62,8 @@ namespace sirius::platform
 		auto *pStatusModule = m_Modules.Get(modules::status::SiriusStatusModuleId());
 		if(!pStatusModule ||
 			!pStatusModule->Commands().Has(modules::status::SiriusStatusOpenCommandId()) ||
-			!pStatusModule->Commands().Has(modules::status::SiriusStatusCloseCommandId()))
+			!pStatusModule->Commands().Has(modules::status::SiriusStatusCloseCommandId()) ||
+			!pStatusModule->Commands().Has(modules::status::SiriusStatusToggleCommandId()))
 		{
 			return false;
 		}
@@ -193,6 +194,10 @@ namespace sirius::platform
 			input::CBindingActivationId(modules::status::SiriusStatusCloseCommandActivationId().Value()),
 			input::CBindingId("binding.sirius.status.close"),
 			input::CInputKey("input.sirius.status.close"));
+		ConfigureBindings(
+			input::CBindingActivationId(modules::status::SiriusStatusToggleCommandActivationId().Value()),
+			input::CBindingId("binding.sirius.status.toggle"),
+			input::CInputKey("input.sirius.status.toggle"));
 	}
 
 	void CPlatform::ConfigureBindings(const input::CBindingActivationId &ActivationId, const input::CBindingId &BindingId, const input::CInputKey &InputKey)
@@ -265,6 +270,9 @@ namespace sirius::platform
 		ConfigureStatusCommandActivations(
 			modules::status::SiriusStatusCloseCommandActivationId(),
 			modules::status::SiriusStatusCloseCommandId());
+		ConfigureStatusCommandActivations(
+			modules::status::SiriusStatusToggleCommandActivationId(),
+			modules::status::SiriusStatusToggleCommandId());
 
 		std::unique_ptr<modules::IModule> pOwnedModule = std::move(pModule);
 		if(!m_Modules.Register(pOwnedModule))

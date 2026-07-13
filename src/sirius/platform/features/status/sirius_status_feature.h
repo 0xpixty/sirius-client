@@ -21,6 +21,7 @@ namespace sirius::platform::features
 
 		bool Open() noexcept;
 		bool Close() noexcept;
+		bool Toggle() noexcept;
 		bool IsInitialized() const noexcept;
 		bool IsOpen() const noexcept;
 		std::size_t OpenCount() const noexcept;
