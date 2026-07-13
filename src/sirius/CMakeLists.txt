@@ -146,6 +146,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/modules/module_registration_plan.h
   platform/modules/module_registry.cpp
   platform/modules/module_registry.h
+  platform/modules/module_runtime_composition.cpp
+  platform/modules/module_runtime_composition.h
   platform/modules/module_runtime_diagnostics.cpp
   platform/modules/module_runtime_diagnostics.h
   platform/modules/services/module_service.h
