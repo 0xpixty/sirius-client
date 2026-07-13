@@ -2,6 +2,7 @@
 #ifndef SIRIUS_PLATFORM_MODULES_MODULE_DESCRIPTOR_H
 #define SIRIUS_PLATFORM_MODULES_MODULE_DESCRIPTOR_H
 
+#include "module_contract.h"
 #include "module_id.h"
 
 #include <sirius/platform/commands/command_id.h>
@@ -28,6 +29,14 @@ namespace sirius::platform::modules
 			std::vector<commands::CCommandId> CommandIds,
 			std::vector<services::CModuleServiceId> ModuleServiceIds,
 			std::vector<CModuleId> DependencyIds);
+		CModuleDescriptor(
+			CModuleId Id,
+			std::vector<features::CFeatureId> FeatureIds,
+			std::vector<commands::CCommandId> CommandIds,
+			std::vector<services::CModuleServiceId> ModuleServiceIds,
+			std::vector<CModuleId> DependencyIds,
+			std::vector<CModuleContractImport> ContractImports,
+			std::vector<CModuleContractExport> ContractExports);
 		~CModuleDescriptor() noexcept;
 
 		const CModuleId &Id() const noexcept;
@@ -35,10 +44,14 @@ namespace sirius::platform::modules
 		const std::vector<commands::CCommandId> &CommandIds() const noexcept;
 		const std::vector<services::CModuleServiceId> &ModuleServiceIds() const noexcept;
 		const std::vector<CModuleId> &DependencyIds() const noexcept;
+		const std::vector<CModuleContractImport> &ContractImports() const noexcept;
+		const std::vector<CModuleContractExport> &ContractExports() const noexcept;
 		bool DeclaresFeature(const features::CFeatureId &Id) const noexcept;
 		bool DeclaresCommand(const commands::CCommandId &Id) const noexcept;
 		bool DeclaresModuleService(const services::CModuleServiceId &Id) const noexcept;
 		bool DeclaresDependency(const CModuleId &Id) const noexcept;
+		bool ImportsContract(const CModuleContractId &Id) const noexcept;
+		bool ExportsContract(const CModuleContractId &Id) const noexcept;
 
 	private:
 		CModuleId m_Id;
@@ -46,6 +59,8 @@ namespace sirius::platform::modules
 		std::vector<commands::CCommandId> m_CommandIds;
 		std::vector<services::CModuleServiceId> m_ModuleServiceIds;
 		std::vector<CModuleId> m_DependencyIds;
+		std::vector<CModuleContractImport> m_ContractImports;
+		std::vector<CModuleContractExport> m_ContractExports;
 	};
 
 } // namespace sirius::platform::modules

@@ -27,11 +27,25 @@ namespace sirius::platform::modules
 		std::vector<commands::CCommandId> CommandIds,
 		std::vector<services::CModuleServiceId> ModuleServiceIds,
 		std::vector<CModuleId> DependencyIds) :
+		CModuleDescriptor(std::move(Id), std::move(FeatureIds), std::move(CommandIds), std::move(ModuleServiceIds), std::move(DependencyIds), {}, {})
+	{
+	}
+
+	CModuleDescriptor::CModuleDescriptor(
+		CModuleId Id,
+		std::vector<features::CFeatureId> FeatureIds,
+		std::vector<commands::CCommandId> CommandIds,
+		std::vector<services::CModuleServiceId> ModuleServiceIds,
+		std::vector<CModuleId> DependencyIds,
+		std::vector<CModuleContractImport> ContractImports,
+		std::vector<CModuleContractExport> ContractExports) :
 		m_Id(std::move(Id)),
 		m_FeatureIds(std::move(FeatureIds)),
 		m_CommandIds(std::move(CommandIds)),
 		m_ModuleServiceIds(std::move(ModuleServiceIds)),
-		m_DependencyIds(std::move(DependencyIds))
+		m_DependencyIds(std::move(DependencyIds)),
+		m_ContractImports(std::move(ContractImports)),
+		m_ContractExports(std::move(ContractExports))
 	{
 	}
 
@@ -62,6 +76,16 @@ namespace sirius::platform::modules
 		return m_DependencyIds;
 	}
 
+	const std::vector<CModuleContractImport> &CModuleDescriptor::ContractImports() const noexcept
+	{
+		return m_ContractImports;
+	}
+
+	const std::vector<CModuleContractExport> &CModuleDescriptor::ContractExports() const noexcept
+	{
+		return m_ContractExports;
+	}
+
 	bool CModuleDescriptor::DeclaresFeature(const features::CFeatureId &Id) const noexcept
 	{
 		return std::find(m_FeatureIds.begin(), m_FeatureIds.end(), Id) != m_FeatureIds.end();
@@ -80,6 +104,20 @@ namespace sirius::platform::modules
 	bool CModuleDescriptor::DeclaresDependency(const CModuleId &Id) const noexcept
 	{
 		return std::find(m_DependencyIds.begin(), m_DependencyIds.end(), Id) != m_DependencyIds.end();
+	}
+
+	bool CModuleDescriptor::ImportsContract(const CModuleContractId &Id) const noexcept
+	{
+		return std::find_if(m_ContractImports.begin(), m_ContractImports.end(), [&Id](const CModuleContractImport &Import) {
+			return Import.Matches(Id);
+		}) != m_ContractImports.end();
+	}
+
+	bool CModuleDescriptor::ExportsContract(const CModuleContractId &Id) const noexcept
+	{
+		return std::find_if(m_ContractExports.begin(), m_ContractExports.end(), [&Id](const CModuleContractExport &Export) {
+			return Export.Matches(Id);
+		}) != m_ContractExports.end();
 	}
 
 } // namespace sirius::platform::modules
