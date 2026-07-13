@@ -3,8 +3,8 @@
 
 #include <sirius/core/runtime/core_runtime.h>
 #include <sirius/core/runtime/core_runtime_configuration.h>
-#include <sirius/platform/commands/activation/test_activation_command.h>
-#include <sirius/platform/features/activation/test_activation_behavior.h>
+#include <sirius/platform/commands/activation/technical_activation_command.h>
+#include <sirius/platform/features/activation/technical_activation_behavior.h>
 #include <sirius/platform/commands/command_id.h>
 #include <sirius/platform/features/feature_activation.h>
 #include <sirius/platform/features/feature_activation_state.h>
@@ -185,7 +185,7 @@ namespace sirius::platform
 		m_FeatureActivationResolver.Register(activation::CActivationId(ActivationId.Value()), features::CFeatureId(FeatureId.Value()));
 		m_FeatureActivations.Register(features::CFeatureActivation(features::CFeatureId(FeatureId.Value()), features::EFeatureActivationState::Inactive));
 
-		std::unique_ptr<features::IFeatureActivationBehavior> pBehavior = std::make_unique<features::CTestActivationBehavior>();
+		std::unique_ptr<features::IFeatureActivationBehavior> pBehavior = std::make_unique<features::CTechnicalActivationBehavior>();
 		m_FeatureActivationBehaviors.Register(features::CFeatureId(FeatureId.Value()), pBehavior);
 	}
 
@@ -197,7 +197,7 @@ namespace sirius::platform
 	void CPlatform::ConfigureTechnicalModule()
 	{
 		auto pModule = std::make_unique<modules::CModule>(modules::CModuleId("module.sirius.technical"));
-		std::unique_ptr<commands::ICommand> pCommand = std::make_unique<commands::CTestActivationCommand>();
+		std::unique_ptr<commands::ICommand> pCommand = std::make_unique<commands::CTechnicalActivationCommand>();
 		if(!pModule->Commands().Register(pCommand))
 		{
 			throw std::runtime_error("failed to register technical activation command");

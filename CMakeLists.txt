@@ -3300,7 +3300,7 @@ if((GTEST_FOUND OR DOWNLOAD_GTEST) AND SERVER)
     src/sirius/core/tasks/task_queue.cpp
     src/sirius/platform/commands/activation/command_activation_handler.cpp
     src/sirius/platform/commands/activation/command_activation_resolver.cpp
-    src/sirius/platform/commands/activation/test_activation_command.cpp
+    src/sirius/platform/commands/activation/technical_activation_command.cpp
     src/sirius/platform/commands/command_context.cpp
     src/sirius/platform/commands/command_dispatcher.cpp
     src/sirius/platform/commands/command_lifecycle.cpp
@@ -3308,7 +3308,7 @@ if((GTEST_FOUND OR DOWNLOAD_GTEST) AND SERVER)
     src/sirius/platform/features/activation/feature_activation_behavior_registry.cpp
     src/sirius/platform/features/activation/feature_activation_handler.cpp
     src/sirius/platform/features/activation/feature_activation_resolver.cpp
-    src/sirius/platform/features/activation/test_activation_behavior.cpp
+    src/sirius/platform/features/activation/technical_activation_behavior.cpp
     src/sirius/platform/features/feature_activation_controller.cpp
     src/sirius/platform/features/feature_activation_registry.cpp
     src/sirius/platform/features/feature_context.cpp
