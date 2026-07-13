@@ -82,7 +82,6 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/features/feature_lifecycle.h
   platform/features/feature_registry.cpp
   platform/features/feature_registry.h
-  platform/input/bindings/activation/activation_resolver.h
   platform/input/bindings/activation/binding_activation_adapter.cpp
   platform/input/bindings/activation/binding_activation_adapter.h
   platform/input/bindings/activation/binding_activation_dispatcher.cpp
