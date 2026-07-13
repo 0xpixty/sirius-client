@@ -62,6 +62,14 @@ namespace sirius::platform
 			return false;
 		}
 
+		auto *pStatusModule = m_Modules.Get(modules::CModuleId("module.sirius.status"));
+		if(!pStatusModule ||
+			!pStatusModule->Commands().Has(commands::CCommandId("command.sirius.status.open")) ||
+			!pStatusModule->Commands().Has(commands::CCommandId("command.sirius.status.close")))
+		{
+			return false;
+		}
+
 		m_pCoreRuntime->Start();
 		if(!m_pCoreRuntime->IsRunning())
 		{
@@ -84,12 +92,16 @@ namespace sirius::platform
 
 		m_ActivationCommandDispatcher.emplace(pTechnicalModule->Commands());
 		m_CommandActivationHandler.emplace(m_CommandActivationResolver, *m_ActivationCommandDispatcher, *m_ModuleContext);
+		m_StatusCommandDispatcher.emplace(pStatusModule->Commands());
+		m_StatusCommandActivationHandler.emplace(m_StatusCommandActivationResolver, *m_StatusCommandDispatcher, *m_ModuleContext);
 
 		return true;
 	}
 
 	void CPlatform::Stop() noexcept
 	{
+		m_StatusCommandActivationHandler.reset();
+		m_StatusCommandDispatcher.reset();
 		m_CommandActivationHandler.reset();
 		m_ActivationCommandDispatcher.reset();
 		m_FeatureActivationController.DeactivateAllForShutdown();
@@ -137,6 +149,10 @@ namespace sirius::platform
 		{
 			m_CommandActivationHandler->Activate(ActivationId);
 		}
+		if(m_StatusCommandActivationHandler.has_value())
+		{
+			m_StatusCommandActivationHandler->Activate(ActivationId);
+		}
 	}
 
 	void CPlatform::Deactivate(const activation::CActivationId &ActivationId)
@@ -150,6 +166,10 @@ namespace sirius::platform
 		if(m_CommandActivationHandler.has_value())
 		{
 			m_CommandActivationHandler->Deactivate(ActivationId);
+		}
+		if(m_StatusCommandActivationHandler.has_value())
+		{
+			m_StatusCommandActivationHandler->Deactivate(ActivationId);
 		}
 	}
 
@@ -168,6 +188,14 @@ namespace sirius::platform
 			input::CBindingActivationId("activation.sirius.status"),
 			input::CBindingId("binding.sirius.status.activation"),
 			input::CInputKey("input.sirius.status.activation"));
+		ConfigureBindings(
+			input::CBindingActivationId("activation.sirius.status.open"),
+			input::CBindingId("binding.sirius.status.open"),
+			input::CInputKey("input.sirius.status.open"));
+		ConfigureBindings(
+			input::CBindingActivationId("activation.sirius.status.close"),
+			input::CBindingId("binding.sirius.status.close"),
+			input::CInputKey("input.sirius.status.close"));
 	}
 
 	void CPlatform::ConfigureBindings(const input::CBindingActivationId &ActivationId, const input::CBindingId &BindingId, const input::CInputKey &InputKey)
@@ -192,6 +220,14 @@ namespace sirius::platform
 	void CPlatform::ConfigureCommandActivations(const activation::CActivationId &ActivationId, const commands::CCommandId &CommandId)
 	{
 		m_CommandActivationResolver.Register(activation::CActivationId(ActivationId.Value()), commands::CCommandId(CommandId.Value()));
+	}
+
+	void CPlatform::ConfigureStatusCommandActivations(const activation::CActivationId &ActivationId, const commands::CCommandId &CommandId)
+	{
+		if(!m_StatusCommandActivationResolver.Register(activation::CActivationId(ActivationId.Value()), commands::CCommandId(CommandId.Value())))
+		{
+			throw std::runtime_error("failed to register Sirius status command activation");
+		}
 	}
 
 	void CPlatform::ConfigureTechnicalModule()
@@ -251,6 +287,13 @@ namespace sirius::platform
 		{
 			throw std::runtime_error("failed to register Sirius status close command");
 		}
+
+		ConfigureStatusCommandActivations(
+			activation::CActivationId("activation.sirius.status.open"),
+			commands::CCommandId("command.sirius.status.open"));
+		ConfigureStatusCommandActivations(
+			activation::CActivationId("activation.sirius.status.close"),
+			commands::CCommandId("command.sirius.status.close"));
 
 		std::unique_ptr<modules::IModule> pOwnedModule = std::move(pModule);
 		if(!m_Modules.Register(pOwnedModule))

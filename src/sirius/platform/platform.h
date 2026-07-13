@@ -68,6 +68,7 @@ namespace sirius::platform
 		void ConfigureTechnicalModule();
 		void ConfigureStatusModule();
 		void ConfigureCommandActivations(const activation::CActivationId &ActivationId, const commands::CCommandId &CommandId);
+		void ConfigureStatusCommandActivations(const activation::CActivationId &ActivationId, const commands::CCommandId &CommandId);
 
 		CPlatformConfiguration m_Configuration;
 		modules::CModuleRegistry m_Modules;
@@ -87,6 +88,9 @@ namespace sirius::platform
 		std::optional<commands::CCommandDispatcher> m_ActivationCommandDispatcher;
 		commands::CCommandActivationResolver m_CommandActivationResolver;
 		std::optional<commands::CCommandActivationHandler> m_CommandActivationHandler;
+		std::optional<commands::CCommandDispatcher> m_StatusCommandDispatcher;
+		commands::CCommandActivationResolver m_StatusCommandActivationResolver;
+		std::optional<commands::CCommandActivationHandler> m_StatusCommandActivationHandler;
 		input::CBindingActivationAdapter m_BindingActivationAdapter;
 		input::CBindingActivationDispatcher m_BindingActivationDispatcher;
 	};
