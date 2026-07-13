@@ -51,6 +51,8 @@ namespace sirius::platform
 		const modules::CModuleRegistry &Modules() const noexcept;
 
 	private:
+		void ConfigureInputBindings();
+
 		CPlatformConfiguration m_Configuration;
 		modules::CModuleRegistry m_Modules;
 		std::unique_ptr<core::runtime::CCoreRuntime> m_pCoreRuntime;

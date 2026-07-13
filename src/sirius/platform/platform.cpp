@@ -19,6 +19,7 @@ namespace sirius::platform
 		m_BindingActivationDispatcher(m_BindingMatcher, m_Bindings, m_BindingActivations, m_FeatureActivationHandler)
 	{
 		m_ModuleContext.emplace(*m_pCoreRuntime, m_pCoreRuntime->Events(), m_pCoreRuntime->Config(), m_pCoreRuntime->Logger(), m_pCoreRuntime->Tasks());
+		ConfigureInputBindings();
 	}
 
 	CPlatform::~CPlatform() noexcept
@@ -98,6 +99,11 @@ namespace sirius::platform
 	const modules::CModuleRegistry &CPlatform::Modules() const noexcept
 	{
 		return m_Modules;
+	}
+
+	void CPlatform::ConfigureInputBindings()
+	{
+		// Registration boundary only. Future composition data belongs here.
 	}
 
 } // namespace sirius::platform
