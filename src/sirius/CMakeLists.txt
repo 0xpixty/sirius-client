@@ -164,6 +164,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   ui/property/property_id.h
   ui/property/property_metadata_snapshot.cpp
   ui/property/property_metadata_snapshot.h
+  ui/property/property_operation.cpp
+  ui/property/property_operation.h
   ui/property/property_storage_snapshot.cpp
   ui/property/property_storage_snapshot.h
   ui/property/property_stored_value.cpp
