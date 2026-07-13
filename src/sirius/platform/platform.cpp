@@ -60,10 +60,7 @@ namespace sirius::platform
 		}
 
 		auto *pStatusModule = m_Modules.Get(modules::status::SiriusStatusModuleId());
-		if(!pStatusModule ||
-			!pStatusModule->Commands().Has(modules::status::SiriusStatusOpenCommandId()) ||
-			!pStatusModule->Commands().Has(modules::status::SiriusStatusCloseCommandId()) ||
-			!pStatusModule->Commands().Has(modules::status::SiriusStatusToggleCommandId()))
+		if(!pStatusModule || !modules::status::IsSiriusStatusModuleComplete(*pStatusModule))
 		{
 			return false;
 		}
