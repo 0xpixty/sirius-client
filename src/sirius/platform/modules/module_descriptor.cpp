@@ -17,10 +17,21 @@ namespace sirius::platform::modules
 		std::vector<features::CFeatureId> FeatureIds,
 		std::vector<commands::CCommandId> CommandIds,
 		std::vector<services::CModuleServiceId> ModuleServiceIds) :
+		CModuleDescriptor(std::move(Id), std::move(FeatureIds), std::move(CommandIds), std::move(ModuleServiceIds), {})
+	{
+	}
+
+	CModuleDescriptor::CModuleDescriptor(
+		CModuleId Id,
+		std::vector<features::CFeatureId> FeatureIds,
+		std::vector<commands::CCommandId> CommandIds,
+		std::vector<services::CModuleServiceId> ModuleServiceIds,
+		std::vector<CModuleId> DependencyIds) :
 		m_Id(std::move(Id)),
 		m_FeatureIds(std::move(FeatureIds)),
 		m_CommandIds(std::move(CommandIds)),
-		m_ModuleServiceIds(std::move(ModuleServiceIds))
+		m_ModuleServiceIds(std::move(ModuleServiceIds)),
+		m_DependencyIds(std::move(DependencyIds))
 	{
 	}
 
@@ -46,6 +57,11 @@ namespace sirius::platform::modules
 		return m_ModuleServiceIds;
 	}
 
+	const std::vector<CModuleId> &CModuleDescriptor::DependencyIds() const noexcept
+	{
+		return m_DependencyIds;
+	}
+
 	bool CModuleDescriptor::DeclaresFeature(const features::CFeatureId &Id) const noexcept
 	{
 		return std::find(m_FeatureIds.begin(), m_FeatureIds.end(), Id) != m_FeatureIds.end();
@@ -59,6 +75,11 @@ namespace sirius::platform::modules
 	bool CModuleDescriptor::DeclaresModuleService(const services::CModuleServiceId &Id) const noexcept
 	{
 		return std::find(m_ModuleServiceIds.begin(), m_ModuleServiceIds.end(), Id) != m_ModuleServiceIds.end();
+	}
+
+	bool CModuleDescriptor::DeclaresDependency(const CModuleId &Id) const noexcept
+	{
+		return std::find(m_DependencyIds.begin(), m_DependencyIds.end(), Id) != m_DependencyIds.end();
 	}
 
 } // namespace sirius::platform::modules
