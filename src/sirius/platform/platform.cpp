@@ -102,6 +102,11 @@ namespace sirius::platform
 		m_BindingActivationDispatcher.Dispatch(Event);
 	}
 
+	void CPlatform::DeactivateInputActivation(const input::CBindingActivationId &ActivationId)
+	{
+		m_FeatureActivationHandler.Deactivate(ActivationId);
+	}
+
 	modules::CModuleRegistry &CPlatform::Modules() noexcept
 	{
 		return m_Modules;

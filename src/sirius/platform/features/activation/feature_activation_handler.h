@@ -22,6 +22,7 @@ namespace sirius::platform::features
 		CFeatureActivationHandler &operator=(CFeatureActivationHandler &&Other) = delete;
 
 		void Activate(const input::CBindingActivationId &ActivationId) override;
+		void Deactivate(const input::CBindingActivationId &ActivationId) override;
 
 	private:
 		const CFeatureActivationResolver &m_Resolver;
