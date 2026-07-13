@@ -32,7 +32,7 @@ namespace sirius::platform
 	private:
 		static const features::CFeatureId &TechnicalFeatureId() noexcept
 		{
-			static const features::CFeatureId Id("feature.activation.test");
+			static const features::CFeatureId Id("feature.sirius.technical.activation");
 			return Id;
 		}
 	};
@@ -42,7 +42,7 @@ namespace
 
 	input::CInputEvent MakeTechnicalActivationEvent()
 	{
-		return input::CInputEvent(input::CInputState(input::CInputKey("input.activation.test"), input::EInputAction::Pressed));
+		return input::CInputEvent(input::CInputState(input::CInputKey("input.sirius.technical.activation"), input::EInputAction::Pressed));
 	}
 
 	commands::CTechnicalActivationCommand *TechnicalCommand(CPlatform &Platform)
@@ -53,7 +53,7 @@ namespace
 			return nullptr;
 		}
 
-		return dynamic_cast<commands::CTechnicalActivationCommand *>(pModule->Commands().Get(commands::CCommandId("command.test")));
+		return dynamic_cast<commands::CTechnicalActivationCommand *>(pModule->Commands().Get(commands::CCommandId("command.sirius.technical.activation")));
 	}
 
 	const features::CFeatureActivation *TechnicalActivation(const CPlatform &Platform)
