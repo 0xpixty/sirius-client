@@ -65,6 +65,7 @@ namespace sirius::platform
 		void Activate(const activation::CActivationId &ActivationId) override;
 		void Deactivate(const activation::CActivationId &ActivationId) override;
 		void ConfigureInputBindings();
+		void ConfigureStatusInputBindings();
 		void ConfigureBindings(const input::CBindingActivationId &ActivationId, const input::CBindingId &BindingId, const input::CInputKey &InputKey);
 		void ConfigureFeatureActivations(const activation::CActivationId &ActivationId, const features::CFeatureId &FeatureId);
 		void ConfigureTechnicalModule();

@@ -197,6 +197,11 @@ namespace sirius::platform
 		ConfigureFeatureActivations(ActivationId, FeatureId);
 		ConfigureCommandActivations(ActivationId, CommandId);
 
+		ConfigureStatusInputBindings();
+	}
+
+	void CPlatform::ConfigureStatusInputBindings()
+	{
 		ConfigureBindings(
 			input::CBindingActivationId(modules::status::SiriusStatusActivationId().Value()),
 			input::CBindingId("binding.sirius.status.activation"),
