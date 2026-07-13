@@ -33,7 +33,7 @@ namespace sirius::platform::features
 		return *this;
 	}
 
-	bool CFeatureActivationResolver::Register(input::CBindingActivationId ActivationId, CFeatureId FeatureId)
+	bool CFeatureActivationResolver::Register(activation::CActivationId ActivationId, CFeatureId FeatureId)
 	{
 		if(ActivationId.IsEmpty() || FeatureId.IsEmpty())
 		{
@@ -55,12 +55,12 @@ namespace sirius::platform::features
 		return true;
 	}
 
-	bool CFeatureActivationResolver::Has(const input::CBindingActivationId &ActivationId) const noexcept
+	bool CFeatureActivationResolver::Has(const activation::CActivationId &ActivationId) const noexcept
 	{
 		return m_Mappings.find(ActivationId.Value()) != m_Mappings.end();
 	}
 
-	const CFeatureId *CFeatureActivationResolver::Resolve(const input::CBindingActivationId &ActivationId) const
+	const CFeatureId *CFeatureActivationResolver::Resolve(const activation::CActivationId &ActivationId) const
 	{
 		const auto Iter = m_Mappings.find(ActivationId.Value());
 		if(Iter == m_Mappings.end())
@@ -71,7 +71,7 @@ namespace sirius::platform::features
 		return &Iter->second.m_FeatureId;
 	}
 
-	bool CFeatureActivationResolver::Remove(const input::CBindingActivationId &ActivationId)
+	bool CFeatureActivationResolver::Remove(const activation::CActivationId &ActivationId)
 	{
 		const auto Iter = m_Mappings.find(ActivationId.Value());
 		if(Iter == m_Mappings.end())

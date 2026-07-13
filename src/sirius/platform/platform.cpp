@@ -27,7 +27,8 @@ namespace sirius::platform
 		m_InputForwarder(m_pCoreRuntime->Events()),
 		m_FeatureActivationController(m_FeatureActivations, m_FeatureActivationBehaviors),
 		m_FeatureActivationHandler(m_FeatureActivationResolver, m_FeatureActivationController),
-		m_BindingActivationDispatcher(m_BindingMatcher, m_Bindings, m_BindingActivations, m_FeatureActivationHandler)
+		m_BindingActivationAdapter(m_FeatureActivationHandler),
+		m_BindingActivationDispatcher(m_BindingMatcher, m_Bindings, m_BindingActivations, m_BindingActivationAdapter)
 	{
 		m_ModuleContext.emplace(*m_pCoreRuntime, m_pCoreRuntime->Events(), m_pCoreRuntime->Config(), m_pCoreRuntime->Logger(), m_pCoreRuntime->Tasks());
 		ConfigureInputBindings();
@@ -102,7 +103,7 @@ namespace sirius::platform
 		m_BindingActivationDispatcher.Dispatch(Event);
 	}
 
-	void CPlatform::DeactivateInputActivation(const input::CBindingActivationId &ActivationId)
+	void CPlatform::DeactivateActivation(const activation::CActivationId &ActivationId)
 	{
 		m_FeatureActivationHandler.Deactivate(ActivationId);
 	}
@@ -129,7 +130,7 @@ namespace sirius::platform
 
 		m_Bindings.Register(pBinding);
 		m_BindingActivations.Register(input::CBindingActivation(input::CBindingId(BindingId.Value()), input::CBindingActivationId(ActivationId.Value())));
-		m_FeatureActivationResolver.Register(input::CBindingActivationId(ActivationId.Value()), features::CFeatureId(FeatureId.Value()));
+		m_FeatureActivationResolver.Register(activation::CActivationId(ActivationId.Value()), features::CFeatureId(FeatureId.Value()));
 		m_FeatureActivations.Register(features::CFeatureActivation(features::CFeatureId(FeatureId.Value()), features::EFeatureActivationState::Inactive));
 
 		std::unique_ptr<features::IFeatureActivationBehavior> pBehavior = std::make_unique<features::CTestActivationBehavior>();

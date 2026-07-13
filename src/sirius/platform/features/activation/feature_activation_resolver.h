@@ -2,8 +2,8 @@
 #ifndef SIRIUS_PLATFORM_FEATURES_ACTIVATION_FEATURE_ACTIVATION_RESOLVER_H
 #define SIRIUS_PLATFORM_FEATURES_ACTIVATION_FEATURE_ACTIVATION_RESOLVER_H
 
+#include <sirius/platform/activation/activation_id.h>
 #include <sirius/platform/features/feature_id.h>
-#include <sirius/platform/input/bindings/activation/activation_resolver.h>
 
 #include <cstddef>
 #include <string>
@@ -12,28 +12,28 @@
 namespace sirius::platform::features
 {
 
-	class CFeatureActivationResolver final : public input::IActivationResolver<CFeatureId>
+	class CFeatureActivationResolver final
 	{
 	public:
 		CFeatureActivationResolver() = default;
-		~CFeatureActivationResolver() noexcept override;
+		~CFeatureActivationResolver() noexcept;
 
 		CFeatureActivationResolver(const CFeatureActivationResolver &Other);
 		CFeatureActivationResolver &operator=(const CFeatureActivationResolver &Other);
 		CFeatureActivationResolver(CFeatureActivationResolver &&Other) noexcept;
 		CFeatureActivationResolver &operator=(CFeatureActivationResolver &&Other) noexcept;
 
-		bool Register(input::CBindingActivationId ActivationId, CFeatureId FeatureId);
-		bool Has(const input::CBindingActivationId &ActivationId) const noexcept;
-		const CFeatureId *Resolve(const input::CBindingActivationId &ActivationId) const override;
-		bool Remove(const input::CBindingActivationId &ActivationId);
+		bool Register(activation::CActivationId ActivationId, CFeatureId FeatureId);
+		bool Has(const activation::CActivationId &ActivationId) const noexcept;
+		const CFeatureId *Resolve(const activation::CActivationId &ActivationId) const;
+		bool Remove(const activation::CActivationId &ActivationId);
 		void Clear() noexcept;
 		std::size_t Count() const noexcept;
 
 	private:
 		struct CMapping final
 		{
-			input::CBindingActivationId m_ActivationId;
+			activation::CActivationId m_ActivationId;
 			CFeatureId m_FeatureId;
 		};
 

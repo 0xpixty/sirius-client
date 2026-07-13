@@ -4,7 +4,6 @@
 #include <sirius/platform/features/feature_activation_controller.h>
 #include <sirius/platform/features/feature_id.h>
 #include <sirius/platform/features/activation/feature_activation_resolver.h>
-#include <sirius/platform/input/bindings/activation/binding_activation_id.h>
 
 namespace sirius::platform::features
 {
@@ -17,7 +16,7 @@ namespace sirius::platform::features
 
 	CFeatureActivationHandler::~CFeatureActivationHandler() noexcept = default;
 
-	void CFeatureActivationHandler::Activate(const input::CBindingActivationId &ActivationId)
+	void CFeatureActivationHandler::Activate(const activation::CActivationId &ActivationId)
 	{
 		const auto *pFeatureId = m_Resolver.Resolve(ActivationId);
 		if(!pFeatureId)
@@ -28,7 +27,7 @@ namespace sirius::platform::features
 		m_Controller.Activate(*pFeatureId);
 	}
 
-	void CFeatureActivationHandler::Deactivate(const input::CBindingActivationId &ActivationId)
+	void CFeatureActivationHandler::Deactivate(const activation::CActivationId &ActivationId)
 	{
 		const auto *pFeatureId = m_Resolver.Resolve(ActivationId);
 		if(!pFeatureId)

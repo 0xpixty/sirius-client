@@ -36,6 +36,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   core/tasks/task_dispatcher.h
   core/tasks/task_queue.cpp
   core/tasks/task_queue.h
+  platform/activation/activation_handler.h
+  platform/activation/activation_id.h
   platform/platform.cpp
   platform/platform.h
   platform/platform_bootstrap.cpp
@@ -75,6 +77,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/features/feature_registry.cpp
   platform/features/feature_registry.h
   platform/input/bindings/activation/activation_resolver.h
+  platform/input/bindings/activation/binding_activation_adapter.cpp
+  platform/input/bindings/activation/binding_activation_adapter.h
   platform/input/bindings/activation/binding_activation_dispatcher.cpp
   platform/input/bindings/activation/binding_activation_dispatcher.h
   platform/input/bindings/activation/binding_activation.h

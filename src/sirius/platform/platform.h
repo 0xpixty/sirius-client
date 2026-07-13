@@ -4,13 +4,14 @@
 
 #include "platform_configuration.h"
 
+#include <sirius/platform/activation/activation_id.h>
 #include <sirius/platform/features/activation/feature_activation_behavior_registry.h>
 #include <sirius/platform/features/activation/feature_activation_handler.h>
 #include <sirius/platform/features/activation/feature_activation_resolver.h>
 #include <sirius/platform/features/feature_activation_controller.h>
 #include <sirius/platform/features/feature_activation_registry.h>
+#include <sirius/platform/input/bindings/activation/binding_activation_adapter.h>
 #include <sirius/platform/input/bindings/activation/binding_activation_dispatcher.h>
-#include <sirius/platform/input/bindings/activation/binding_activation_id.h>
 #include <sirius/platform/input/bindings/activation/binding_activation_registry.h>
 #include <sirius/platform/input/bindings/binding_matcher.h>
 #include <sirius/platform/input/bindings/binding_registry.h>
@@ -49,7 +50,7 @@ namespace sirius::platform
 		const input::CBufferedInputSource &InputSource() const noexcept;
 		void ForwardInput();
 		void ProcessInputEvent(const input::CInputEvent &Event);
-		void DeactivateInputActivation(const input::CBindingActivationId &ActivationId);
+		void DeactivateActivation(const activation::CActivationId &ActivationId);
 		modules::CModuleRegistry &Modules() noexcept;
 		const modules::CModuleRegistry &Modules() const noexcept;
 
@@ -71,6 +72,7 @@ namespace sirius::platform
 		features::CFeatureActivationController m_FeatureActivationController;
 		features::CFeatureActivationResolver m_FeatureActivationResolver;
 		features::CFeatureActivationHandler m_FeatureActivationHandler;
+		input::CBindingActivationAdapter m_BindingActivationAdapter;
 		input::CBindingActivationDispatcher m_BindingActivationDispatcher;
 	};
 
