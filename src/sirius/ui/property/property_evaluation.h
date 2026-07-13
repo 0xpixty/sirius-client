@@ -13,7 +13,7 @@
 namespace sirius::ui::property
 {
 
-	enum class EPropertyEvaluationStage
+	enum class EPropertyEvaluationOrderStage
 	{
 		DeclarationMetadata,
 		PersistenceProfileValue,
@@ -39,14 +39,14 @@ namespace sirius::ui::property
 	class CPropertyEvaluationOrderRecord final
 	{
 	public:
-		CPropertyEvaluationOrderRecord(EPropertyEvaluationStage Stage, std::size_t StableOrderIndex) noexcept;
+		CPropertyEvaluationOrderRecord(EPropertyEvaluationOrderStage Stage, std::size_t StableOrderIndex) noexcept;
 		~CPropertyEvaluationOrderRecord() noexcept;
 
-		EPropertyEvaluationStage Stage() const noexcept;
+		EPropertyEvaluationOrderStage Stage() const noexcept;
 		std::size_t StableOrderIndex() const noexcept;
 
 	private:
-		EPropertyEvaluationStage m_Stage = EPropertyEvaluationStage::DeclarationMetadata;
+		EPropertyEvaluationOrderStage m_Stage = EPropertyEvaluationOrderStage::DeclarationMetadata;
 		std::size_t m_StableOrderIndex = 0;
 	};
 
@@ -55,19 +55,19 @@ namespace sirius::ui::property
 	public:
 		CPropertyEvaluationRecord(
 			CPropertyId Id,
-			EPropertyEvaluationStage Stage,
+			EPropertyEvaluationOrderStage Stage,
 			EPropertyEvaluationStatus Status,
 			CPropertyGenerationStamp Generation);
 		CPropertyEvaluationRecord(
 			CPropertyId Id,
-			EPropertyEvaluationStage Stage,
+			EPropertyEvaluationOrderStage Stage,
 			EPropertyEvaluationStatus Status,
 			CPropertyGenerationStamp Generation,
 			CPropertyStoredValue EffectiveValue);
 		~CPropertyEvaluationRecord() noexcept;
 
 		const CPropertyId &Id() const noexcept;
-		EPropertyEvaluationStage Stage() const noexcept;
+		EPropertyEvaluationOrderStage Stage() const noexcept;
 		EPropertyEvaluationStatus Status() const noexcept;
 		const CPropertyGenerationStamp &Generation() const noexcept;
 		const std::optional<CPropertyStoredValue> &EffectiveValue() const noexcept;
@@ -75,7 +75,7 @@ namespace sirius::ui::property
 
 	private:
 		CPropertyId m_Id;
-		EPropertyEvaluationStage m_Stage = EPropertyEvaluationStage::DeclarationMetadata;
+		EPropertyEvaluationOrderStage m_Stage = EPropertyEvaluationOrderStage::DeclarationMetadata;
 		EPropertyEvaluationStatus m_Status = EPropertyEvaluationStatus::NotEvaluated;
 		CPropertyGenerationStamp m_Generation;
 		std::optional<CPropertyStoredValue> m_EffectiveValue;

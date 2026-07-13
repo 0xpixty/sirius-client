@@ -6,7 +6,7 @@
 namespace sirius::ui::property
 {
 
-	CPropertyEvaluationOrderRecord::CPropertyEvaluationOrderRecord(EPropertyEvaluationStage Stage, std::size_t StableOrderIndex) noexcept :
+	CPropertyEvaluationOrderRecord::CPropertyEvaluationOrderRecord(EPropertyEvaluationOrderStage Stage, std::size_t StableOrderIndex) noexcept :
 		m_Stage(Stage),
 		m_StableOrderIndex(StableOrderIndex)
 	{
@@ -14,7 +14,7 @@ namespace sirius::ui::property
 
 	CPropertyEvaluationOrderRecord::~CPropertyEvaluationOrderRecord() noexcept = default;
 
-	EPropertyEvaluationStage CPropertyEvaluationOrderRecord::Stage() const noexcept
+	EPropertyEvaluationOrderStage CPropertyEvaluationOrderRecord::Stage() const noexcept
 	{
 		return m_Stage;
 	}
@@ -26,7 +26,7 @@ namespace sirius::ui::property
 
 	CPropertyEvaluationRecord::CPropertyEvaluationRecord(
 		CPropertyId Id,
-		EPropertyEvaluationStage Stage,
+		EPropertyEvaluationOrderStage Stage,
 		EPropertyEvaluationStatus Status,
 		CPropertyGenerationStamp Generation) :
 		m_Id(std::move(Id)),
@@ -38,7 +38,7 @@ namespace sirius::ui::property
 
 	CPropertyEvaluationRecord::CPropertyEvaluationRecord(
 		CPropertyId Id,
-		EPropertyEvaluationStage Stage,
+		EPropertyEvaluationOrderStage Stage,
 		EPropertyEvaluationStatus Status,
 		CPropertyGenerationStamp Generation,
 		CPropertyStoredValue EffectiveValue) :
@@ -57,7 +57,7 @@ namespace sirius::ui::property
 		return m_Id;
 	}
 
-	EPropertyEvaluationStage CPropertyEvaluationRecord::Stage() const noexcept
+	EPropertyEvaluationOrderStage CPropertyEvaluationRecord::Stage() const noexcept
 	{
 		return m_Stage;
 	}
