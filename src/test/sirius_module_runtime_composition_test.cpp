@@ -85,5 +85,69 @@ namespace
 		EXPECT_FALSE(BuildModuleRuntimeComposition(Plan).has_value());
 	}
 
+	TEST(SiriusModuleRuntimeComposition, RejectsRequiredContractBindingWithoutDependency)
+	{
+		CModuleRegistrationPlan Plan;
+		ASSERT_TRUE(Plan.Add(Definition(CModuleDescriptor(
+			CModuleId("module.sirius.composition.provider"),
+			{},
+			{},
+			{},
+			{},
+			{},
+			{CModuleContractExport(CModuleContractId("contract.sirius.composition"), CModuleContractVersion(1, 0))}))));
+		ASSERT_TRUE(Plan.Add(Definition(CModuleDescriptor(
+			CModuleId("module.sirius.composition.consumer"),
+			{},
+			{},
+			{},
+			{},
+			{CModuleContractImport(CModuleContractId("contract.sirius.composition"), CModuleContractVersion(1, 0), EModuleContractImportRequirement::Required)},
+			{}))));
+
+		EXPECT_FALSE(BuildModuleRuntimeComposition(Plan).has_value());
+	}
+
+	TEST(SiriusModuleRuntimeComposition, RejectsResolvedOptionalContractBindingWithoutDependency)
+	{
+		CModuleRegistrationPlan Plan;
+		ASSERT_TRUE(Plan.Add(Definition(CModuleDescriptor(
+			CModuleId("module.sirius.composition.provider"),
+			{},
+			{},
+			{},
+			{},
+			{},
+			{CModuleContractExport(CModuleContractId("contract.sirius.composition.optional"), CModuleContractVersion(1, 0))}))));
+		ASSERT_TRUE(Plan.Add(Definition(CModuleDescriptor(
+			CModuleId("module.sirius.composition.consumer"),
+			{},
+			{},
+			{},
+			{},
+			{CModuleContractImport(CModuleContractId("contract.sirius.composition.optional"), CModuleContractVersion(1, 0), EModuleContractImportRequirement::Optional)},
+			{}))));
+
+		EXPECT_FALSE(BuildModuleRuntimeComposition(Plan).has_value());
+	}
+
+	TEST(SiriusModuleRuntimeComposition, AllowsMissingOptionalContractImportWithoutDependency)
+	{
+		CModuleRegistrationPlan Plan;
+		ASSERT_TRUE(Plan.Add(Definition(CModuleDescriptor(
+			CModuleId("module.sirius.composition.consumer"),
+			{},
+			{},
+			{},
+			{},
+			{CModuleContractImport(CModuleContractId("contract.sirius.composition.optional.missing"), CModuleContractVersion(1, 0), EModuleContractImportRequirement::Optional)},
+			{}))));
+
+		const auto Composition = BuildModuleRuntimeComposition(Plan);
+
+		ASSERT_TRUE(Composition.has_value());
+		EXPECT_TRUE(Composition->ContractResolution().Bindings().empty());
+	}
+
 } // namespace
 } // namespace sirius::platform::modules
