@@ -37,6 +37,8 @@ namespace sirius::core::runtime
 namespace sirius::platform
 {
 
+	class CPlatformActivationLifecycleTestPeer;
+
 	class CPlatform final : private activation::IActivationHandler
 	{
 	public:
@@ -59,6 +61,8 @@ namespace sirius::platform
 		const modules::CModuleRegistry &Modules() const noexcept;
 
 	private:
+		friend class CPlatformActivationLifecycleTestPeer;
+
 		void Activate(const activation::CActivationId &ActivationId) override;
 		void Deactivate(const activation::CActivationId &ActivationId) override;
 		void ConfigureInputBindings();

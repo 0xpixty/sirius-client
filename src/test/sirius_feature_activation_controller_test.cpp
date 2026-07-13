@@ -188,5 +188,63 @@ namespace
 		EXPECT_TRUE(Context.m_Controller.IsActive(FeatureId));
 	}
 
+	TEST(FeatureActivationController, ShutdownDeactivatesOnlyActiveRecords)
+	{
+		CControllerTestContext Context;
+		const CFeatureId ActiveWithBehaviorId("feature.shutdown.active_behavior");
+		const CFeatureId InactiveWithBehaviorId("feature.shutdown.inactive_behavior");
+		const CFeatureId ActiveWithoutBehaviorId("feature.shutdown.active_without_behavior");
+		Context.RegisterActivation(ActiveWithBehaviorId, EFeatureActivationState::Active);
+		Context.RegisterActivation(InactiveWithBehaviorId, EFeatureActivationState::Inactive);
+		Context.RegisterActivation(ActiveWithoutBehaviorId, EFeatureActivationState::Active);
+		auto *pActiveBehavior = Context.RegisterBehavior(ActiveWithBehaviorId);
+		auto *pInactiveBehavior = Context.RegisterBehavior(InactiveWithBehaviorId);
+
+		Context.m_Controller.DeactivateAllForShutdown();
+
+		EXPECT_FALSE(Context.m_Controller.IsActive(ActiveWithBehaviorId));
+		EXPECT_FALSE(Context.m_Controller.IsActive(InactiveWithBehaviorId));
+		EXPECT_FALSE(Context.m_Controller.IsActive(ActiveWithoutBehaviorId));
+		EXPECT_EQ(pActiveBehavior->m_ActivationCount, 0U);
+		EXPECT_EQ(pActiveBehavior->m_DeactivationCount, 1U);
+		EXPECT_EQ(pInactiveBehavior->m_ActivationCount, 0U);
+		EXPECT_EQ(pInactiveBehavior->m_DeactivationCount, 0U);
+	}
+
+	TEST(FeatureActivationController, ShutdownIsolatesThrowingDeactivationsAndContinues)
+	{
+		CControllerTestContext Context;
+		const CFeatureId ThrowingFeatureId("feature.shutdown.throwing");
+		const CFeatureId ContinuingFeatureId("feature.shutdown.continuing");
+		Context.RegisterActivation(ThrowingFeatureId, EFeatureActivationState::Active);
+		Context.RegisterActivation(ContinuingFeatureId, EFeatureActivationState::Active);
+		auto *pThrowingBehavior = Context.RegisterBehavior(ThrowingFeatureId);
+		auto *pContinuingBehavior = Context.RegisterBehavior(ContinuingFeatureId);
+		pThrowingBehavior->m_ThrowOnDeactivate = true;
+		pThrowingBehavior->m_ExceptionPayload = 9001;
+
+		EXPECT_NO_THROW(Context.m_Controller.DeactivateAllForShutdown());
+
+		EXPECT_FALSE(Context.m_Controller.IsActive(ThrowingFeatureId));
+		EXPECT_FALSE(Context.m_Controller.IsActive(ContinuingFeatureId));
+		EXPECT_EQ(pThrowingBehavior->m_DeactivationCount, 1U);
+		EXPECT_EQ(pContinuingBehavior->m_DeactivationCount, 1U);
+	}
+
+	TEST(FeatureActivationController, ShutdownReconciliationIsIdempotent)
+	{
+		CControllerTestContext Context;
+		const CFeatureId FeatureId("feature.shutdown.idempotent");
+		Context.RegisterActivation(FeatureId, EFeatureActivationState::Active);
+		auto *pBehavior = Context.RegisterBehavior(FeatureId);
+
+		Context.m_Controller.DeactivateAllForShutdown();
+		Context.m_Controller.DeactivateAllForShutdown();
+
+		EXPECT_FALSE(Context.m_Controller.IsActive(FeatureId));
+		EXPECT_EQ(pBehavior->m_ActivationCount, 0U);
+		EXPECT_EQ(pBehavior->m_DeactivationCount, 1U);
+	}
+
 } // namespace
 } // namespace sirius::platform::features
