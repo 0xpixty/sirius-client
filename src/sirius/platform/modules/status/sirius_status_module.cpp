@@ -8,6 +8,7 @@
 #include <sirius/platform/features/status/sirius_status_activation_behavior.h>
 #include <sirius/platform/features/status/sirius_status_feature.h>
 #include <sirius/platform/modules/module.h>
+#include <sirius/platform/modules/module_descriptor_validation.h>
 
 #include <stdexcept>
 #include <utility>
@@ -113,10 +114,7 @@ namespace sirius::platform::modules::status
 			Descriptor.DeclaresCommand(SiriusStatusOpenCommandId()) &&
 			Descriptor.DeclaresCommand(SiriusStatusCloseCommandId()) &&
 			Descriptor.DeclaresCommand(SiriusStatusToggleCommandId()) &&
-			Module.Features().Has(SiriusStatusFeatureId()) &&
-			Module.Commands().Has(SiriusStatusOpenCommandId()) &&
-			Module.Commands().Has(SiriusStatusCloseCommandId()) &&
-			Module.Commands().Has(SiriusStatusToggleCommandId());
+			IsModuleDescriptorOwnershipValid(Module);
 	}
 
 	CSiriusStatusFeatureActivation SiriusStatusFeatureActivation()

@@ -129,6 +129,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/modules/module_definition.h
   platform/modules/module_descriptor.cpp
   platform/modules/module_descriptor.h
+  platform/modules/module_descriptor_validation.cpp
+  platform/modules/module_descriptor_validation.h
   platform/modules/module_id.h
   platform/modules/module_lifecycle.cpp
   platform/modules/module_lifecycle.h

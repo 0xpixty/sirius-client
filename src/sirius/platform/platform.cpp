@@ -19,6 +19,7 @@
 #include <sirius/platform/input/input_key.h>
 #include <sirius/platform/modules/module.h>
 #include <sirius/platform/modules/module_definition.h>
+#include <sirius/platform/modules/module_descriptor_validation.h>
 #include <sirius/platform/modules/module_registration_plan.h>
 #include <sirius/platform/modules/status/sirius_status_module.h>
 
@@ -268,6 +269,11 @@ namespace sirius::platform
 		for(const auto &Definition : Plan.DefinitionsInRegistrationOrder())
 		{
 			auto pModule = Definition.CreateModule();
+			if(!pModule || !modules::IsModuleDescriptorOwnershipValid(*pModule))
+			{
+				throw std::runtime_error("failed to validate module descriptor ownership");
+			}
+
 			if(!m_Modules.Register(pModule))
 			{
 				throw std::runtime_error("failed to register module definition");
