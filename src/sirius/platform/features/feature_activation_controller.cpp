@@ -25,11 +25,16 @@ namespace sirius::platform::features
 			return false;
 		}
 
-		pActivation->SetState(EFeatureActivationState::Active);
+		if(pActivation->State() == EFeatureActivationState::Active)
+		{
+			return true;
+		}
+
 		if(auto *pBehavior = m_Behaviors.Get(FeatureId))
 		{
 			pBehavior->Activate();
 		}
+		pActivation->SetState(EFeatureActivationState::Active);
 
 		return true;
 	}
@@ -42,11 +47,16 @@ namespace sirius::platform::features
 			return false;
 		}
 
-		pActivation->SetState(EFeatureActivationState::Inactive);
+		if(pActivation->State() == EFeatureActivationState::Inactive)
+		{
+			return true;
+		}
+
 		if(auto *pBehavior = m_Behaviors.Get(FeatureId))
 		{
 			pBehavior->Deactivate();
 		}
+		pActivation->SetState(EFeatureActivationState::Inactive);
 
 		return true;
 	}

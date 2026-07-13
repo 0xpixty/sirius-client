@@ -3258,6 +3258,7 @@ if((GTEST_FOUND OR DOWNLOAD_GTEST) AND SERVER)
     server_test.cpp
     serverbrowser_test.cpp
     serverinfo_test.cpp
+    sirius_feature_activation_controller_test.cpp
     snapshot_test.cpp
     str_test.cpp
     swap_endian_test.cpp
@@ -3286,6 +3287,10 @@ if((GTEST_FOUND OR DOWNLOAD_GTEST) AND SERVER)
     src/engine/client/sqlite.cpp
     src/game/client/components/censor.cpp
     src/game/client/components/censor.h
+    src/sirius/platform/features/activation/feature_activation_behavior_registry.cpp
+    src/sirius/platform/features/feature_activation_controller.cpp
+    src/sirius/platform/features/feature_activation_registry.cpp
+    src/sirius/platform/features/feature_registry.cpp
     # tidy-alphabetical-end
   )
 
