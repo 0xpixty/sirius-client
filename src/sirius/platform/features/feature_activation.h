@@ -31,9 +31,14 @@ namespace sirius::platform::features
 			return m_State;
 		}
 
+		void SetState(EFeatureActivationState State) noexcept
+		{
+			m_State = State;
+		}
+
 	private:
 		const CFeatureId m_FeatureId;
-		const EFeatureActivationState m_State;
+		EFeatureActivationState m_State;
 	};
 
 } // namespace sirius::platform::features
