@@ -160,6 +160,12 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/modules/services/module_service_registry.h
   platform/modules/status/sirius_status_module.cpp
   platform/modules/status/sirius_status_module.h
+  ui/property/property_id.cpp
+  ui/property/property_id.h
+  ui/property/property_metadata_snapshot.cpp
+  ui/property/property_metadata_snapshot.h
+  ui/property/property_type_descriptor.cpp
+  ui/property/property_type_descriptor.h
   # tidy-alphabetical-end
 )
 
