@@ -13,6 +13,7 @@
 #include <sirius/platform/input/bindings/binding_matcher.h>
 #include <sirius/platform/input/bindings/binding_registry.h>
 #include <sirius/platform/input/dispatch/input_event_forwarder.h>
+#include <sirius/platform/input/input_event.h>
 #include <sirius/platform/input/source/buffered_input_source.h>
 #include <sirius/platform/modules/module_context.h>
 #include <sirius/platform/modules/module_lifecycle.h>
@@ -45,6 +46,7 @@ namespace sirius::platform
 		input::CBufferedInputSource &InputSource() noexcept;
 		const input::CBufferedInputSource &InputSource() const noexcept;
 		void ForwardInput();
+		void ProcessInputEvent(const input::CInputEvent &Event);
 		modules::CModuleRegistry &Modules() noexcept;
 		const modules::CModuleRegistry &Modules() const noexcept;
 
