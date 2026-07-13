@@ -15,6 +15,24 @@
 namespace sirius::platform::modules::status
 {
 
+	CSiriusStatusFeatureActivation::CSiriusStatusFeatureActivation(activation::CActivationId ActivationId, features::CFeatureId FeatureId) :
+		m_ActivationId(std::move(ActivationId)),
+		m_FeatureId(std::move(FeatureId))
+	{
+	}
+
+	CSiriusStatusFeatureActivation::~CSiriusStatusFeatureActivation() noexcept = default;
+
+	const activation::CActivationId &CSiriusStatusFeatureActivation::ActivationId() const noexcept
+	{
+		return m_ActivationId;
+	}
+
+	const features::CFeatureId &CSiriusStatusFeatureActivation::FeatureId() const noexcept
+	{
+		return m_FeatureId;
+	}
+
 	CSiriusStatusCommandActivation::CSiriusStatusCommandActivation(activation::CActivationId ActivationId, commands::CCommandId CommandId) :
 		m_ActivationId(std::move(ActivationId)),
 		m_CommandId(std::move(CommandId))
@@ -85,6 +103,11 @@ namespace sirius::platform::modules::status
 			Module.Commands().Has(SiriusStatusOpenCommandId()) &&
 			Module.Commands().Has(SiriusStatusCloseCommandId()) &&
 			Module.Commands().Has(SiriusStatusToggleCommandId());
+	}
+
+	CSiriusStatusFeatureActivation SiriusStatusFeatureActivation()
+	{
+		return CSiriusStatusFeatureActivation(SiriusStatusActivationId(), SiriusStatusFeatureId());
 	}
 
 	std::array<CSiriusStatusCommandActivation, 3> SiriusStatusCommandActivations()

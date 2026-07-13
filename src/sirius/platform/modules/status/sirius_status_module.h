@@ -23,6 +23,20 @@ namespace sirius::platform::modules
 namespace sirius::platform::modules::status
 {
 
+	class CSiriusStatusFeatureActivation final
+	{
+	public:
+		CSiriusStatusFeatureActivation(activation::CActivationId ActivationId, features::CFeatureId FeatureId);
+		~CSiriusStatusFeatureActivation() noexcept;
+
+		const activation::CActivationId &ActivationId() const noexcept;
+		const features::CFeatureId &FeatureId() const noexcept;
+
+	private:
+		activation::CActivationId m_ActivationId;
+		features::CFeatureId m_FeatureId;
+	};
+
 	class CSiriusStatusCommandActivation final
 	{
 	public:
@@ -47,6 +61,7 @@ namespace sirius::platform::modules::status
 	activation::CActivationId SiriusStatusCloseCommandActivationId();
 	activation::CActivationId SiriusStatusToggleCommandActivationId();
 	bool IsSiriusStatusModuleComplete(const IModule &Module) noexcept;
+	CSiriusStatusFeatureActivation SiriusStatusFeatureActivation();
 	std::array<CSiriusStatusCommandActivation, 3> SiriusStatusCommandActivations();
 	std::unique_ptr<IModule> CreateSiriusStatusModule(features::CFeatureActivationBehaviorRegistry &FeatureActivationBehaviors);
 

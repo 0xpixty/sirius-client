@@ -267,14 +267,13 @@ namespace sirius::platform
 	void CPlatform::ConfigureStatusModule()
 	{
 		auto pModule = modules::status::CreateSiriusStatusModule(m_FeatureActivationBehaviors);
-		const activation::CActivationId ActivationId = modules::status::SiriusStatusActivationId();
-		const features::CFeatureId FeatureId = modules::status::SiriusStatusFeatureId();
-		if(!m_FeatureActivationResolver.Register(activation::CActivationId(ActivationId.Value()), features::CFeatureId(FeatureId.Value())))
+		const auto FeatureActivation = modules::status::SiriusStatusFeatureActivation();
+		if(!m_FeatureActivationResolver.Register(activation::CActivationId(FeatureActivation.ActivationId().Value()), features::CFeatureId(FeatureActivation.FeatureId().Value())))
 		{
 			throw std::runtime_error("failed to register Sirius status activation mapping");
 		}
 
-		if(!m_FeatureActivations.Register(features::CFeatureActivation(features::CFeatureId(FeatureId.Value()), features::EFeatureActivationState::Inactive)))
+		if(!m_FeatureActivations.Register(features::CFeatureActivation(features::CFeatureId(FeatureActivation.FeatureId().Value()), features::EFeatureActivationState::Inactive)))
 		{
 			throw std::runtime_error("failed to register Sirius status feature activation");
 		}
