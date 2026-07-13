@@ -11,7 +11,18 @@
 namespace sirius::platform::modules
 {
 
+	class CModuleDescriptor;
 	class CModuleRegistrationPlan;
+
+	enum class EModuleRuntimeCompositionFailureStage
+	{
+		None,
+		DescriptorParity,
+		DependencyGraph,
+		LifecycleGraph,
+		ContractResolution,
+		ContractDependencyCohesion,
+	};
 
 	class CModuleRuntimeComposition final
 	{
@@ -32,6 +43,26 @@ namespace sirius::platform::modules
 		CModuleContractResolution m_ContractResolution;
 	};
 
+	class CModuleRuntimeCompositionResult final
+	{
+	public:
+		explicit CModuleRuntimeCompositionResult(CModuleRuntimeComposition Composition);
+		explicit CModuleRuntimeCompositionResult(EModuleRuntimeCompositionFailureStage FailureStage);
+		~CModuleRuntimeCompositionResult() noexcept;
+
+		bool Succeeded() const noexcept;
+		EModuleRuntimeCompositionFailureStage FailureStage() const noexcept;
+		CModuleRuntimeComposition *Composition() noexcept;
+		const CModuleRuntimeComposition *Composition() const noexcept;
+
+	private:
+		std::optional<CModuleRuntimeComposition> m_Composition;
+		EModuleRuntimeCompositionFailureStage m_FailureStage;
+	};
+
+	const char *ModuleRuntimeCompositionFailureStageName(EModuleRuntimeCompositionFailureStage Stage) noexcept;
+	EModuleRuntimeCompositionFailureStage ValidateModuleRuntimeDefinitionDescriptorParity(const CModuleDescriptor &Expected, const CModuleDescriptor &Actual) noexcept;
+	CModuleRuntimeCompositionResult BuildModuleRuntimeCompositionResult(const CModuleRegistrationPlan &Plan);
 	std::optional<CModuleRuntimeComposition> BuildModuleRuntimeComposition(const CModuleRegistrationPlan &Plan);
 
 } // namespace sirius::platform::modules

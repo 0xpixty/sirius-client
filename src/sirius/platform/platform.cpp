@@ -27,6 +27,7 @@
 
 #include <memory>
 #include <stdexcept>
+#include <string>
 #include <utility>
 
 namespace sirius::platform
@@ -277,18 +278,25 @@ namespace sirius::platform
 			throw std::runtime_error("failed to add Sirius status module definition");
 		}
 
-		auto Composition = modules::BuildModuleRuntimeComposition(Plan);
-		if(!Composition.has_value())
+		auto Composition = modules::BuildModuleRuntimeCompositionResult(Plan);
+		if(!Composition.Succeeded())
 		{
-			throw std::runtime_error("failed to build module runtime composition");
+			throw std::runtime_error(std::string("failed to build module runtime composition: ") + modules::ModuleRuntimeCompositionFailureStageName(Composition.FailureStage()));
 		}
 
 		for(const auto &Definition : Plan.DefinitionsInRegistrationOrder())
 		{
 			auto pModule = Definition.CreateModule();
-			if(!pModule ||
-				!modules::AreModuleDescriptorsEquivalent(Definition.Descriptor(), pModule->Descriptor()) ||
-				!modules::IsModuleDescriptorOwnershipValid(*pModule))
+			if(!pModule)
+			{
+				throw std::runtime_error("failed to validate module descriptor ownership");
+			}
+			const auto ParityFailureStage = modules::ValidateModuleRuntimeDefinitionDescriptorParity(Definition.Descriptor(), pModule->Descriptor());
+			if(ParityFailureStage != modules::EModuleRuntimeCompositionFailureStage::None)
+			{
+				throw std::runtime_error(std::string("failed to build module runtime composition: ") + modules::ModuleRuntimeCompositionFailureStageName(ParityFailureStage));
+			}
+			if(!modules::IsModuleDescriptorOwnershipValid(*pModule))
 			{
 				throw std::runtime_error("failed to validate module descriptor ownership");
 			}
@@ -299,7 +307,7 @@ namespace sirius::platform
 			}
 		}
 
-		m_ModuleRuntimeComposition.emplace(std::move(*Composition));
+		m_ModuleRuntimeComposition.emplace(std::move(*Composition.Composition()));
 		ConfigureStatusModuleActivations();
 	}
 
