@@ -136,6 +136,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/modules/module_id.h
   platform/modules/module_lifecycle.cpp
   platform/modules/module_lifecycle.h
+  platform/modules/module_lifecycle_graph.cpp
+  platform/modules/module_lifecycle_graph.h
   platform/modules/module_registration_plan.cpp
   platform/modules/module_registration_plan.h
   platform/modules/module_registry.cpp

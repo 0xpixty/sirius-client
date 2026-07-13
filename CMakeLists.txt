@@ -3263,6 +3263,7 @@ if((GTEST_FOUND OR DOWNLOAD_GTEST) AND SERVER)
     sirius_module_definition_test.cpp
     sirius_module_descriptor_test.cpp
     sirius_module_descriptor_validation_test.cpp
+    sirius_module_lifecycle_graph_test.cpp
     sirius_module_registration_plan_test.cpp
     sirius_platform_activation_lifecycle_test.cpp
     snapshot_test.cpp
@@ -3333,6 +3334,7 @@ if((GTEST_FOUND OR DOWNLOAD_GTEST) AND SERVER)
     src/sirius/platform/modules/module_descriptor.cpp
     src/sirius/platform/modules/module_descriptor_validation.cpp
     src/sirius/platform/modules/module_lifecycle.cpp
+    src/sirius/platform/modules/module_lifecycle_graph.cpp
     src/sirius/platform/modules/module_registration_plan.cpp
     src/sirius/platform/modules/module_registry.cpp
     src/sirius/platform/modules/services/module_service_context.cpp
