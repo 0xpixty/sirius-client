@@ -3,6 +3,10 @@
 
 #include <sirius/core/runtime/core_runtime.h>
 #include <sirius/core/runtime/core_runtime_configuration.h>
+#include <sirius/platform/features/feature_activation.h>
+#include <sirius/platform/features/feature_activation_state.h>
+#include <sirius/platform/features/feature_id.h>
+#include <sirius/platform/input/bindings/activation/binding_activation_id.h>
 
 #include <memory>
 #include <utility>
@@ -103,7 +107,11 @@ namespace sirius::platform
 
 	void CPlatform::ConfigureInputBindings()
 	{
-		// Registration boundary only. Future composition data belongs here.
+		const input::CBindingActivationId ActivationId("feature.activation.test");
+		const features::CFeatureId FeatureId("feature.activation.test");
+
+		m_FeatureActivationResolver.Register(input::CBindingActivationId(ActivationId.Value()), features::CFeatureId(FeatureId.Value()));
+		m_FeatureActivations.Register(features::CFeatureActivation(features::CFeatureId(FeatureId.Value()), features::EFeatureActivationState::Inactive));
 	}
 
 } // namespace sirius::platform
