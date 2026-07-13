@@ -134,6 +134,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/modules/services/module_service_lifecycle.h
   platform/modules/services/module_service_registry.cpp
   platform/modules/services/module_service_registry.h
+  platform/modules/status/sirius_status_module.cpp
+  platform/modules/status/sirius_status_module.h
   # tidy-alphabetical-end
 )
 

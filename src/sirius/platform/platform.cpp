@@ -4,15 +4,11 @@
 #include <sirius/core/runtime/core_runtime.h>
 #include <sirius/core/runtime/core_runtime_configuration.h>
 #include <sirius/platform/commands/activation/technical_activation_command.h>
-#include <sirius/platform/commands/status/close_sirius_status_command.h>
-#include <sirius/platform/commands/status/open_sirius_status_command.h>
 #include <sirius/platform/features/activation/technical_activation_behavior.h>
 #include <sirius/platform/commands/command_id.h>
 #include <sirius/platform/features/feature_activation.h>
 #include <sirius/platform/features/feature_activation_state.h>
 #include <sirius/platform/features/feature_id.h>
-#include <sirius/platform/features/status/sirius_status_activation_behavior.h>
-#include <sirius/platform/features/status/sirius_status_feature.h>
 #include <sirius/platform/input/bindings/activation/binding_activation.h>
 #include <sirius/platform/input/bindings/activation/binding_activation_id.h>
 #include <sirius/platform/input/bindings/binding_id.h>
@@ -21,6 +17,7 @@
 #include <sirius/platform/input/input_action.h>
 #include <sirius/platform/input/input_key.h>
 #include <sirius/platform/modules/module.h>
+#include <sirius/platform/modules/status/sirius_status_module.h>
 
 #include <memory>
 #include <stdexcept>
@@ -62,10 +59,10 @@ namespace sirius::platform
 			return false;
 		}
 
-		auto *pStatusModule = m_Modules.Get(modules::CModuleId("module.sirius.status"));
+		auto *pStatusModule = m_Modules.Get(modules::status::SiriusStatusModuleId());
 		if(!pStatusModule ||
-			!pStatusModule->Commands().Has(commands::CCommandId("command.sirius.status.open")) ||
-			!pStatusModule->Commands().Has(commands::CCommandId("command.sirius.status.close")))
+			!pStatusModule->Commands().Has(modules::status::SiriusStatusOpenCommandId()) ||
+			!pStatusModule->Commands().Has(modules::status::SiriusStatusCloseCommandId()))
 		{
 			return false;
 		}
@@ -185,15 +182,15 @@ namespace sirius::platform
 		ConfigureCommandActivations(ActivationId, CommandId);
 
 		ConfigureBindings(
-			input::CBindingActivationId("activation.sirius.status"),
+			input::CBindingActivationId(modules::status::SiriusStatusActivationId().Value()),
 			input::CBindingId("binding.sirius.status.activation"),
 			input::CInputKey("input.sirius.status.activation"));
 		ConfigureBindings(
-			input::CBindingActivationId("activation.sirius.status.open"),
+			input::CBindingActivationId(modules::status::SiriusStatusOpenCommandActivationId().Value()),
 			input::CBindingId("binding.sirius.status.open"),
 			input::CInputKey("input.sirius.status.open"));
 		ConfigureBindings(
-			input::CBindingActivationId("activation.sirius.status.close"),
+			input::CBindingActivationId(modules::status::SiriusStatusCloseCommandActivationId().Value()),
 			input::CBindingId("binding.sirius.status.close"),
 			input::CInputKey("input.sirius.status.close"));
 	}
@@ -249,17 +246,9 @@ namespace sirius::platform
 
 	void CPlatform::ConfigureStatusModule()
 	{
-		auto pModule = std::make_unique<modules::CModule>(modules::CModuleId("module.sirius.status"));
-		auto pFeature = std::make_unique<features::CSiriusStatusFeature>();
-		auto *pStatusFeature = pFeature.get();
-		std::unique_ptr<features::IFeature> pOwnedFeature = std::move(pFeature);
-		if(!pModule->Features().Register(pOwnedFeature))
-		{
-			throw std::runtime_error("failed to register Sirius status feature");
-		}
-
-		const activation::CActivationId ActivationId("activation.sirius.status");
-		const features::CFeatureId FeatureId(pStatusFeature->Id().Value());
+		auto pModule = modules::status::CreateSiriusStatusModule(m_FeatureActivationBehaviors);
+		const activation::CActivationId ActivationId = modules::status::SiriusStatusActivationId();
+		const features::CFeatureId FeatureId = modules::status::SiriusStatusFeatureId();
 		if(!m_FeatureActivationResolver.Register(activation::CActivationId(ActivationId.Value()), features::CFeatureId(FeatureId.Value())))
 		{
 			throw std::runtime_error("failed to register Sirius status activation mapping");
@@ -270,30 +259,12 @@ namespace sirius::platform
 			throw std::runtime_error("failed to register Sirius status feature activation");
 		}
 
-		std::unique_ptr<features::IFeatureActivationBehavior> pBehavior = std::make_unique<features::CSiriusStatusActivationBehavior>(*pStatusFeature);
-		if(!m_FeatureActivationBehaviors.Register(features::CFeatureId(FeatureId.Value()), pBehavior))
-		{
-			throw std::runtime_error("failed to register Sirius status activation behavior");
-		}
-
-		std::unique_ptr<commands::ICommand> pOpenCommand = std::make_unique<commands::COpenSiriusStatusCommand>(*pStatusFeature);
-		if(!pModule->Commands().Register(pOpenCommand))
-		{
-			throw std::runtime_error("failed to register Sirius status open command");
-		}
-
-		std::unique_ptr<commands::ICommand> pCloseCommand = std::make_unique<commands::CCloseSiriusStatusCommand>(*pStatusFeature);
-		if(!pModule->Commands().Register(pCloseCommand))
-		{
-			throw std::runtime_error("failed to register Sirius status close command");
-		}
-
 		ConfigureStatusCommandActivations(
-			activation::CActivationId("activation.sirius.status.open"),
-			commands::CCommandId("command.sirius.status.open"));
+			modules::status::SiriusStatusOpenCommandActivationId(),
+			modules::status::SiriusStatusOpenCommandId());
 		ConfigureStatusCommandActivations(
-			activation::CActivationId("activation.sirius.status.close"),
-			commands::CCommandId("command.sirius.status.close"));
+			modules::status::SiriusStatusCloseCommandActivationId(),
+			modules::status::SiriusStatusCloseCommandId());
 
 		std::unique_ptr<modules::IModule> pOwnedModule = std::move(pModule);
 		if(!m_Modules.Register(pOwnedModule))
