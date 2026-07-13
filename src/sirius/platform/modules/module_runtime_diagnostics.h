@@ -13,6 +13,7 @@ namespace sirius::platform::modules
 	class CModuleLifecycle;
 	class CModuleLifecycleGraph;
 	class CModuleRegistry;
+	class CModuleContractResolution;
 
 	class CModuleRuntimeDiagnosticsModuleSnapshot final
 	{
@@ -45,21 +46,24 @@ namespace sirius::platform::modules
 	class CModuleRuntimeDiagnosticsSnapshot final
 	{
 	public:
-		CModuleRuntimeDiagnosticsSnapshot(bool LifecycleInitialized, std::vector<CModuleRuntimeDiagnosticsModuleSnapshot> Modules);
+		CModuleRuntimeDiagnosticsSnapshot(bool LifecycleInitialized, std::size_t ContractBindingCount, std::vector<CModuleRuntimeDiagnosticsModuleSnapshot> Modules);
 		~CModuleRuntimeDiagnosticsSnapshot() noexcept;
 
 		bool LifecycleInitialized() const noexcept;
+		std::size_t ContractBindingCount() const noexcept;
 		const std::vector<CModuleRuntimeDiagnosticsModuleSnapshot> &Modules() const noexcept;
 
 	private:
 		bool m_LifecycleInitialized = false;
+		std::size_t m_ContractBindingCount = 0;
 		std::vector<CModuleRuntimeDiagnosticsModuleSnapshot> m_Modules;
 	};
 
 	CModuleRuntimeDiagnosticsSnapshot BuildModuleRuntimeDiagnosticsSnapshot(
 		const CModuleRegistry &Registry,
 		const CModuleLifecycle &Lifecycle,
-		const CModuleLifecycleGraph *pLifecycleGraph) noexcept;
+		const CModuleLifecycleGraph *pLifecycleGraph,
+		const CModuleContractResolution *pContractResolution) noexcept;
 
 } // namespace sirius::platform::modules
 

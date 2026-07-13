@@ -47,9 +47,10 @@ namespace
 			{CModuleId("module.sirius.diagnostics.consumer"), CModuleId("module.sirius.diagnostics.core")});
 		CModuleLifecycle Lifecycle;
 
-		const auto Snapshot = BuildModuleRuntimeDiagnosticsSnapshot(Registry, Lifecycle, &LifecycleGraph);
+		const auto Snapshot = BuildModuleRuntimeDiagnosticsSnapshot(Registry, Lifecycle, &LifecycleGraph, nullptr);
 
 		EXPECT_FALSE(Snapshot.LifecycleInitialized());
+		EXPECT_EQ(Snapshot.ContractBindingCount(), 0U);
 		ASSERT_EQ(Snapshot.Modules().size(), 2U);
 		EXPECT_EQ(Snapshot.Modules()[0].Id(), CModuleId("module.sirius.diagnostics.consumer"));
 		ASSERT_EQ(Snapshot.Modules()[0].DependencyIds().size(), 1U);
@@ -77,7 +78,7 @@ namespace
 		CModuleLifecycle Lifecycle;
 
 		ASSERT_TRUE(Lifecycle.Initialize(Registry, Context, LifecycleGraph));
-		const auto Snapshot = BuildModuleRuntimeDiagnosticsSnapshot(Registry, Lifecycle, &LifecycleGraph);
+		const auto Snapshot = BuildModuleRuntimeDiagnosticsSnapshot(Registry, Lifecycle, &LifecycleGraph, nullptr);
 		Lifecycle.Shutdown(Registry, Context);
 
 		EXPECT_TRUE(Snapshot.LifecycleInitialized());

@@ -18,6 +18,7 @@
 #include <sirius/platform/input/input_action.h>
 #include <sirius/platform/input/input_key.h>
 #include <sirius/platform/modules/module.h>
+#include <sirius/platform/modules/module_contract_resolution.h>
 #include <sirius/platform/modules/module_definition.h>
 #include <sirius/platform/modules/module_dependency_graph.h>
 #include <sirius/platform/modules/module_descriptor_validation.h>
@@ -157,7 +158,11 @@ namespace sirius::platform
 
 	modules::CModuleRuntimeDiagnosticsSnapshot CPlatform::ModuleRuntimeDiagnosticsSnapshot() const noexcept
 	{
-		return modules::BuildModuleRuntimeDiagnosticsSnapshot(m_Modules, m_ModuleLifecycle, m_ModuleLifecycleGraph.has_value() ? &*m_ModuleLifecycleGraph : nullptr);
+		return modules::BuildModuleRuntimeDiagnosticsSnapshot(
+			m_Modules,
+			m_ModuleLifecycle,
+			m_ModuleLifecycleGraph.has_value() ? &*m_ModuleLifecycleGraph : nullptr,
+			m_ModuleContractResolution.has_value() ? &*m_ModuleContractResolution : nullptr);
 	}
 
 	void CPlatform::Activate(const activation::CActivationId &ActivationId)
@@ -286,6 +291,12 @@ namespace sirius::platform
 			throw std::runtime_error("failed to build module lifecycle graph");
 		}
 
+		auto ContractResolution = modules::ResolveModuleContractImports(Plan);
+		if(!ContractResolution.has_value())
+		{
+			throw std::runtime_error("failed to resolve module contract imports");
+		}
+
 		for(const auto &Definition : Plan.DefinitionsInRegistrationOrder())
 		{
 			auto pModule = Definition.CreateModule();
@@ -300,6 +311,7 @@ namespace sirius::platform
 			}
 		}
 
+		m_ModuleContractResolution.emplace(std::move(*ContractResolution));
 		m_ModuleLifecycleGraph.emplace(std::move(*LifecycleGraph));
 		ConfigureStatusModuleActivations();
 	}

@@ -2,6 +2,7 @@
 #include "module_runtime_diagnostics.h"
 
 #include "module.h"
+#include "module_contract_resolution.h"
 #include "module_descriptor_validation.h"
 #include "module_lifecycle.h"
 #include "module_lifecycle_graph.h"
@@ -78,8 +79,9 @@ namespace
 		return m_ShutdownOrder;
 	}
 
-	CModuleRuntimeDiagnosticsSnapshot::CModuleRuntimeDiagnosticsSnapshot(bool LifecycleInitialized, std::vector<CModuleRuntimeDiagnosticsModuleSnapshot> Modules) :
+	CModuleRuntimeDiagnosticsSnapshot::CModuleRuntimeDiagnosticsSnapshot(bool LifecycleInitialized, std::size_t ContractBindingCount, std::vector<CModuleRuntimeDiagnosticsModuleSnapshot> Modules) :
 		m_LifecycleInitialized(LifecycleInitialized),
+		m_ContractBindingCount(ContractBindingCount),
 		m_Modules(std::move(Modules))
 	{
 	}
@@ -91,6 +93,11 @@ namespace
 		return m_LifecycleInitialized;
 	}
 
+	std::size_t CModuleRuntimeDiagnosticsSnapshot::ContractBindingCount() const noexcept
+	{
+		return m_ContractBindingCount;
+	}
+
 	const std::vector<CModuleRuntimeDiagnosticsModuleSnapshot> &CModuleRuntimeDiagnosticsSnapshot::Modules() const noexcept
 	{
 		return m_Modules;
@@ -99,7 +106,8 @@ namespace
 	CModuleRuntimeDiagnosticsSnapshot BuildModuleRuntimeDiagnosticsSnapshot(
 		const CModuleRegistry &Registry,
 		const CModuleLifecycle &Lifecycle,
-		const CModuleLifecycleGraph *pLifecycleGraph) noexcept
+		const CModuleLifecycleGraph *pLifecycleGraph,
+		const CModuleContractResolution *pContractResolution) noexcept
 	{
 		std::vector<CModuleRuntimeDiagnosticsModuleSnapshot> Modules;
 		Modules.reserve(Registry.ModulesInRegistrationOrder().size());
@@ -119,7 +127,10 @@ namespace
 				ShutdownOrder);
 		}
 
-		return CModuleRuntimeDiagnosticsSnapshot(Lifecycle.IsInitialized(), std::move(Modules));
+		return CModuleRuntimeDiagnosticsSnapshot(
+			Lifecycle.IsInitialized(),
+			pContractResolution ? pContractResolution->Bindings().size() : 0U,
+			std::move(Modules));
 	}
 
 } // namespace sirius::platform::modules
