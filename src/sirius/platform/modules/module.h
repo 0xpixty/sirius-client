@@ -4,6 +4,10 @@
 
 #include "module_id.h"
 
+#include <sirius/platform/commands/command_registry.h>
+#include <sirius/platform/features/feature_registry.h>
+#include <sirius/platform/modules/services/module_service_registry.h>
+
 namespace sirius::platform::commands
 {
 	class CCommandRegistry;
@@ -38,6 +42,34 @@ namespace sirius::platform::modules
 		virtual const services::CModuleServiceRegistry &ModuleServices() const noexcept = 0;
 		virtual bool Initialize(CModuleContext &Context) = 0;
 		virtual void Shutdown(CModuleContext &Context) noexcept = 0;
+	};
+
+	class CModule final : public IModule
+	{
+	public:
+		explicit CModule(CModuleId Id);
+		~CModule() noexcept override;
+
+		CModule(const CModule &Other) = delete;
+		CModule &operator=(const CModule &Other) = delete;
+		CModule(CModule &&Other) = delete;
+		CModule &operator=(CModule &&Other) = delete;
+
+		const CModuleId &Id() const noexcept override;
+		features::CFeatureRegistry &Features() noexcept override;
+		const features::CFeatureRegistry &Features() const noexcept override;
+		commands::CCommandRegistry &Commands() noexcept override;
+		const commands::CCommandRegistry &Commands() const noexcept override;
+		services::CModuleServiceRegistry &ModuleServices() noexcept override;
+		const services::CModuleServiceRegistry &ModuleServices() const noexcept override;
+		bool Initialize(CModuleContext &Context) override;
+		void Shutdown(CModuleContext &Context) noexcept override;
+
+	private:
+		const CModuleId m_Id;
+		features::CFeatureRegistry m_Features;
+		commands::CCommandRegistry m_Commands;
+		services::CModuleServiceRegistry m_ModuleServices;
 	};
 
 } // namespace sirius::platform::modules

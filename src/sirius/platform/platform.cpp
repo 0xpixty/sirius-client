@@ -16,8 +16,10 @@
 #include <sirius/platform/input/bindings/input_binding.h>
 #include <sirius/platform/input/input_action.h>
 #include <sirius/platform/input/input_key.h>
+#include <sirius/platform/modules/module.h>
 
 #include <memory>
+#include <stdexcept>
 #include <utility>
 
 namespace sirius::platform
@@ -29,12 +31,11 @@ namespace sirius::platform
 		m_InputForwarder(m_pCoreRuntime->Events()),
 		m_FeatureActivationController(m_FeatureActivations, m_FeatureActivationBehaviors),
 		m_FeatureActivationHandler(m_FeatureActivationResolver, m_FeatureActivationController),
-		m_ActivationCommandDispatcher(m_ActivationCommandRegistry),
 		m_BindingActivationAdapter(*this),
 		m_BindingActivationDispatcher(m_BindingMatcher, m_Bindings, m_BindingActivations, m_BindingActivationAdapter)
 	{
 		m_ModuleContext.emplace(*m_pCoreRuntime, m_pCoreRuntime->Events(), m_pCoreRuntime->Config(), m_pCoreRuntime->Logger(), m_pCoreRuntime->Tasks());
-		m_CommandActivationHandler.emplace(m_CommandActivationResolver, m_ActivationCommandDispatcher, *m_ModuleContext);
+		ConfigureTechnicalModule();
 		ConfigureInputBindings();
 	}
 
@@ -48,6 +49,12 @@ namespace sirius::platform
 		if(m_pCoreRuntime->IsRunning() && m_ModuleLifecycle.IsInitialized())
 		{
 			return true;
+		}
+
+		auto *pTechnicalModule = m_Modules.Get(modules::CModuleId("module.sirius.technical"));
+		if(!pTechnicalModule || !pTechnicalModule->Commands().Has(commands::CCommandId("command.test")))
+		{
+			return false;
 		}
 
 		m_pCoreRuntime->Start();
@@ -70,15 +77,20 @@ namespace sirius::platform
 			throw;
 		}
 
+		m_ActivationCommandDispatcher.emplace(pTechnicalModule->Commands());
+		m_CommandActivationHandler.emplace(m_CommandActivationResolver, *m_ActivationCommandDispatcher, *m_ModuleContext);
+
 		return true;
 	}
 
 	void CPlatform::Stop() noexcept
 	{
+		m_CommandActivationHandler.reset();
+		m_ActivationCommandDispatcher.reset();
+
 		if(m_ModuleContext.has_value())
 		{
 			m_ModuleLifecycle.Shutdown(m_Modules, *m_ModuleContext);
-			m_Modules.Clear();
 		}
 
 		if(m_pCoreRuntime)
@@ -173,10 +185,24 @@ namespace sirius::platform
 
 	void CPlatform::ConfigureCommandActivations(const activation::CActivationId &ActivationId, const commands::CCommandId &CommandId)
 	{
-		std::unique_ptr<commands::ICommand> pCommand = std::make_unique<commands::CTestActivationCommand>();
-
-		m_ActivationCommandRegistry.Register(pCommand);
 		m_CommandActivationResolver.Register(activation::CActivationId(ActivationId.Value()), commands::CCommandId(CommandId.Value()));
+	}
+
+	void CPlatform::ConfigureTechnicalModule()
+	{
+		auto pModule = std::make_unique<modules::CModule>(modules::CModuleId("module.sirius.technical"));
+		std::unique_ptr<commands::ICommand> pCommand = std::make_unique<commands::CTestActivationCommand>();
+		if(!pModule->Commands().Register(pCommand))
+		{
+			throw std::runtime_error("failed to register technical activation command");
+		}
+
+		std::unique_ptr<modules::IModule> pOwnedModule = std::move(pModule);
+		if(!m_Modules.Register(pOwnedModule))
+		{
+			throw std::runtime_error("failed to register technical module");
+		}
+
 	}
 
 } // namespace sirius::platform
