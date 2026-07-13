@@ -5,6 +5,7 @@
 #include <sirius/platform/activation/activation_id.h>
 #include <sirius/platform/commands/command_id.h>
 #include <sirius/platform/features/feature_id.h>
+#include <sirius/platform/modules/module_definition.h>
 #include <sirius/platform/modules/module_descriptor.h>
 #include <sirius/platform/modules/module_id.h>
 
@@ -65,6 +66,7 @@ namespace sirius::platform::modules::status
 	bool IsSiriusStatusModuleComplete(const IModule &Module) noexcept;
 	CSiriusStatusFeatureActivation SiriusStatusFeatureActivation();
 	std::array<CSiriusStatusCommandActivation, 3> SiriusStatusCommandActivations();
+	CModuleDefinition SiriusStatusModuleDefinition(features::CFeatureActivationBehaviorRegistry &FeatureActivationBehaviors);
 	std::unique_ptr<IModule> CreateSiriusStatusModule(features::CFeatureActivationBehaviorRegistry &FeatureActivationBehaviors);
 
 } // namespace sirius::platform::modules::status

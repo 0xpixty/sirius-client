@@ -133,6 +133,15 @@ namespace sirius::platform::modules::status
 		};
 	}
 
+	CModuleDefinition SiriusStatusModuleDefinition(features::CFeatureActivationBehaviorRegistry &FeatureActivationBehaviors)
+	{
+		return CModuleDefinition(
+			SiriusStatusModuleDescriptor(),
+			[&FeatureActivationBehaviors]() {
+				return CreateSiriusStatusModule(FeatureActivationBehaviors);
+			});
+	}
+
 	std::unique_ptr<IModule> CreateSiriusStatusModule(features::CFeatureActivationBehaviorRegistry &FeatureActivationBehaviors)
 	{
 		auto pModule = std::make_unique<CModule>(SiriusStatusModuleDescriptor());

@@ -18,6 +18,7 @@
 #include <sirius/platform/input/input_action.h>
 #include <sirius/platform/input/input_key.h>
 #include <sirius/platform/modules/module.h>
+#include <sirius/platform/modules/module_definition.h>
 #include <sirius/platform/modules/status/sirius_status_module.h>
 
 #include <memory>
@@ -254,14 +255,27 @@ namespace sirius::platform
 
 	void CPlatform::ConfigureTechnicalModule()
 	{
-		auto pModule = std::make_unique<modules::CModule>(modules::CModuleId("module.sirius.technical"));
-		std::unique_ptr<commands::ICommand> pCommand = std::make_unique<commands::CTechnicalActivationCommand>();
-		if(!pModule->Commands().Register(pCommand))
-		{
-			throw std::runtime_error("failed to register technical activation command");
-		}
+		const auto CommandId = commands::CCommandId("command.sirius.technical.activation");
+		const auto Descriptor = modules::CModuleDescriptor(
+			modules::CModuleId("module.sirius.technical"),
+			{},
+			{CommandId},
+			{});
+		const auto Definition = modules::CModuleDefinition(
+			Descriptor,
+			[Descriptor]() {
+				auto pModule = std::make_unique<modules::CModule>(Descriptor);
+				std::unique_ptr<commands::ICommand> pCommand = std::make_unique<commands::CTechnicalActivationCommand>();
+				if(!pModule->Commands().Register(pCommand))
+				{
+					throw std::runtime_error("failed to register technical activation command");
+				}
 
-		std::unique_ptr<modules::IModule> pOwnedModule = std::move(pModule);
+				std::unique_ptr<modules::IModule> pOwnedModule = std::move(pModule);
+				return pOwnedModule;
+			});
+
+		auto pOwnedModule = Definition.CreateModule();
 		if(!m_Modules.Register(pOwnedModule))
 		{
 			throw std::runtime_error("failed to register technical module");
@@ -271,7 +285,8 @@ namespace sirius::platform
 
 	void CPlatform::ConfigureStatusModule()
 	{
-		auto pModule = modules::status::CreateSiriusStatusModule(m_FeatureActivationBehaviors);
+		auto Definition = modules::status::SiriusStatusModuleDefinition(m_FeatureActivationBehaviors);
+		auto pModule = Definition.CreateModule();
 		const auto FeatureActivation = modules::status::SiriusStatusFeatureActivation();
 		if(!m_FeatureActivationResolver.Register(activation::CActivationId(FeatureActivation.ActivationId().Value()), features::CFeatureId(FeatureActivation.FeatureId().Value())))
 		{
