@@ -86,6 +86,33 @@ namespace sirius::platform::modules
 		return Iter->second.get();
 	}
 
+	bool CModuleRegistry::Remove(const CModuleId &Id)
+	{
+		if(m_Sealed)
+		{
+			return false;
+		}
+
+		const auto Iter = m_Modules.find(Id.Value());
+		if(Iter == m_Modules.end())
+		{
+			return false;
+		}
+
+		auto *pModule = Iter->second.get();
+		for(auto OrderIter = m_ModulesInRegistrationOrder.begin(); OrderIter != m_ModulesInRegistrationOrder.end(); ++OrderIter)
+		{
+			if(*OrderIter == pModule)
+			{
+				m_ModulesInRegistrationOrder.erase(OrderIter);
+				break;
+			}
+		}
+
+		m_Modules.erase(Iter);
+		return true;
+	}
+
 	const std::vector<IModule *> &CModuleRegistry::ModulesInRegistrationOrder() const noexcept
 	{
 		return m_ModulesInRegistrationOrder;

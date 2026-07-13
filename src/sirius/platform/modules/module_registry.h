@@ -29,6 +29,7 @@ namespace sirius::platform::modules
 		bool Has(const CModuleId &Id) const;
 		IModule *Get(const CModuleId &Id);
 		const IModule *Get(const CModuleId &Id) const;
+		bool Remove(const CModuleId &Id);
 		const std::vector<IModule *> &ModulesInRegistrationOrder() const noexcept;
 		std::size_t Count() const noexcept;
 		void Clear() noexcept;
