@@ -279,15 +279,10 @@ namespace sirius::platform
 			throw std::runtime_error("failed to register Sirius status feature activation");
 		}
 
-		ConfigureStatusCommandActivations(
-			modules::status::SiriusStatusOpenCommandActivationId(),
-			modules::status::SiriusStatusOpenCommandId());
-		ConfigureStatusCommandActivations(
-			modules::status::SiriusStatusCloseCommandActivationId(),
-			modules::status::SiriusStatusCloseCommandId());
-		ConfigureStatusCommandActivations(
-			modules::status::SiriusStatusToggleCommandActivationId(),
-			modules::status::SiriusStatusToggleCommandId());
+		for(const auto &CommandActivation : modules::status::SiriusStatusCommandActivations())
+		{
+			ConfigureStatusCommandActivations(CommandActivation.ActivationId(), CommandActivation.CommandId());
+		}
 
 		std::unique_ptr<modules::IModule> pOwnedModule = std::move(pModule);
 		if(!m_Modules.Register(pOwnedModule))
