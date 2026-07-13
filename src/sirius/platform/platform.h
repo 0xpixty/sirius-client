@@ -4,7 +4,11 @@
 
 #include "platform_configuration.h"
 
-#include <sirius/platform/activation/activation_id.h>
+#include <sirius/platform/activation/activation_handler.h>
+#include <sirius/platform/commands/activation/command_activation_handler.h>
+#include <sirius/platform/commands/activation/command_activation_resolver.h>
+#include <sirius/platform/commands/command_dispatcher.h>
+#include <sirius/platform/commands/command_registry.h>
 #include <sirius/platform/features/activation/feature_activation_behavior_registry.h>
 #include <sirius/platform/features/activation/feature_activation_handler.h>
 #include <sirius/platform/features/activation/feature_activation_resolver.h>
@@ -33,7 +37,7 @@ namespace sirius::core::runtime
 namespace sirius::platform
 {
 
-	class CPlatform final
+	class CPlatform final : private activation::IActivationHandler
 	{
 	public:
 		explicit CPlatform(CPlatformConfiguration Configuration);
@@ -55,6 +59,8 @@ namespace sirius::platform
 		const modules::CModuleRegistry &Modules() const noexcept;
 
 	private:
+		void Activate(const activation::CActivationId &ActivationId) override;
+		void Deactivate(const activation::CActivationId &ActivationId) override;
 		void ConfigureInputBindings();
 
 		CPlatformConfiguration m_Configuration;
@@ -72,6 +78,10 @@ namespace sirius::platform
 		features::CFeatureActivationController m_FeatureActivationController;
 		features::CFeatureActivationResolver m_FeatureActivationResolver;
 		features::CFeatureActivationHandler m_FeatureActivationHandler;
+		commands::CCommandRegistry m_ActivationCommandRegistry;
+		commands::CCommandDispatcher m_ActivationCommandDispatcher;
+		commands::CCommandActivationResolver m_CommandActivationResolver;
+		std::optional<commands::CCommandActivationHandler> m_CommandActivationHandler;
 		input::CBindingActivationAdapter m_BindingActivationAdapter;
 		input::CBindingActivationDispatcher m_BindingActivationDispatcher;
 	};

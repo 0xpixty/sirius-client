@@ -43,6 +43,10 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/platform_bootstrap.cpp
   platform/platform_bootstrap.h
   platform/platform_configuration.h
+  platform/commands/activation/command_activation_handler.cpp
+  platform/commands/activation/command_activation_handler.h
+  platform/commands/activation/command_activation_resolver.cpp
+  platform/commands/activation/command_activation_resolver.h
   platform/commands/command_context.cpp
   platform/commands/command_context.h
   platform/commands/command_dispatcher.cpp

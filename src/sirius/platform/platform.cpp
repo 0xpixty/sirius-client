@@ -4,6 +4,7 @@
 #include <sirius/core/runtime/core_runtime.h>
 #include <sirius/core/runtime/core_runtime_configuration.h>
 #include <sirius/platform/features/activation/test_activation_behavior.h>
+#include <sirius/platform/commands/command_id.h>
 #include <sirius/platform/features/feature_activation.h>
 #include <sirius/platform/features/feature_activation_state.h>
 #include <sirius/platform/features/feature_id.h>
@@ -27,10 +28,12 @@ namespace sirius::platform
 		m_InputForwarder(m_pCoreRuntime->Events()),
 		m_FeatureActivationController(m_FeatureActivations, m_FeatureActivationBehaviors),
 		m_FeatureActivationHandler(m_FeatureActivationResolver, m_FeatureActivationController),
-		m_BindingActivationAdapter(m_FeatureActivationHandler),
+		m_ActivationCommandDispatcher(m_ActivationCommandRegistry),
+		m_BindingActivationAdapter(*this),
 		m_BindingActivationDispatcher(m_BindingMatcher, m_Bindings, m_BindingActivations, m_BindingActivationAdapter)
 	{
 		m_ModuleContext.emplace(*m_pCoreRuntime, m_pCoreRuntime->Events(), m_pCoreRuntime->Config(), m_pCoreRuntime->Logger(), m_pCoreRuntime->Tasks());
+		m_CommandActivationHandler.emplace(m_CommandActivationResolver, m_ActivationCommandDispatcher, *m_ModuleContext);
 		ConfigureInputBindings();
 	}
 
@@ -105,7 +108,7 @@ namespace sirius::platform
 
 	void CPlatform::DeactivateActivation(const activation::CActivationId &ActivationId)
 	{
-		m_FeatureActivationHandler.Deactivate(ActivationId);
+		Deactivate(ActivationId);
 	}
 
 	modules::CModuleRegistry &CPlatform::Modules() noexcept
@@ -118,10 +121,29 @@ namespace sirius::platform
 		return m_Modules;
 	}
 
+	void CPlatform::Activate(const activation::CActivationId &ActivationId)
+	{
+		m_FeatureActivationHandler.Activate(ActivationId);
+		if(m_CommandActivationHandler.has_value())
+		{
+			m_CommandActivationHandler->Activate(ActivationId);
+		}
+	}
+
+	void CPlatform::Deactivate(const activation::CActivationId &ActivationId)
+	{
+		m_FeatureActivationHandler.Deactivate(ActivationId);
+		if(m_CommandActivationHandler.has_value())
+		{
+			m_CommandActivationHandler->Deactivate(ActivationId);
+		}
+	}
+
 	void CPlatform::ConfigureInputBindings()
 	{
 		const input::CBindingActivationId ActivationId("feature.activation.test");
 		const features::CFeatureId FeatureId("feature.activation.test");
+		const commands::CCommandId CommandId("command.activation.test");
 		const input::CBindingId BindingId("binding.activation.test");
 
 		auto pBinding = std::make_unique<input::CInputBinding>(
@@ -131,6 +153,7 @@ namespace sirius::platform
 		m_Bindings.Register(pBinding);
 		m_BindingActivations.Register(input::CBindingActivation(input::CBindingId(BindingId.Value()), input::CBindingActivationId(ActivationId.Value())));
 		m_FeatureActivationResolver.Register(activation::CActivationId(ActivationId.Value()), features::CFeatureId(FeatureId.Value()));
+		m_CommandActivationResolver.Register(activation::CActivationId(ActivationId.Value()), commands::CCommandId(CommandId.Value()));
 		m_FeatureActivations.Register(features::CFeatureActivation(features::CFeatureId(FeatureId.Value()), features::EFeatureActivationState::Inactive));
 
 		std::unique_ptr<features::IFeatureActivationBehavior> pBehavior = std::make_unique<features::CTestActivationBehavior>();
