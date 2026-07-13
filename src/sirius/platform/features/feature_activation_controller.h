@@ -5,13 +5,14 @@
 namespace sirius::platform::features
 {
 
+	class CFeatureActivationBehaviorRegistry;
 	class CFeatureActivationRegistry;
 	class CFeatureId;
 
 	class CFeatureActivationController final
 	{
 	public:
-		explicit CFeatureActivationController(CFeatureActivationRegistry &Registry) noexcept;
+		CFeatureActivationController(CFeatureActivationRegistry &Registry, CFeatureActivationBehaviorRegistry &Behaviors) noexcept;
 		~CFeatureActivationController() noexcept;
 
 		CFeatureActivationController(const CFeatureActivationController &Other) = delete;
@@ -19,12 +20,13 @@ namespace sirius::platform::features
 		CFeatureActivationController(CFeatureActivationController &&Other) = delete;
 		CFeatureActivationController &operator=(CFeatureActivationController &&Other) = delete;
 
-		bool Activate(const CFeatureId &FeatureId) noexcept;
-		bool Deactivate(const CFeatureId &FeatureId) noexcept;
+		bool Activate(const CFeatureId &FeatureId);
+		bool Deactivate(const CFeatureId &FeatureId);
 		bool IsActive(const CFeatureId &FeatureId) const noexcept;
 
 	private:
 		CFeatureActivationRegistry &m_Registry;
+		CFeatureActivationBehaviorRegistry &m_Behaviors;
 	};
 
 } // namespace sirius::platform::features

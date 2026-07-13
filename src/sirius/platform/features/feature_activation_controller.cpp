@@ -2,20 +2,22 @@
 #include "feature_activation_controller.h"
 
 #include "feature_activation.h"
+#include "activation/feature_activation_behavior_registry.h"
 #include "feature_activation_registry.h"
 #include "feature_activation_state.h"
 
 namespace sirius::platform::features
 {
 
-	CFeatureActivationController::CFeatureActivationController(CFeatureActivationRegistry &Registry) noexcept :
-		m_Registry(Registry)
+	CFeatureActivationController::CFeatureActivationController(CFeatureActivationRegistry &Registry, CFeatureActivationBehaviorRegistry &Behaviors) noexcept :
+		m_Registry(Registry),
+		m_Behaviors(Behaviors)
 	{
 	}
 
 	CFeatureActivationController::~CFeatureActivationController() noexcept = default;
 
-	bool CFeatureActivationController::Activate(const CFeatureId &FeatureId) noexcept
+	bool CFeatureActivationController::Activate(const CFeatureId &FeatureId)
 	{
 		auto *pActivation = m_Registry.Get(FeatureId);
 		if(!pActivation)
@@ -24,10 +26,15 @@ namespace sirius::platform::features
 		}
 
 		pActivation->SetState(EFeatureActivationState::Active);
+		if(auto *pBehavior = m_Behaviors.Get(FeatureId))
+		{
+			pBehavior->Activate();
+		}
+
 		return true;
 	}
 
-	bool CFeatureActivationController::Deactivate(const CFeatureId &FeatureId) noexcept
+	bool CFeatureActivationController::Deactivate(const CFeatureId &FeatureId)
 	{
 		auto *pActivation = m_Registry.Get(FeatureId);
 		if(!pActivation)
@@ -36,6 +43,11 @@ namespace sirius::platform::features
 		}
 
 		pActivation->SetState(EFeatureActivationState::Inactive);
+		if(auto *pBehavior = m_Behaviors.Get(FeatureId))
+		{
+			pBehavior->Deactivate();
+		}
+
 		return true;
 	}
 

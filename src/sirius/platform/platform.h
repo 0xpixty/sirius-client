@@ -4,6 +4,7 @@
 
 #include "platform_configuration.h"
 
+#include <sirius/platform/features/activation/feature_activation_behavior_registry.h>
 #include <sirius/platform/features/activation/feature_activation_handler.h>
 #include <sirius/platform/features/activation/feature_activation_resolver.h>
 #include <sirius/platform/features/feature_activation_controller.h>
@@ -64,6 +65,7 @@ namespace sirius::platform
 		input::CBindingActivationRegistry m_BindingActivations;
 		input::CBindingMatcher m_BindingMatcher;
 		features::CFeatureActivationRegistry m_FeatureActivations;
+		features::CFeatureActivationBehaviorRegistry m_FeatureActivationBehaviors;
 		features::CFeatureActivationController m_FeatureActivationController;
 		features::CFeatureActivationResolver m_FeatureActivationResolver;
 		features::CFeatureActivationHandler m_FeatureActivationHandler;

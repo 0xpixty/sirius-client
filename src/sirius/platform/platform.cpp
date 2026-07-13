@@ -24,7 +24,7 @@ namespace sirius::platform
 		m_Configuration(std::move(Configuration)),
 		m_pCoreRuntime(std::make_unique<core::runtime::CCoreRuntime>(core::runtime::CCoreRuntimeConfiguration())),
 		m_InputForwarder(m_pCoreRuntime->Events()),
-		m_FeatureActivationController(m_FeatureActivations),
+		m_FeatureActivationController(m_FeatureActivations, m_FeatureActivationBehaviors),
 		m_FeatureActivationHandler(m_FeatureActivationResolver, m_FeatureActivationController),
 		m_BindingActivationDispatcher(m_BindingMatcher, m_Bindings, m_BindingActivations, m_FeatureActivationHandler)
 	{
