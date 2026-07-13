@@ -64,6 +64,21 @@ namespace sirius::platform::features
 		return true;
 	}
 
+	bool CSiriusStatusFeature::Toggle() noexcept
+	{
+		if(!m_Initialized)
+		{
+			return false;
+		}
+
+		if(m_Open)
+		{
+			return Close();
+		}
+
+		return Open();
+	}
+
 	bool CSiriusStatusFeature::IsInitialized() const noexcept
 	{
 		return m_Initialized;

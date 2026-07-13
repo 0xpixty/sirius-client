@@ -3,6 +3,7 @@
 
 #include <sirius/platform/commands/status/close_sirius_status_command.h>
 #include <sirius/platform/commands/status/open_sirius_status_command.h>
+#include <sirius/platform/commands/status/toggle_sirius_status_command.h>
 #include <sirius/platform/features/activation/feature_activation_behavior_registry.h>
 #include <sirius/platform/features/status/sirius_status_activation_behavior.h>
 #include <sirius/platform/features/status/sirius_status_feature.h>
@@ -39,6 +40,11 @@ namespace sirius::platform::modules::status
 		return commands::CCommandId("command.sirius.status.close");
 	}
 
+	commands::CCommandId SiriusStatusToggleCommandId()
+	{
+		return commands::CCommandId("command.sirius.status.toggle");
+	}
+
 	activation::CActivationId SiriusStatusOpenCommandActivationId()
 	{
 		return activation::CActivationId("activation.sirius.status.open");
@@ -47,6 +53,11 @@ namespace sirius::platform::modules::status
 	activation::CActivationId SiriusStatusCloseCommandActivationId()
 	{
 		return activation::CActivationId("activation.sirius.status.close");
+	}
+
+	activation::CActivationId SiriusStatusToggleCommandActivationId()
+	{
+		return activation::CActivationId("activation.sirius.status.toggle");
 	}
 
 	std::unique_ptr<IModule> CreateSiriusStatusModule(features::CFeatureActivationBehaviorRegistry &FeatureActivationBehaviors)
@@ -76,6 +87,12 @@ namespace sirius::platform::modules::status
 		if(!pModule->Commands().Register(pCloseCommand))
 		{
 			throw std::runtime_error("failed to register Sirius status close command");
+		}
+
+		std::unique_ptr<commands::ICommand> pToggleCommand = std::make_unique<commands::CToggleSiriusStatusCommand>(*pStatusFeature);
+		if(!pModule->Commands().Register(pToggleCommand))
+		{
+			throw std::runtime_error("failed to register Sirius status toggle command");
 		}
 
 		std::unique_ptr<features::IFeatureActivationBehavior> pBehavior = std::make_unique<features::CSiriusStatusActivationBehavior>(*pStatusFeature);
