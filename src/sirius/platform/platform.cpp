@@ -4,11 +4,14 @@
 #include <sirius/core/runtime/core_runtime.h>
 #include <sirius/core/runtime/core_runtime_configuration.h>
 #include <sirius/platform/commands/activation/technical_activation_command.h>
+#include <sirius/platform/commands/status/close_sirius_status_command.h>
+#include <sirius/platform/commands/status/open_sirius_status_command.h>
 #include <sirius/platform/features/activation/technical_activation_behavior.h>
 #include <sirius/platform/commands/command_id.h>
 #include <sirius/platform/features/feature_activation.h>
 #include <sirius/platform/features/feature_activation_state.h>
 #include <sirius/platform/features/feature_id.h>
+#include <sirius/platform/features/status/sirius_status_feature.h>
 #include <sirius/platform/input/bindings/activation/binding_activation.h>
 #include <sirius/platform/input/bindings/activation/binding_activation_id.h>
 #include <sirius/platform/input/bindings/binding_id.h>
@@ -36,6 +39,7 @@ namespace sirius::platform
 	{
 		m_ModuleContext.emplace(*m_pCoreRuntime, m_pCoreRuntime->Events(), m_pCoreRuntime->Config(), m_pCoreRuntime->Logger(), m_pCoreRuntime->Tasks());
 		ConfigureTechnicalModule();
+		ConfigureStatusModule();
 		ConfigureInputBindings();
 	}
 
@@ -199,6 +203,36 @@ namespace sirius::platform
 			throw std::runtime_error("failed to register technical module");
 		}
 
+	}
+
+	void CPlatform::ConfigureStatusModule()
+	{
+		auto pModule = std::make_unique<modules::CModule>(modules::CModuleId("module.sirius.status"));
+		auto pFeature = std::make_unique<features::CSiriusStatusFeature>();
+		auto *pStatusFeature = pFeature.get();
+		std::unique_ptr<features::IFeature> pOwnedFeature = std::move(pFeature);
+		if(!pModule->Features().Register(pOwnedFeature))
+		{
+			throw std::runtime_error("failed to register Sirius status feature");
+		}
+
+		std::unique_ptr<commands::ICommand> pOpenCommand = std::make_unique<commands::COpenSiriusStatusCommand>(*pStatusFeature);
+		if(!pModule->Commands().Register(pOpenCommand))
+		{
+			throw std::runtime_error("failed to register Sirius status open command");
+		}
+
+		std::unique_ptr<commands::ICommand> pCloseCommand = std::make_unique<commands::CCloseSiriusStatusCommand>(*pStatusFeature);
+		if(!pModule->Commands().Register(pCloseCommand))
+		{
+			throw std::runtime_error("failed to register Sirius status close command");
+		}
+
+		std::unique_ptr<modules::IModule> pOwnedModule = std::move(pModule);
+		if(!m_Modules.Register(pOwnedModule))
+		{
+			throw std::runtime_error("failed to register Sirius status module");
+		}
 	}
 
 } // namespace sirius::platform

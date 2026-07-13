@@ -66,6 +66,7 @@ namespace sirius::platform
 		void ConfigureBindings(const input::CBindingActivationId &ActivationId, const input::CBindingId &BindingId);
 		void ConfigureFeatureActivations(const activation::CActivationId &ActivationId, const features::CFeatureId &FeatureId);
 		void ConfigureTechnicalModule();
+		void ConfigureStatusModule();
 		void ConfigureCommandActivations(const activation::CActivationId &ActivationId, const commands::CCommandId &CommandId);
 
 		CPlatformConfiguration m_Configuration;

@@ -59,6 +59,10 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/commands/command_lifecycle.h
   platform/commands/command_registry.cpp
   platform/commands/command_registry.h
+  platform/commands/status/close_sirius_status_command.cpp
+  platform/commands/status/close_sirius_status_command.h
+  platform/commands/status/open_sirius_status_command.cpp
+  platform/commands/status/open_sirius_status_command.h
   platform/features/feature_context.cpp
   platform/features/feature_context.h
   platform/features/activation/feature_activation_behavior.h
@@ -82,6 +86,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/features/feature_lifecycle.h
   platform/features/feature_registry.cpp
   platform/features/feature_registry.h
+  platform/features/status/sirius_status_feature.cpp
+  platform/features/status/sirius_status_feature.h
   platform/input/bindings/activation/binding_activation_adapter.cpp
   platform/input/bindings/activation/binding_activation_adapter.h
   platform/input/bindings/activation/binding_activation_dispatcher.cpp
