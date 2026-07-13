@@ -61,6 +61,27 @@ namespace sirius::platform::features
 		return true;
 	}
 
+	void CFeatureActivationController::DeactivateAllForShutdown() noexcept
+	{
+		for(auto &[FeatureKey, Activation] : m_Registry.m_Activations)
+		{
+			(void)FeatureKey;
+			if(Activation.State() == EFeatureActivationState::Inactive)
+			{
+				continue;
+			}
+
+			try
+			{
+				Deactivate(Activation.FeatureId());
+			}
+			catch(...)
+			{
+				Activation.SetState(EFeatureActivationState::Inactive);
+			}
+		}
+	}
+
 	bool CFeatureActivationController::IsActive(const CFeatureId &FeatureId) const noexcept
 	{
 		const auto *pActivation = m_Registry.Get(FeatureId);

@@ -11,6 +11,8 @@
 namespace sirius::platform::features
 {
 
+	class CFeatureActivationController;
+
 	class CFeatureActivationRegistry final
 	{
 	public:
@@ -31,6 +33,8 @@ namespace sirius::platform::features
 		std::size_t Count() const noexcept;
 
 	private:
+		friend class CFeatureActivationController;
+
 		std::unordered_map<std::string, CFeatureActivation> m_Activations;
 	};
 

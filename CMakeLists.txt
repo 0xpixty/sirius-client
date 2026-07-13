@@ -3437,6 +3437,7 @@ if((GTEST_FOUND OR DOWNLOAD_GTEST) AND SERVER)
     serverbrowser_test.cpp
     serverinfo_test.cpp
     sirius_feature_activation_controller_test.cpp
+    sirius_platform_activation_lifecycle_test.cpp
     snapshot_test.cpp
     str_test.cpp
     swap_endian_test.cpp
@@ -3465,10 +3466,47 @@ if((GTEST_FOUND OR DOWNLOAD_GTEST) AND SERVER)
     src/engine/client/sqlite.cpp
     src/game/client/components/censor.cpp
     src/game/client/components/censor.h
+    src/sirius/core/config/config_registry.cpp
+    src/sirius/core/events/event_dispatcher.cpp
+    src/sirius/core/logging/logger.cpp
+    src/sirius/core/runtime/core_runtime.cpp
+    src/sirius/core/runtime/runtime_component_registry.cpp
+    src/sirius/core/runtime/runtime_context.cpp
+    src/sirius/core/runtime/runtime_lifecycle.cpp
+    src/sirius/core/services/service_registry.cpp
+    src/sirius/core/tasks/task_dispatcher.cpp
+    src/sirius/core/tasks/task_queue.cpp
+    src/sirius/platform/commands/activation/command_activation_handler.cpp
+    src/sirius/platform/commands/activation/command_activation_resolver.cpp
+    src/sirius/platform/commands/activation/test_activation_command.cpp
+    src/sirius/platform/commands/command_context.cpp
+    src/sirius/platform/commands/command_dispatcher.cpp
+    src/sirius/platform/commands/command_lifecycle.cpp
+    src/sirius/platform/commands/command_registry.cpp
     src/sirius/platform/features/activation/feature_activation_behavior_registry.cpp
+    src/sirius/platform/features/activation/feature_activation_handler.cpp
+    src/sirius/platform/features/activation/feature_activation_resolver.cpp
+    src/sirius/platform/features/activation/test_activation_behavior.cpp
     src/sirius/platform/features/feature_activation_controller.cpp
     src/sirius/platform/features/feature_activation_registry.cpp
+    src/sirius/platform/features/feature_context.cpp
+    src/sirius/platform/features/feature_lifecycle.cpp
     src/sirius/platform/features/feature_registry.cpp
+    src/sirius/platform/input/bindings/activation/binding_activation_adapter.cpp
+    src/sirius/platform/input/bindings/activation/binding_activation_dispatcher.cpp
+    src/sirius/platform/input/bindings/activation/binding_activation_registry.cpp
+    src/sirius/platform/input/bindings/binding_matcher.cpp
+    src/sirius/platform/input/bindings/binding_registry.cpp
+    src/sirius/platform/input/dispatch/input_event_forwarder.cpp
+    src/sirius/platform/input/source/buffered_input_source.cpp
+    src/sirius/platform/modules/module.cpp
+    src/sirius/platform/modules/module_context.cpp
+    src/sirius/platform/modules/module_lifecycle.cpp
+    src/sirius/platform/modules/module_registry.cpp
+    src/sirius/platform/modules/services/module_service_context.cpp
+    src/sirius/platform/modules/services/module_service_lifecycle.cpp
+    src/sirius/platform/modules/services/module_service_registry.cpp
+    src/sirius/platform/platform.cpp
     # tidy-alphabetical-end
   )
 

@@ -22,6 +22,7 @@ namespace sirius::platform::features
 
 		bool Activate(const CFeatureId &FeatureId);
 		bool Deactivate(const CFeatureId &FeatureId);
+		void DeactivateAllForShutdown() noexcept;
 		bool IsActive(const CFeatureId &FeatureId) const noexcept;
 
 	private:

@@ -87,6 +87,7 @@ namespace sirius::platform
 	{
 		m_CommandActivationHandler.reset();
 		m_ActivationCommandDispatcher.reset();
+		m_FeatureActivationController.DeactivateAllForShutdown();
 
 		if(m_ModuleContext.has_value())
 		{
@@ -136,6 +137,11 @@ namespace sirius::platform
 
 	void CPlatform::Activate(const activation::CActivationId &ActivationId)
 	{
+		if(!m_pCoreRuntime || !m_pCoreRuntime->IsRunning() || !m_ModuleLifecycle.IsInitialized())
+		{
+			return;
+		}
+
 		m_FeatureActivationHandler.Activate(ActivationId);
 		if(m_CommandActivationHandler.has_value())
 		{
@@ -145,6 +151,11 @@ namespace sirius::platform
 
 	void CPlatform::Deactivate(const activation::CActivationId &ActivationId)
 	{
+		if(!m_pCoreRuntime || !m_pCoreRuntime->IsRunning() || !m_ModuleLifecycle.IsInitialized())
+		{
+			return;
+		}
+
 		m_FeatureActivationHandler.Deactivate(ActivationId);
 		if(m_CommandActivationHandler.has_value())
 		{

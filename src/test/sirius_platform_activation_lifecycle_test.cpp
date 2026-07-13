@@ -1,0 +1,155 @@
+#include <sirius/platform/commands/activation/test_activation_command.h>
+#include <sirius/platform/commands/command_id.h>
+#include <sirius/platform/features/activation/test_activation_behavior.h>
+#include <sirius/platform/features/feature_activation.h>
+#include <sirius/platform/features/feature_activation_state.h>
+#include <sirius/platform/features/feature_id.h>
+#include <sirius/platform/input/input_action.h>
+#include <sirius/platform/input/input_event.h>
+#include <sirius/platform/input/input_key.h>
+#include <sirius/platform/input/input_state.h>
+#include <sirius/platform/modules/module_id.h>
+#include <sirius/platform/platform.h>
+
+#include <gtest/gtest.h>
+
+namespace sirius::platform
+{
+
+	class CPlatformActivationLifecycleTestPeer final
+	{
+	public:
+		static const features::CFeatureActivation *TechnicalActivation(const CPlatform &Platform) noexcept
+		{
+			return Platform.m_FeatureActivations.Get(TechnicalFeatureId());
+		}
+
+		static const features::CTestActivationBehavior *TechnicalBehavior(const CPlatform &Platform) noexcept
+		{
+			return dynamic_cast<const features::CTestActivationBehavior *>(Platform.m_FeatureActivationBehaviors.Get(TechnicalFeatureId()));
+		}
+
+	private:
+		static const features::CFeatureId &TechnicalFeatureId() noexcept
+		{
+			static const features::CFeatureId Id("feature.activation.test");
+			return Id;
+		}
+	};
+
+namespace
+{
+
+	input::CInputEvent MakeTechnicalActivationEvent()
+	{
+		return input::CInputEvent(input::CInputState(input::CInputKey("input.activation.test"), input::EInputAction::Pressed));
+	}
+
+	commands::CTestActivationCommand *TechnicalCommand(CPlatform &Platform)
+	{
+		auto *pModule = Platform.Modules().Get(modules::CModuleId("module.sirius.technical"));
+		if(!pModule)
+		{
+			return nullptr;
+		}
+
+		return dynamic_cast<commands::CTestActivationCommand *>(pModule->Commands().Get(commands::CCommandId("command.test")));
+	}
+
+	const features::CFeatureActivation *TechnicalActivation(const CPlatform &Platform)
+	{
+		return CPlatformActivationLifecycleTestPeer::TechnicalActivation(Platform);
+	}
+
+	const features::CTestActivationBehavior *TechnicalBehavior(const CPlatform &Platform)
+	{
+		return CPlatformActivationLifecycleTestPeer::TechnicalBehavior(Platform);
+	}
+
+	TEST(PlatformActivationLifecycle, ActivationFanoutIsDisabledBeforeStart)
+	{
+		CPlatform Platform{CPlatformConfiguration()};
+		auto *pCommand = TechnicalCommand(Platform);
+		const auto *pActivation = TechnicalActivation(Platform);
+		const auto *pBehavior = TechnicalBehavior(Platform);
+		ASSERT_NE(pCommand, nullptr);
+		ASSERT_NE(pActivation, nullptr);
+		ASSERT_NE(pBehavior, nullptr);
+
+		Platform.ProcessInputEvent(MakeTechnicalActivationEvent());
+
+		EXPECT_EQ(pCommand->ExecutionCount(), 0U);
+		EXPECT_EQ(pActivation->State(), features::EFeatureActivationState::Inactive);
+		EXPECT_FALSE(pBehavior->IsActive());
+		EXPECT_EQ(pBehavior->ActivationCount(), 0U);
+		EXPECT_EQ(pBehavior->DeactivationCount(), 0U);
+	}
+
+	TEST(PlatformActivationLifecycle, StopReconcilesFeatureActivationAndRestartReactivates)
+	{
+		CPlatform Platform{CPlatformConfiguration()};
+		auto *pCommand = TechnicalCommand(Platform);
+		const auto *pActivation = TechnicalActivation(Platform);
+		const auto *pBehavior = TechnicalBehavior(Platform);
+		ASSERT_NE(pCommand, nullptr);
+		ASSERT_NE(pActivation, nullptr);
+		ASSERT_NE(pBehavior, nullptr);
+
+		ASSERT_TRUE(Platform.Start());
+		Platform.ProcessInputEvent(MakeTechnicalActivationEvent());
+
+		EXPECT_EQ(pCommand->ExecutionCount(), 1U);
+		EXPECT_EQ(pActivation->State(), features::EFeatureActivationState::Active);
+		EXPECT_TRUE(pBehavior->IsActive());
+		EXPECT_EQ(pBehavior->ActivationCount(), 1U);
+		EXPECT_EQ(pBehavior->DeactivationCount(), 0U);
+
+		Platform.Stop();
+
+		EXPECT_EQ(pCommand->ExecutionCount(), 1U);
+		EXPECT_EQ(pActivation->State(), features::EFeatureActivationState::Inactive);
+		EXPECT_FALSE(pBehavior->IsActive());
+		EXPECT_EQ(pBehavior->ActivationCount(), 1U);
+		EXPECT_EQ(pBehavior->DeactivationCount(), 1U);
+
+		Platform.ProcessInputEvent(MakeTechnicalActivationEvent());
+		Platform.Stop();
+
+		EXPECT_EQ(pCommand->ExecutionCount(), 1U);
+		EXPECT_EQ(pActivation->State(), features::EFeatureActivationState::Inactive);
+		EXPECT_FALSE(pBehavior->IsActive());
+		EXPECT_EQ(pBehavior->ActivationCount(), 1U);
+		EXPECT_EQ(pBehavior->DeactivationCount(), 1U);
+
+		ASSERT_TRUE(Platform.Start());
+		Platform.ProcessInputEvent(MakeTechnicalActivationEvent());
+
+		EXPECT_EQ(pCommand->ExecutionCount(), 2U);
+		EXPECT_EQ(pActivation->State(), features::EFeatureActivationState::Active);
+		EXPECT_TRUE(pBehavior->IsActive());
+		EXPECT_EQ(pBehavior->ActivationCount(), 2U);
+		EXPECT_EQ(pBehavior->DeactivationCount(), 1U);
+	}
+
+	TEST(PlatformActivationLifecycle, FailedStartRemainsGatedAndStopIsSafe)
+	{
+		CPlatform Platform{CPlatformConfiguration()};
+		const auto *pActivation = TechnicalActivation(Platform);
+		const auto *pBehavior = TechnicalBehavior(Platform);
+		ASSERT_NE(pActivation, nullptr);
+		ASSERT_NE(pBehavior, nullptr);
+
+		Platform.Modules().Clear();
+
+		EXPECT_FALSE(Platform.Start());
+		Platform.ProcessInputEvent(MakeTechnicalActivationEvent());
+		Platform.Stop();
+
+		EXPECT_EQ(pActivation->State(), features::EFeatureActivationState::Inactive);
+		EXPECT_FALSE(pBehavior->IsActive());
+		EXPECT_EQ(pBehavior->ActivationCount(), 0U);
+		EXPECT_EQ(pBehavior->DeactivationCount(), 0U);
+	}
+
+} // namespace
+} // namespace sirius::platform
