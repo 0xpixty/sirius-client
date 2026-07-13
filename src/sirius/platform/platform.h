@@ -28,6 +28,7 @@
 #include <sirius/platform/modules/module_lifecycle_graph.h>
 #include <sirius/platform/modules/module_lifecycle.h>
 #include <sirius/platform/modules/module_registry.h>
+#include <sirius/platform/modules/module_runtime_diagnostics.h>
 
 #include <memory>
 #include <optional>
@@ -60,6 +61,7 @@ namespace sirius::platform
 		void ForwardInput();
 		void ProcessInputEvent(const input::CInputEvent &Event);
 		std::optional<features::CSiriusStatusSnapshot> SiriusStatusSnapshot() const noexcept;
+		modules::CModuleRuntimeDiagnosticsSnapshot ModuleRuntimeDiagnosticsSnapshot() const noexcept;
 
 	private:
 		friend class CPlatformActivationLifecycleTestPeer;

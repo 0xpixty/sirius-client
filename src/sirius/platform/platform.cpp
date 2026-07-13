@@ -23,6 +23,7 @@
 #include <sirius/platform/modules/module_descriptor_validation.h>
 #include <sirius/platform/modules/module_lifecycle_graph.h>
 #include <sirius/platform/modules/module_registration_plan.h>
+#include <sirius/platform/modules/module_runtime_diagnostics.h>
 #include <sirius/platform/modules/status/sirius_status_module.h>
 
 #include <memory>
@@ -152,6 +153,11 @@ namespace sirius::platform
 		}
 
 		return pFeature->Snapshot();
+	}
+
+	modules::CModuleRuntimeDiagnosticsSnapshot CPlatform::ModuleRuntimeDiagnosticsSnapshot() const noexcept
+	{
+		return modules::BuildModuleRuntimeDiagnosticsSnapshot(m_Modules, m_ModuleLifecycle, m_ModuleLifecycleGraph.has_value() ? &*m_ModuleLifecycleGraph : nullptr);
 	}
 
 	void CPlatform::Activate(const activation::CActivationId &ActivationId)
