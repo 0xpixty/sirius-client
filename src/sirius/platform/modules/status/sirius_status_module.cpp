@@ -60,6 +60,15 @@ namespace sirius::platform::modules::status
 		return activation::CActivationId("activation.sirius.status.toggle");
 	}
 
+	bool IsSiriusStatusModuleComplete(const IModule &Module) noexcept
+	{
+		return Module.Id() == SiriusStatusModuleId() &&
+			Module.Features().Has(SiriusStatusFeatureId()) &&
+			Module.Commands().Has(SiriusStatusOpenCommandId()) &&
+			Module.Commands().Has(SiriusStatusCloseCommandId()) &&
+			Module.Commands().Has(SiriusStatusToggleCommandId());
+	}
+
 	std::unique_ptr<IModule> CreateSiriusStatusModule(features::CFeatureActivationBehaviorRegistry &FeatureActivationBehaviors)
 	{
 		auto pModule = std::make_unique<CModule>(SiriusStatusModuleId());

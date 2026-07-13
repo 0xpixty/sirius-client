@@ -31,6 +31,7 @@ namespace sirius::platform::modules::status
 	activation::CActivationId SiriusStatusOpenCommandActivationId();
 	activation::CActivationId SiriusStatusCloseCommandActivationId();
 	activation::CActivationId SiriusStatusToggleCommandActivationId();
+	bool IsSiriusStatusModuleComplete(const IModule &Module) noexcept;
 	std::unique_ptr<IModule> CreateSiriusStatusModule(features::CFeatureActivationBehaviorRegistry &FeatureActivationBehaviors);
 
 } // namespace sirius::platform::modules::status
