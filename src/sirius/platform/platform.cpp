@@ -19,6 +19,7 @@
 #include <sirius/platform/input/input_key.h>
 #include <sirius/platform/modules/module.h>
 #include <sirius/platform/modules/module_definition.h>
+#include <sirius/platform/modules/module_registration_plan.h>
 #include <sirius/platform/modules/status/sirius_status_module.h>
 
 #include <memory>
@@ -38,8 +39,7 @@ namespace sirius::platform
 		m_BindingActivationDispatcher(m_BindingMatcher, m_Bindings, m_BindingActivations, m_BindingActivationAdapter)
 	{
 		m_ModuleContext.emplace(*m_pCoreRuntime, m_pCoreRuntime->Events(), m_pCoreRuntime->Config(), m_pCoreRuntime->Logger(), m_pCoreRuntime->Tasks());
-		ConfigureTechnicalModule();
-		ConfigureStatusModule();
+		ConfigureModules();
 		ConfigureInputBindings();
 	}
 
@@ -253,7 +253,31 @@ namespace sirius::platform
 		}
 	}
 
-	void CPlatform::ConfigureTechnicalModule()
+	void CPlatform::ConfigureModules()
+	{
+		modules::CModuleRegistrationPlan Plan;
+		if(!Plan.Add(TechnicalModuleDefinition()))
+		{
+			throw std::runtime_error("failed to add technical module definition");
+		}
+		if(!Plan.Add(modules::status::SiriusStatusModuleDefinition(m_FeatureActivationBehaviors)))
+		{
+			throw std::runtime_error("failed to add Sirius status module definition");
+		}
+
+		for(const auto &Definition : Plan.DefinitionsInRegistrationOrder())
+		{
+			auto pModule = Definition.CreateModule();
+			if(!m_Modules.Register(pModule))
+			{
+				throw std::runtime_error("failed to register module definition");
+			}
+		}
+
+		ConfigureStatusModuleActivations();
+	}
+
+	modules::CModuleDefinition CPlatform::TechnicalModuleDefinition() const
 	{
 		const auto CommandId = commands::CCommandId("command.sirius.technical.activation");
 		const auto Descriptor = modules::CModuleDescriptor(
@@ -261,7 +285,7 @@ namespace sirius::platform
 			{},
 			{CommandId},
 			{});
-		const auto Definition = modules::CModuleDefinition(
+		return modules::CModuleDefinition(
 			Descriptor,
 			[Descriptor]() {
 				auto pModule = std::make_unique<modules::CModule>(Descriptor);
@@ -274,19 +298,10 @@ namespace sirius::platform
 				std::unique_ptr<modules::IModule> pOwnedModule = std::move(pModule);
 				return pOwnedModule;
 			});
-
-		auto pOwnedModule = Definition.CreateModule();
-		if(!m_Modules.Register(pOwnedModule))
-		{
-			throw std::runtime_error("failed to register technical module");
-		}
-
 	}
 
-	void CPlatform::ConfigureStatusModule()
+	void CPlatform::ConfigureStatusModuleActivations()
 	{
-		auto Definition = modules::status::SiriusStatusModuleDefinition(m_FeatureActivationBehaviors);
-		auto pModule = Definition.CreateModule();
 		const auto FeatureActivation = modules::status::SiriusStatusFeatureActivation();
 		if(!m_FeatureActivationResolver.Register(activation::CActivationId(FeatureActivation.ActivationId().Value()), features::CFeatureId(FeatureActivation.FeatureId().Value())))
 		{
@@ -303,11 +318,6 @@ namespace sirius::platform
 			ConfigureStatusCommandActivations(CommandActivation.ActivationId(), CommandActivation.CommandId());
 		}
 
-		std::unique_ptr<modules::IModule> pOwnedModule = std::move(pModule);
-		if(!m_Modules.Register(pOwnedModule))
-		{
-			throw std::runtime_error("failed to register Sirius status module");
-		}
 	}
 
 } // namespace sirius::platform

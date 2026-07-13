@@ -24,6 +24,7 @@
 #include <sirius/platform/input/input_event.h>
 #include <sirius/platform/input/source/buffered_input_source.h>
 #include <sirius/platform/modules/module_context.h>
+#include <sirius/platform/modules/module_definition.h>
 #include <sirius/platform/modules/module_lifecycle.h>
 #include <sirius/platform/modules/module_registry.h>
 
@@ -68,8 +69,9 @@ namespace sirius::platform
 		void ConfigureStatusInputBindings();
 		void ConfigureBindings(const input::CBindingActivationId &ActivationId, const input::CBindingId &BindingId, const input::CInputKey &InputKey);
 		void ConfigureFeatureActivations(const activation::CActivationId &ActivationId, const features::CFeatureId &FeatureId);
-		void ConfigureTechnicalModule();
-		void ConfigureStatusModule();
+		void ConfigureModules();
+		modules::CModuleDefinition TechnicalModuleDefinition() const;
+		void ConfigureStatusModuleActivations();
 		void ConfigureCommandActivations(const activation::CActivationId &ActivationId, const commands::CCommandId &CommandId);
 		void ConfigureStatusCommandActivations(const activation::CActivationId &ActivationId, const commands::CCommandId &CommandId);
 
