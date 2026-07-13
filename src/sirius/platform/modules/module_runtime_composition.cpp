@@ -7,6 +7,24 @@
 
 namespace sirius::platform::modules
 {
+namespace
+{
+
+	bool ContractBindingsAreBackedByDependencies(const CModuleDependencyGraph &DependencyGraph, const CModuleContractResolution &ContractResolution) noexcept
+	{
+		for(const auto &Binding : ContractResolution.Bindings())
+		{
+			const auto *pImporter = DependencyGraph.Get(Binding.ImportingModuleId());
+			if(!pImporter || !pImporter->DependsOn(Binding.ExportingModuleId()))
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+} // namespace
 
 	CModuleRuntimeComposition::CModuleRuntimeComposition(
 		CModuleDependencyGraph DependencyGraph,
@@ -51,6 +69,11 @@ namespace sirius::platform::modules
 
 		auto ContractResolution = ResolveModuleContractImports(Plan);
 		if(!ContractResolution.has_value())
+		{
+			return std::nullopt;
+		}
+
+		if(!ContractBindingsAreBackedByDependencies(*DependencyGraph, *ContractResolution))
 		{
 			return std::nullopt;
 		}
