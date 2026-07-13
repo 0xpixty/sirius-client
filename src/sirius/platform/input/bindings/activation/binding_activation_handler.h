@@ -13,6 +13,7 @@ namespace sirius::platform::input
 		virtual ~IBindingActivationHandler() = default;
 
 		virtual void Activate(const CBindingActivationId &ActivationId) = 0;
+		virtual void Deactivate(const CBindingActivationId &ActivationId) = 0;
 	};
 
 } // namespace sirius::platform::input

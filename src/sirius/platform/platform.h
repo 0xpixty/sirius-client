@@ -10,6 +10,7 @@
 #include <sirius/platform/features/feature_activation_controller.h>
 #include <sirius/platform/features/feature_activation_registry.h>
 #include <sirius/platform/input/bindings/activation/binding_activation_dispatcher.h>
+#include <sirius/platform/input/bindings/activation/binding_activation_id.h>
 #include <sirius/platform/input/bindings/activation/binding_activation_registry.h>
 #include <sirius/platform/input/bindings/binding_matcher.h>
 #include <sirius/platform/input/bindings/binding_registry.h>
@@ -48,6 +49,7 @@ namespace sirius::platform
 		const input::CBufferedInputSource &InputSource() const noexcept;
 		void ForwardInput();
 		void ProcessInputEvent(const input::CInputEvent &Event);
+		void DeactivateInputActivation(const input::CBindingActivationId &ActivationId);
 		modules::CModuleRegistry &Modules() noexcept;
 		const modules::CModuleRegistry &Modules() const noexcept;
 

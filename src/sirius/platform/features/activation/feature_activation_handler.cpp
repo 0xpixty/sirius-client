@@ -28,4 +28,15 @@ namespace sirius::platform::features
 		m_Controller.Activate(*pFeatureId);
 	}
 
+	void CFeatureActivationHandler::Deactivate(const input::CBindingActivationId &ActivationId)
+	{
+		const auto *pFeatureId = m_Resolver.Resolve(ActivationId);
+		if(!pFeatureId)
+		{
+			return;
+		}
+
+		m_Controller.Deactivate(*pFeatureId);
+	}
+
 } // namespace sirius::platform::features
