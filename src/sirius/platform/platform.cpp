@@ -142,25 +142,41 @@ namespace sirius::platform
 
 	void CPlatform::ConfigureInputBindings()
 	{
-		const input::CBindingActivationId ActivationId("activation.command.test");
+		const activation::CActivationId ActivationId("activation.command.test");
 		const features::CFeatureId FeatureId("feature.activation.test");
 		const commands::CCommandId CommandId("command.test");
 		const input::CBindingId BindingId("binding.activation.test");
 
-		std::unique_ptr<commands::ICommand> pCommand = std::make_unique<commands::CTestActivationCommand>();
+		ConfigureBindings(input::CBindingActivationId(ActivationId.Value()), BindingId);
+		ConfigureFeatureActivations(ActivationId, FeatureId);
+		ConfigureCommandActivations(ActivationId, CommandId);
+	}
+
+	void CPlatform::ConfigureBindings(const input::CBindingActivationId &ActivationId, const input::CBindingId &BindingId)
+	{
 		auto pBinding = std::make_unique<input::CInputBinding>(
 			input::CBindingId(BindingId.Value()),
 			input::CBindingTrigger(input::CInputKey("input.activation.test"), input::EInputAction::Pressed));
 
-		m_ActivationCommandRegistry.Register(pCommand);
 		m_Bindings.Register(pBinding);
 		m_BindingActivations.Register(input::CBindingActivation(input::CBindingId(BindingId.Value()), input::CBindingActivationId(ActivationId.Value())));
+	}
+
+	void CPlatform::ConfigureFeatureActivations(const activation::CActivationId &ActivationId, const features::CFeatureId &FeatureId)
+	{
 		m_FeatureActivationResolver.Register(activation::CActivationId(ActivationId.Value()), features::CFeatureId(FeatureId.Value()));
-		m_CommandActivationResolver.Register(activation::CActivationId(ActivationId.Value()), commands::CCommandId(CommandId.Value()));
 		m_FeatureActivations.Register(features::CFeatureActivation(features::CFeatureId(FeatureId.Value()), features::EFeatureActivationState::Inactive));
 
 		std::unique_ptr<features::IFeatureActivationBehavior> pBehavior = std::make_unique<features::CTestActivationBehavior>();
 		m_FeatureActivationBehaviors.Register(features::CFeatureId(FeatureId.Value()), pBehavior);
+	}
+
+	void CPlatform::ConfigureCommandActivations(const activation::CActivationId &ActivationId, const commands::CCommandId &CommandId)
+	{
+		std::unique_ptr<commands::ICommand> pCommand = std::make_unique<commands::CTestActivationCommand>();
+
+		m_ActivationCommandRegistry.Register(pCommand);
+		m_CommandActivationResolver.Register(activation::CActivationId(ActivationId.Value()), commands::CCommandId(CommandId.Value()));
 	}
 
 } // namespace sirius::platform
