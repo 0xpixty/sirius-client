@@ -160,16 +160,21 @@ namespace sirius::platform
 		const commands::CCommandId CommandId("command.sirius.technical.activation");
 		const input::CBindingId BindingId("binding.sirius.technical.activation");
 
-		ConfigureBindings(input::CBindingActivationId(ActivationId.Value()), BindingId);
+		ConfigureBindings(input::CBindingActivationId(ActivationId.Value()), BindingId, input::CInputKey("input.sirius.technical.activation"));
 		ConfigureFeatureActivations(ActivationId, FeatureId);
 		ConfigureCommandActivations(ActivationId, CommandId);
+
+		ConfigureBindings(
+			input::CBindingActivationId("activation.sirius.status"),
+			input::CBindingId("binding.sirius.status.activation"),
+			input::CInputKey("input.sirius.status.activation"));
 	}
 
-	void CPlatform::ConfigureBindings(const input::CBindingActivationId &ActivationId, const input::CBindingId &BindingId)
+	void CPlatform::ConfigureBindings(const input::CBindingActivationId &ActivationId, const input::CBindingId &BindingId, const input::CInputKey &InputKey)
 	{
 		auto pBinding = std::make_unique<input::CInputBinding>(
 			input::CBindingId(BindingId.Value()),
-			input::CBindingTrigger(input::CInputKey("input.sirius.technical.activation"), input::EInputAction::Pressed));
+			input::CBindingTrigger(input::CInputKey(InputKey.Value()), input::EInputAction::Pressed));
 
 		m_Bindings.Register(pBinding);
 		m_BindingActivations.Register(input::CBindingActivation(input::CBindingId(BindingId.Value()), input::CBindingActivationId(ActivationId.Value())));
