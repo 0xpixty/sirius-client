@@ -3,6 +3,7 @@
 
 #include <sirius/core/runtime/core_runtime.h>
 #include <sirius/core/runtime/core_runtime_configuration.h>
+#include <sirius/platform/commands/activation/test_activation_command.h>
 #include <sirius/platform/features/activation/test_activation_behavior.h>
 #include <sirius/platform/commands/command_id.h>
 #include <sirius/platform/features/feature_activation.h>
@@ -141,15 +142,17 @@ namespace sirius::platform
 
 	void CPlatform::ConfigureInputBindings()
 	{
-		const input::CBindingActivationId ActivationId("feature.activation.test");
+		const input::CBindingActivationId ActivationId("activation.command.test");
 		const features::CFeatureId FeatureId("feature.activation.test");
-		const commands::CCommandId CommandId("command.activation.test");
+		const commands::CCommandId CommandId("command.test");
 		const input::CBindingId BindingId("binding.activation.test");
 
+		std::unique_ptr<commands::ICommand> pCommand = std::make_unique<commands::CTestActivationCommand>();
 		auto pBinding = std::make_unique<input::CInputBinding>(
 			input::CBindingId(BindingId.Value()),
 			input::CBindingTrigger(input::CInputKey("input.activation.test"), input::EInputAction::Pressed));
 
+		m_ActivationCommandRegistry.Register(pCommand);
 		m_Bindings.Register(pBinding);
 		m_BindingActivations.Register(input::CBindingActivation(input::CBindingId(BindingId.Value()), input::CBindingActivationId(ActivationId.Value())));
 		m_FeatureActivationResolver.Register(activation::CActivationId(ActivationId.Value()), features::CFeatureId(FeatureId.Value()));
