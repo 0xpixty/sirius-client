@@ -125,6 +125,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/modules/module.h
   platform/modules/module_contract.cpp
   platform/modules/module_contract.h
+  platform/modules/module_contract_resolution.cpp
+  platform/modules/module_contract_resolution.h
   platform/modules/module_context.cpp
   platform/modules/module_context.h
   platform/modules/module_dependency_graph.cpp

@@ -3260,6 +3260,7 @@ if((GTEST_FOUND OR DOWNLOAD_GTEST) AND SERVER)
     serverinfo_test.cpp
     sirius_feature_activation_controller_test.cpp
     sirius_module_contract_test.cpp
+    sirius_module_contract_resolution_test.cpp
     sirius_module_dependency_graph_test.cpp
     sirius_module_definition_test.cpp
     sirius_module_descriptor_test.cpp
