@@ -85,6 +85,11 @@ namespace sirius::platform
 		m_InputForwarder.Forward(m_InputSource);
 	}
 
+	void CPlatform::ProcessInputEvent(const input::CInputEvent &Event)
+	{
+		m_BindingActivationDispatcher.Dispatch(Event);
+	}
+
 	modules::CModuleRegistry &CPlatform::Modules() noexcept
 	{
 		return m_Modules;
