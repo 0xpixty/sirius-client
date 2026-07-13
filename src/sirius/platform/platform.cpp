@@ -120,11 +120,6 @@ namespace sirius::platform
 		m_BindingActivationDispatcher.Dispatch(Event);
 	}
 
-	void CPlatform::DeactivateActivation(const activation::CActivationId &ActivationId)
-	{
-		Deactivate(ActivationId);
-	}
-
 	modules::CModuleRegistry &CPlatform::Modules() noexcept
 	{
 		return m_Modules;

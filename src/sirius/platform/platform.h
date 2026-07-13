@@ -56,7 +56,6 @@ namespace sirius::platform
 		const input::CBufferedInputSource &InputSource() const noexcept;
 		void ForwardInput();
 		void ProcessInputEvent(const input::CInputEvent &Event);
-		void DeactivateActivation(const activation::CActivationId &ActivationId);
 		modules::CModuleRegistry &Modules() noexcept;
 		const modules::CModuleRegistry &Modules() const noexcept;
 
