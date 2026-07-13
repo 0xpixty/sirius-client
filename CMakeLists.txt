@@ -3264,6 +3264,7 @@ if((GTEST_FOUND OR DOWNLOAD_GTEST) AND SERVER)
     sirius_module_descriptor_test.cpp
     sirius_module_descriptor_validation_test.cpp
     sirius_module_lifecycle_graph_test.cpp
+    sirius_module_lifecycle_order_test.cpp
     sirius_module_registration_plan_test.cpp
     sirius_platform_activation_lifecycle_test.cpp
     snapshot_test.cpp

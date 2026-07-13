@@ -19,7 +19,9 @@
 #include <sirius/platform/input/input_key.h>
 #include <sirius/platform/modules/module.h>
 #include <sirius/platform/modules/module_definition.h>
+#include <sirius/platform/modules/module_dependency_graph.h>
 #include <sirius/platform/modules/module_descriptor_validation.h>
+#include <sirius/platform/modules/module_lifecycle_graph.h>
 #include <sirius/platform/modules/module_registration_plan.h>
 #include <sirius/platform/modules/status/sirius_status_module.h>
 
@@ -76,7 +78,7 @@ namespace sirius::platform
 
 		try
 		{
-			if(!m_ModuleLifecycle.Initialize(m_Modules, *m_ModuleContext))
+			if(!m_ModuleLifecycleGraph.has_value() || !m_ModuleLifecycle.Initialize(m_Modules, *m_ModuleContext, *m_ModuleLifecycleGraph))
 			{
 				m_pCoreRuntime->Stop();
 				return false;
@@ -266,6 +268,18 @@ namespace sirius::platform
 			throw std::runtime_error("failed to add Sirius status module definition");
 		}
 
+		auto DependencyGraph = modules::BuildModuleDependencyGraph(Plan);
+		if(!DependencyGraph.has_value())
+		{
+			throw std::runtime_error("failed to build module dependency graph");
+		}
+
+		auto LifecycleGraph = modules::BuildModuleLifecycleGraph(*DependencyGraph);
+		if(!LifecycleGraph.has_value())
+		{
+			throw std::runtime_error("failed to build module lifecycle graph");
+		}
+
 		for(const auto &Definition : Plan.DefinitionsInRegistrationOrder())
 		{
 			auto pModule = Definition.CreateModule();
@@ -280,6 +294,7 @@ namespace sirius::platform
 			}
 		}
 
+		m_ModuleLifecycleGraph.emplace(std::move(*LifecycleGraph));
 		ConfigureStatusModuleActivations();
 	}
 

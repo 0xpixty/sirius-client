@@ -14,7 +14,9 @@ namespace sirius::platform::modules
 {
 
 	class CModuleContext;
+	class CModuleLifecycleGraph;
 	class CModuleRegistry;
+	class IModule;
 
 	class CModuleLifecycle final
 	{
@@ -28,17 +30,20 @@ namespace sirius::platform::modules
 		CModuleLifecycle &operator=(CModuleLifecycle &&Other) = delete;
 
 		bool Initialize(CModuleRegistry &Registry, CModuleContext &Context);
+		bool Initialize(CModuleRegistry &Registry, CModuleContext &Context, const CModuleLifecycleGraph &LifecycleGraph);
 		void Shutdown(CModuleRegistry &Registry, CModuleContext &Context) noexcept;
 		bool IsInitialized() const noexcept;
 
 	private:
+		bool InitializeModules(CModuleRegistry &Registry, CModuleContext &Context, const std::vector<IModule *> &ModulesInLifecycleOrder);
+		bool ResolveLifecycleGraph(CModuleRegistry &Registry, const CModuleLifecycleGraph &LifecycleGraph, std::vector<IModule *> &ModulesInLifecycleOrder) const noexcept;
 		void ShutdownInitializedModules(CModuleRegistry &Registry, CModuleContext &Context) noexcept;
 
 		std::vector<std::unique_ptr<services::CModuleServiceLifecycle>> m_ModuleServiceLifecycles;
 		std::vector<std::unique_ptr<commands::CCommandLifecycle>> m_CommandLifecycles;
 		std::vector<std::unique_ptr<features::CFeatureLifecycle>> m_FeatureLifecycles;
+		std::vector<IModule *> m_InitializedModules;
 		bool m_Initialized = false;
-		std::size_t m_InitializedModuleCount = 0;
 	};
 
 } // namespace sirius::platform::modules

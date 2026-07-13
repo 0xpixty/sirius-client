@@ -25,6 +25,7 @@
 #include <sirius/platform/input/source/buffered_input_source.h>
 #include <sirius/platform/modules/module_context.h>
 #include <sirius/platform/modules/module_definition.h>
+#include <sirius/platform/modules/module_lifecycle_graph.h>
 #include <sirius/platform/modules/module_lifecycle.h>
 #include <sirius/platform/modules/module_registry.h>
 
@@ -81,6 +82,7 @@ namespace sirius::platform
 		input::CBufferedInputSource m_InputSource;
 		input::CInputEventForwarder m_InputForwarder;
 		std::optional<modules::CModuleContext> m_ModuleContext;
+		std::optional<modules::CModuleLifecycleGraph> m_ModuleLifecycleGraph;
 		modules::CModuleLifecycle m_ModuleLifecycle;
 		input::CBindingRegistry m_Bindings;
 		input::CBindingActivationRegistry m_BindingActivations;

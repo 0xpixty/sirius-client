@@ -3,12 +3,14 @@
 
 #include "module.h"
 #include "module_context.h"
+#include "module_lifecycle_graph.h"
 #include "module_registry.h"
 
 #include <sirius/platform/commands/command_context.h>
 #include <sirius/platform/features/feature_context.h>
 #include <sirius/platform/modules/services/module_service_context.h>
 
+#include <algorithm>
 #include <memory>
 
 namespace sirius::platform::modules
@@ -17,6 +19,22 @@ namespace sirius::platform::modules
 	CModuleLifecycle::~CModuleLifecycle() noexcept = default;
 
 	bool CModuleLifecycle::Initialize(CModuleRegistry &Registry, CModuleContext &Context)
+	{
+		return InitializeModules(Registry, Context, Registry.ModulesInRegistrationOrder());
+	}
+
+	bool CModuleLifecycle::Initialize(CModuleRegistry &Registry, CModuleContext &Context, const CModuleLifecycleGraph &LifecycleGraph)
+	{
+		std::vector<IModule *> ModulesInLifecycleOrder;
+		if(!ResolveLifecycleGraph(Registry, LifecycleGraph, ModulesInLifecycleOrder))
+		{
+			return false;
+		}
+
+		return InitializeModules(Registry, Context, ModulesInLifecycleOrder);
+	}
+
+	bool CModuleLifecycle::InitializeModules(CModuleRegistry &Registry, CModuleContext &Context, const std::vector<IModule *> &ModulesInLifecycleOrder)
 	{
 		if(m_Initialized)
 		{
@@ -30,11 +48,11 @@ namespace sirius::platform::modules
 			services::CModuleServiceContext ModuleServiceContext(Context);
 			commands::CCommandContext CommandContext(Context);
 			features::CFeatureContext FeatureContext(Context);
-			const auto &Modules = Registry.ModulesInRegistrationOrder();
-			m_ModuleServiceLifecycles.reserve(Modules.size());
-			m_CommandLifecycles.reserve(Modules.size());
-			m_FeatureLifecycles.reserve(Modules.size());
-			for(auto *pModule : Modules)
+			m_ModuleServiceLifecycles.reserve(ModulesInLifecycleOrder.size());
+			m_CommandLifecycles.reserve(ModulesInLifecycleOrder.size());
+			m_FeatureLifecycles.reserve(ModulesInLifecycleOrder.size());
+			m_InitializedModules.reserve(ModulesInLifecycleOrder.size());
+			for(auto *pModule : ModulesInLifecycleOrder)
 			{
 				auto pModuleServiceLifecycle = std::make_unique<services::CModuleServiceLifecycle>();
 				auto pCommandLifecycle = std::make_unique<commands::CCommandLifecycle>();
@@ -46,10 +64,10 @@ namespace sirius::platform::modules
 					return false;
 				}
 
-				++m_InitializedModuleCount;
 				m_ModuleServiceLifecycles.push_back(std::move(pModuleServiceLifecycle));
 				m_CommandLifecycles.push_back(std::move(pCommandLifecycle));
 				m_FeatureLifecycles.push_back(std::move(pFeatureLifecycle));
+				m_InitializedModules.push_back(pModule);
 				if(!m_FeatureLifecycles.back()->Initialize(pModule->Features(), FeatureContext))
 				{
 					ShutdownInitializedModules(Registry, Context);
@@ -83,9 +101,49 @@ namespace sirius::platform::modules
 		return true;
 	}
 
+	bool CModuleLifecycle::ResolveLifecycleGraph(CModuleRegistry &Registry, const CModuleLifecycleGraph &LifecycleGraph, std::vector<IModule *> &ModulesInLifecycleOrder) const noexcept
+	{
+		if(LifecycleGraph.InitializationOrder().size() != Registry.Count() ||
+			LifecycleGraph.ShutdownOrder().size() != LifecycleGraph.InitializationOrder().size())
+		{
+			return false;
+		}
+
+		for(std::size_t Index = 0; Index < LifecycleGraph.InitializationOrder().size(); ++Index)
+		{
+			const auto &InitializationId = LifecycleGraph.InitializationOrder()[Index];
+			const auto &ShutdownId = LifecycleGraph.ShutdownOrder()[LifecycleGraph.ShutdownOrder().size() - Index - 1U];
+			if(InitializationId != ShutdownId)
+			{
+				return false;
+			}
+		}
+
+		ModulesInLifecycleOrder.reserve(LifecycleGraph.InitializationOrder().size());
+		for(const auto &ModuleId : LifecycleGraph.InitializationOrder())
+		{
+			if(std::find_if(ModulesInLifecycleOrder.begin(), ModulesInLifecycleOrder.end(), [&ModuleId](const IModule *pModule) {
+				   return pModule && pModule->Id() == ModuleId;
+			   }) != ModulesInLifecycleOrder.end())
+			{
+				return false;
+			}
+
+			auto *pModule = Registry.Get(ModuleId);
+			if(!pModule)
+			{
+				return false;
+			}
+
+			ModulesInLifecycleOrder.push_back(pModule);
+		}
+
+		return true;
+	}
+
 	void CModuleLifecycle::Shutdown(CModuleRegistry &Registry, CModuleContext &Context) noexcept
 	{
-		if(!m_Initialized && m_InitializedModuleCount == 0)
+		if(!m_Initialized && m_InitializedModules.empty())
 		{
 			Registry.Unseal();
 			return;
@@ -102,18 +160,18 @@ namespace sirius::platform::modules
 
 	void CModuleLifecycle::ShutdownInitializedModules(CModuleRegistry &Registry, CModuleContext &Context) noexcept
 	{
+		(void)Registry;
 		services::CModuleServiceContext ModuleServiceContext(Context);
 		commands::CCommandContext CommandContext(Context);
 		features::CFeatureContext FeatureContext(Context);
-		const auto &Modules = Registry.ModulesInRegistrationOrder();
-		while(m_InitializedModuleCount > 0)
+		while(!m_InitializedModules.empty())
 		{
-			--m_InitializedModuleCount;
-			auto *pModule = Modules[m_InitializedModuleCount];
-			m_ModuleServiceLifecycles[m_InitializedModuleCount]->Shutdown(pModule->ModuleServices(), ModuleServiceContext);
-			m_CommandLifecycles[m_InitializedModuleCount]->Shutdown(pModule->Commands(), CommandContext);
-			m_FeatureLifecycles[m_InitializedModuleCount]->Shutdown(pModule->Features(), FeatureContext);
+			auto *pModule = m_InitializedModules.back();
+			m_ModuleServiceLifecycles.back()->Shutdown(pModule->ModuleServices(), ModuleServiceContext);
+			m_CommandLifecycles.back()->Shutdown(pModule->Commands(), CommandContext);
+			m_FeatureLifecycles.back()->Shutdown(pModule->Features(), FeatureContext);
 			pModule->Shutdown(Context);
+			m_InitializedModules.pop_back();
 			m_ModuleServiceLifecycles.pop_back();
 			m_CommandLifecycles.pop_back();
 			m_FeatureLifecycles.pop_back();
@@ -122,6 +180,7 @@ namespace sirius::platform::modules
 		m_ModuleServiceLifecycles.clear();
 		m_CommandLifecycles.clear();
 		m_FeatureLifecycles.clear();
+		m_InitializedModules.clear();
 		m_Initialized = false;
 	}
 
