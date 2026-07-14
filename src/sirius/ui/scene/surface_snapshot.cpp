@@ -33,6 +33,46 @@ namespace sirius::ui::scene
 		return !(*this == Other);
 	}
 
+	CUiHostSlotId UiHostSlotBeforeHUD()
+	{
+		return CUiHostSlotId("BeforeHUD");
+	}
+
+	CUiHostSlotId UiHostSlotHUD()
+	{
+		return CUiHostSlotId("HUD");
+	}
+
+	CUiHostSlotId UiHostSlotOverlay()
+	{
+		return CUiHostSlotId("Overlay");
+	}
+
+	CUiHostSlotId UiHostSlotMenu()
+	{
+		return CUiHostSlotId("Menu");
+	}
+
+	CUiHostSlotId UiHostSlotModal()
+	{
+		return CUiHostSlotId("Modal");
+	}
+
+	CUiHostSlotId UiHostSlotDebug()
+	{
+		return CUiHostSlotId("Debug");
+	}
+
+	bool IsApprovedInitialUiHostSlot(const CUiHostSlotId &HostSlotId) noexcept
+	{
+		return HostSlotId == UiHostSlotBeforeHUD() ||
+			HostSlotId == UiHostSlotHUD() ||
+			HostSlotId == UiHostSlotOverlay() ||
+			HostSlotId == UiHostSlotMenu() ||
+			HostSlotId == UiHostSlotModal() ||
+			HostSlotId == UiHostSlotDebug();
+	}
+
 	CSurfaceSnapshot::CSurfaceSnapshot(
 		CUiSurfaceId SurfaceId,
 		ESurfaceHostIntent HostIntent,

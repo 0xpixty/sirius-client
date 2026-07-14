@@ -52,12 +52,18 @@ namespace sirius::ui::scene
 
 	enum class ESurfaceCompositionStatus
 	{
-		Hosted,
-		Hidden,
-		Degraded,
-		Rejected,
-		Unavailable,
+		Pending,
+		Composed,
+		Failed,
 	};
+
+	CUiHostSlotId UiHostSlotBeforeHUD();
+	CUiHostSlotId UiHostSlotHUD();
+	CUiHostSlotId UiHostSlotOverlay();
+	CUiHostSlotId UiHostSlotMenu();
+	CUiHostSlotId UiHostSlotModal();
+	CUiHostSlotId UiHostSlotDebug();
+	bool IsApprovedInitialUiHostSlot(const CUiHostSlotId &HostSlotId) noexcept;
 
 	class CSurfaceSnapshot final
 	{
@@ -93,7 +99,7 @@ namespace sirius::ui::scene
 		ESurfaceHostIntent m_HostIntent = ESurfaceHostIntent::Custom;
 		CUiHostSlotId m_HostSlotId;
 		ESurfaceLayer m_Layer = ESurfaceLayer::Content;
-		ESurfaceCompositionStatus m_Status = ESurfaceCompositionStatus::Unavailable;
+		ESurfaceCompositionStatus m_Status = ESurfaceCompositionStatus::Pending;
 		std::size_t m_StableOrderIndex = 0;
 		std::optional<CSceneSnapshot> m_Scene;
 	};
