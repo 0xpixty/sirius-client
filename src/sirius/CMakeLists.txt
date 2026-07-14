@@ -196,6 +196,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   ui/layout/layout_scene_projection.h
   ui/layout/layout_snapshot.cpp
   ui/layout/layout_snapshot.h
+  ui/layout/layout_validation.cpp
+  ui/layout/layout_validation.h
   ui/property/property_dependency_graph.cpp
   ui/property/property_dependency_graph.h
   ui/property/property_evaluation.cpp
