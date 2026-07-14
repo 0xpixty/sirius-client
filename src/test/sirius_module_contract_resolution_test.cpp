@@ -1,3 +1,4 @@
+#include <sirius/platform/modules/module.h>
 #include <sirius/platform/modules/module_contract_resolution.h>
 #include <sirius/platform/modules/module_definition.h>
 #include <sirius/platform/modules/module_descriptor.h>

@@ -15,7 +15,7 @@ namespace
 
 	CModuleDefinition MakeDefinition(const char *pId)
 	{
-		const CModuleDescriptor Descriptor(CModuleId(pId));
+		const CModuleDescriptor Descriptor{CModuleId(pId)};
 		return CModuleDefinition(
 			Descriptor,
 			[Descriptor]() {

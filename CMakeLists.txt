@@ -3349,6 +3349,9 @@ if((GTEST_FOUND OR DOWNLOAD_GTEST) AND SERVER)
     # tidy-alphabetical-end
   )
 
+  list(APPEND TESTS_EXTRA ${SIRIUS_CLIENT})
+  list(REMOVE_DUPLICATES TESTS_EXTRA)
+  
   set(TARGET_TESTRUNNER testrunner)
   add_executable(${TARGET_TESTRUNNER} EXCLUDE_FROM_ALL
     ${TESTS}
