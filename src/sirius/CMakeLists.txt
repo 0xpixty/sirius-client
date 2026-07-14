@@ -170,6 +170,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   ui/declaration/declaration_registration_plan.h
   ui/declaration/declaration_snapshot.cpp
   ui/declaration/declaration_snapshot.h
+  ui/declaration/declaration_validation.cpp
+  ui/declaration/declaration_validation.h
   ui/declaration/element_declaration.cpp
   ui/declaration/element_declaration.h
   ui/declaration/module_declaration_contribution.cpp
