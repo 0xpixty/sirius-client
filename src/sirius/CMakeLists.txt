@@ -188,6 +188,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   ui/localization/localization_snapshot.h
   ui/layout/layout_diagnostic.cpp
   ui/layout/layout_diagnostic.h
+  ui/layout/layout_runtime.cpp
+  ui/layout/layout_runtime.h
   ui/layout/layout_snapshot.cpp
   ui/layout/layout_snapshot.h
   ui/property/property_dependency_graph.cpp
