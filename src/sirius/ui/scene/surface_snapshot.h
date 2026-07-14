@@ -42,6 +42,7 @@ namespace sirius::ui::scene
 	{
 		Background,
 		Content,
+		Hud,
 		Overlay,
 		Modal,
 		Tooltip,

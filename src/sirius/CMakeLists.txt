@@ -162,6 +162,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/modules/status/sirius_status_module.h
   ui/editor/editor_snapshot.cpp
   ui/editor/editor_snapshot.h
+  ui/hud/hud_snapshot.cpp
+  ui/hud/hud_snapshot.h
   ui/localization/localization_snapshot.cpp
   ui/localization/localization_snapshot.h
   ui/layout/layout_snapshot.cpp
