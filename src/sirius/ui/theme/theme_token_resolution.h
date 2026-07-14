@@ -2,7 +2,7 @@
 #ifndef SIRIUS_UI_THEME_THEME_TOKEN_RESOLUTION_H
 #define SIRIUS_UI_THEME_THEME_TOKEN_RESOLUTION_H
 
-#include "theme_runtime.h"
+#include "theme_runtime_collection.h"
 
 #include <optional>
 
@@ -30,6 +30,13 @@ namespace sirius::ui::theme
 
 	CThemeTokenResolutionSnapshot ResolveUiThemeToken(
 		const CThemeRuntimeSnapshot &ThemeRuntime,
+		CThemeTokenId TokenId,
+		EThemeStateDimension State,
+		bool Required);
+
+	CThemeTokenResolutionSnapshot ResolveUiThemeToken(
+		const CThemeRuntimeCollectionSnapshot &Themes,
+		CThemeId ThemeId,
 		CThemeTokenId TokenId,
 		EThemeStateDimension State,
 		bool Required);
