@@ -164,6 +164,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   ui/action/action_intent.h
   ui/declaration/element_declaration.cpp
   ui/declaration/element_declaration.h
+  ui/declaration/property_declaration.cpp
+  ui/declaration/property_declaration.h
   ui/declaration/surface_declaration.cpp
   ui/declaration/surface_declaration.h
   ui/editor/editor_snapshot.cpp
