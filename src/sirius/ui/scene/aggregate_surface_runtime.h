@@ -6,6 +6,7 @@
 #include "surface_snapshot.h"
 
 #include <sirius/ui/declaration/declaration_diagnostic.h>
+#include <sirius/ui/declaration/declaration_snapshot.h>
 
 namespace sirius::ui::scene
 {
@@ -31,6 +32,9 @@ namespace sirius::ui::scene
 		sirius::ui::declaration::CDeclarationDiagnosticSnapshot m_DeclarationDiagnostics;
 		CSurfaceRuntimeDiagnosticSnapshot m_SurfaceDiagnostics;
 	};
+
+	CAggregateSurfaceRuntimeSnapshot ProjectAggregateUiSurfaceRuntimeSnapshot(
+		const sirius::ui::declaration::CUiDeclarationSnapshot &Declarations);
 
 } // namespace sirius::ui::scene
 
