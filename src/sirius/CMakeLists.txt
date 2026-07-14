@@ -278,3 +278,9 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   ui/theme/theme_validation.h
   # tidy-alphabetical-end
 )
+
+# DDNet disables C++ exceptions globally on Unix-like platforms.
+# Sirius currently relies on exceptions for initialization rollback.
+if(NOT MSVC AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    set_property(SOURCE ${SIRIUS_CLIENT} APPEND PROPERTY COMPILE_OPTIONS -fexceptions)
+endif()
