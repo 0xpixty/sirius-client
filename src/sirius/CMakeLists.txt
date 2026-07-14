@@ -254,6 +254,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   ui/scene/surface_runtime_diagnostic.h
   ui/scene/surface_snapshot.cpp
   ui/scene/surface_snapshot.h
+  ui/theme/theme_diagnostic.cpp
+  ui/theme/theme_diagnostic.h
   ui/theme/theme_snapshot.cpp
   ui/theme/theme_snapshot.h
   # tidy-alphabetical-end
