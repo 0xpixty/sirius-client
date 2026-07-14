@@ -5,6 +5,7 @@
 #include "scene_snapshot.h"
 
 #include <sirius/ui/declaration/element_declaration.h>
+#include <sirius/ui/declaration/declaration_snapshot.h>
 
 #include <vector>
 
@@ -12,6 +13,7 @@ namespace sirius::ui::scene
 {
 
 	std::vector<CSceneElementSnapshot> ProjectUiSceneElements(const sirius::ui::declaration::CUiElementDeclarationList &Elements);
+	CSceneSnapshot ProjectUiSceneSnapshot(const sirius::ui::declaration::CUiSurfaceDeclarationSnapshot &Surface, CUiSceneId SceneId);
 
 } // namespace sirius::ui::scene
 

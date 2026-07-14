@@ -1,6 +1,10 @@
 /* (c) Sirius Client contributors. See licence.txt in the root of the distribution for more information. */
 #include "scene_declaration_projection.h"
 
+#include "scene_property_projection.h"
+
+#include <utility>
+
 namespace sirius::ui::scene
 {
 
@@ -22,6 +26,15 @@ namespace sirius::ui::scene
 		}
 
 		return ProjectedElements;
+	}
+
+	CSceneSnapshot ProjectUiSceneSnapshot(const sirius::ui::declaration::CUiSurfaceDeclarationSnapshot &Surface, CUiSceneId SceneId)
+	{
+		return CSceneSnapshot(
+			Surface.Surface().SurfaceId(),
+			std::move(SceneId),
+			ProjectUiSceneElements(Surface.Elements()),
+			ProjectUiScenePropertyRuntimeSnapshot(Surface.Properties()));
 	}
 
 } // namespace sirius::ui::scene
