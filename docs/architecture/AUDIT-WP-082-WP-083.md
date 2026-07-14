@@ -90,4 +90,3 @@ The next WP should not add another broad Platform command fan-out by default. Pr
 
 - improves local module-owned composition for the existing Status feature/commands without introducing generalized routing; or
 - advances the first real Status feature behavior only where ownership remains explicit and module-owned.
-

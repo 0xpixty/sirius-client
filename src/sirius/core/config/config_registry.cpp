@@ -17,4 +17,3 @@ namespace sirius::core::config
 	}
 
 } // namespace sirius::core::config
-

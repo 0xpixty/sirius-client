@@ -46,4 +46,3 @@ namespace sirius::core::tasks
 	}
 
 } // namespace sirius::core::tasks
-

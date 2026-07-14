@@ -80,4 +80,3 @@ namespace sirius::core::logging
 	}
 
 } // namespace sirius::core::logging
-

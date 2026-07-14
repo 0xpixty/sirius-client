@@ -83,4 +83,3 @@ Not required.
 Proceed to WP-087 design.
 
 WP-087 should continue from repository-derived Status feature pressure. Avoid adding another Platform fan-out or generalized routing. If the next meaningful step requires a user-facing consumer surface, classify the needed product choice explicitly instead of guessing.
-
