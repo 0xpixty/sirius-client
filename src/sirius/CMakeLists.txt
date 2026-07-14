@@ -258,6 +258,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   ui/theme/theme_diagnostic.h
   ui/theme/theme_snapshot.cpp
   ui/theme/theme_snapshot.h
+  ui/theme/theme_validation.cpp
+  ui/theme/theme_validation.h
   # tidy-alphabetical-end
 )
 
