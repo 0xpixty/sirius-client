@@ -5,10 +5,13 @@
 #include "layout_diagnostic.h"
 #include "layout_snapshot.h"
 
+#include <cstddef>
+
 namespace sirius::ui::layout
 {
 
 	CLayoutDiagnosticSnapshot ValidateUiLayoutSnapshot(const CLayoutSnapshot &Layout);
+	CLayoutDiagnosticSnapshot ValidateUiLayoutSnapshot(const CLayoutSnapshot &Layout, std::size_t StableOrderOffset);
 
 } // namespace sirius::ui::layout
 

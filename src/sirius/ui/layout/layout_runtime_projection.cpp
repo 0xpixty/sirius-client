@@ -2,6 +2,7 @@
 #include "layout_runtime_projection.h"
 
 #include "layout_scene_projection.h"
+#include "layout_validation.h"
 
 #include <optional>
 #include <utility>
@@ -41,7 +42,13 @@ namespace sirius::ui::layout
 				continue;
 			}
 
-			Layouts.push_back(ProjectUiLayoutSnapshot(*Surface.Scene(), RootBounds));
+			CLayoutSnapshot Layout = ProjectUiLayoutSnapshot(*Surface.Scene(), RootBounds);
+			CLayoutDiagnosticSnapshot LayoutDiagnostics = ValidateUiLayoutSnapshot(Layout, Diagnostics.size());
+			for(const auto &Diagnostic : LayoutDiagnostics.Diagnostics())
+			{
+				Diagnostics.push_back(Diagnostic);
+			}
+			Layouts.push_back(std::move(Layout));
 		}
 
 		return CLayoutRuntimeSnapshot(

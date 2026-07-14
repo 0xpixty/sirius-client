@@ -41,7 +41,8 @@ namespace sirius::ui::layout
 			ELayoutDiagnosticCode Code,
 			std::string Message,
 			const CLayoutSnapshot &Layout,
-			const sirius::ui::scene::CUiElementId &ElementId)
+			const sirius::ui::scene::CUiElementId &ElementId,
+			std::size_t StableOrderOffset)
 		{
 			Diagnostics.emplace_back(
 				ELayoutDiagnosticSeverity::Error,
@@ -50,7 +51,7 @@ namespace sirius::ui::layout
 				Layout.SurfaceId(),
 				Layout.SceneId(),
 				ElementId,
-				Diagnostics.size());
+				StableOrderOffset + Diagnostics.size());
 		}
 
 		bool HasInvalidBounds(const CLayoutRect &Bounds) noexcept
@@ -75,6 +76,11 @@ namespace sirius::ui::layout
 
 	CLayoutDiagnosticSnapshot ValidateUiLayoutSnapshot(const CLayoutSnapshot &Layout)
 	{
+		return ValidateUiLayoutSnapshot(Layout, 0);
+	}
+
+	CLayoutDiagnosticSnapshot ValidateUiLayoutSnapshot(const CLayoutSnapshot &Layout, std::size_t StableOrderOffset)
+	{
 		std::vector<CLayoutDiagnostic> Diagnostics;
 
 		for(const auto &Element : Layout.Elements())
@@ -86,7 +92,8 @@ namespace sirius::ui::layout
 					ELayoutDiagnosticCode::UnsupportedLayoutKind,
 					"Layout element uses an unsupported layout kind.",
 					Layout,
-					Element.ElementId());
+					Element.ElementId(),
+					StableOrderOffset);
 			}
 
 			if(HasInvalidBounds(Element.Bounds()))
@@ -96,7 +103,8 @@ namespace sirius::ui::layout
 					ELayoutDiagnosticCode::InvalidBounds,
 					"Layout element bounds must have finite non-negative width and height.",
 					Layout,
-					Element.ElementId());
+					Element.ElementId(),
+					StableOrderOffset);
 			}
 
 			if(HasInvalidSizeConstraints(Element.SizeConstraints()))
@@ -106,7 +114,8 @@ namespace sirius::ui::layout
 					ELayoutDiagnosticCode::InvalidSizeConstraints,
 					"Layout element size constraints must be finite, non-negative, and ordered minimum <= preferred <= maximum.",
 					Layout,
-					Element.ElementId());
+					Element.ElementId(),
+					StableOrderOffset);
 			}
 		}
 
