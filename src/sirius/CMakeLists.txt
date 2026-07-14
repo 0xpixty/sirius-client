@@ -160,6 +160,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/modules/services/module_service_registry.h
   platform/modules/status/sirius_status_module.cpp
   platform/modules/status/sirius_status_module.h
+  ui/localization/localization_snapshot.cpp
+  ui/localization/localization_snapshot.h
   ui/layout/layout_snapshot.cpp
   ui/layout/layout_snapshot.h
   ui/property/property_dependency_graph.cpp
