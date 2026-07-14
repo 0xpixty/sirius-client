@@ -2731,7 +2731,7 @@ if(CLIENT)
     render_map.h
     # tidy-alphabetical-end
   )
-  add_subdirectory(src/sirius)
+  include(src/sirius/CMakeLists.txt)
   set(GAME_GENERATED_CLIENT
     # tidy-alphabetical-start
     src/generated/checksum.cpp
@@ -3259,8 +3259,8 @@ if((GTEST_FOUND OR DOWNLOAD_GTEST) AND SERVER)
     serverbrowser_test.cpp
     serverinfo_test.cpp
     sirius_feature_activation_controller_test.cpp
-    sirius_module_contract_test.cpp
     sirius_module_contract_resolution_test.cpp
+    sirius_module_contract_test.cpp
     sirius_module_dependency_graph_test.cpp
     sirius_module_definition_test.cpp
     sirius_module_descriptor_test.cpp

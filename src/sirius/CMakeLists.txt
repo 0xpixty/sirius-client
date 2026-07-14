@@ -278,6 +278,3 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   ui/theme/theme_validation.h
   # tidy-alphabetical-end
 )
-
-set(SIRIUS_CLIENT ${SIRIUS_CLIENT} PARENT_SCOPE)
-set(CHECKSUM_SRC ${CHECKSUM_SRC} PARENT_SCOPE)
