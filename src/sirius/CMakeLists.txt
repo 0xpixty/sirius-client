@@ -186,6 +186,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   ui/hud/hud_snapshot.h
   ui/input/input_diagnostic.cpp
   ui/input/input_diagnostic.h
+  ui/input/input_runtime.cpp
+  ui/input/input_runtime.h
   ui/input/input_snapshot.cpp
   ui/input/input_snapshot.h
   ui/input/input_validation.cpp
