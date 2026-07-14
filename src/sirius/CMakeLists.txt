@@ -214,6 +214,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   ui/property/property_type_descriptor.h
   ui/render/render_command_snapshot.cpp
   ui/render/render_command_snapshot.h
+  ui/scene/aggregate_surface_validation.cpp
+  ui/scene/aggregate_surface_validation.h
   ui/scene/scene_declaration_projection.cpp
   ui/scene/scene_declaration_projection.h
   ui/scene/scene_property_projection.cpp
