@@ -160,6 +160,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/modules/services/module_service_registry.h
   platform/modules/status/sirius_status_module.cpp
   platform/modules/status/sirius_status_module.h
+  ui/action/action_intent.cpp
+  ui/action/action_intent.h
   ui/editor/editor_snapshot.cpp
   ui/editor/editor_snapshot.h
   ui/hud/hud_snapshot.cpp
