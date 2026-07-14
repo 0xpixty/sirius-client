@@ -38,22 +38,17 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   core/tasks/task_queue.h
   platform/activation/activation_handler.h
   platform/activation/activation_id.h
-  platform/platform.cpp
-  platform/platform.h
-  platform/platform_bootstrap.cpp
-  platform/platform_bootstrap.h
-  platform/platform_configuration.h
   platform/commands/activation/command_activation_handler.cpp
   platform/commands/activation/command_activation_handler.h
   platform/commands/activation/command_activation_resolver.cpp
   platform/commands/activation/command_activation_resolver.h
   platform/commands/activation/technical_activation_command.cpp
   platform/commands/activation/technical_activation_command.h
+  platform/commands/command.h
   platform/commands/command_context.cpp
   platform/commands/command_context.h
   platform/commands/command_dispatcher.cpp
   platform/commands/command_dispatcher.h
-  platform/commands/command.h
   platform/commands/command_id.h
   platform/commands/command_lifecycle.cpp
   platform/commands/command_lifecycle.h
@@ -65,8 +60,6 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/commands/status/open_sirius_status_command.h
   platform/commands/status/toggle_sirius_status_command.cpp
   platform/commands/status/toggle_sirius_status_command.h
-  platform/features/feature_context.cpp
-  platform/features/feature_context.h
   platform/features/activation/feature_activation_behavior.h
   platform/features/activation/feature_activation_behavior_registry.cpp
   platform/features/activation/feature_activation_behavior_registry.h
@@ -76,29 +69,31 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/features/activation/feature_activation_resolver.h
   platform/features/activation/technical_activation_behavior.cpp
   platform/features/activation/technical_activation_behavior.h
+  platform/features/feature.h
   platform/features/feature_activation.h
   platform/features/feature_activation_controller.cpp
   platform/features/feature_activation_controller.h
   platform/features/feature_activation_registry.cpp
   platform/features/feature_activation_registry.h
   platform/features/feature_activation_state.h
-  platform/features/feature.h
+  platform/features/feature_context.cpp
+  platform/features/feature_context.h
   platform/features/feature_id.h
   platform/features/feature_lifecycle.cpp
   platform/features/feature_lifecycle.h
   platform/features/feature_registry.cpp
   platform/features/feature_registry.h
+  platform/features/status/sirius_status_activation_behavior.cpp
+  platform/features/status/sirius_status_activation_behavior.h
   platform/features/status/sirius_status_feature.cpp
   platform/features/status/sirius_status_feature.h
   platform/features/status/sirius_status_snapshot.cpp
   platform/features/status/sirius_status_snapshot.h
-  platform/features/status/sirius_status_activation_behavior.cpp
-  platform/features/status/sirius_status_activation_behavior.h
+  platform/input/bindings/activation/binding_activation.h
   platform/input/bindings/activation/binding_activation_adapter.cpp
   platform/input/bindings/activation/binding_activation_adapter.h
   platform/input/bindings/activation/binding_activation_dispatcher.cpp
   platform/input/bindings/activation/binding_activation_dispatcher.h
-  platform/input/bindings/activation/binding_activation.h
   platform/input/bindings/activation/binding_activation_handler.h
   platform/input/bindings/activation/binding_activation_id.h
   platform/input/bindings/activation/binding_activation_registry.cpp
@@ -123,16 +118,16 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/input/source/input_source.h
   platform/modules/module.cpp
   platform/modules/module.h
+  platform/modules/module_context.cpp
+  platform/modules/module_context.h
   platform/modules/module_contract.cpp
   platform/modules/module_contract.h
   platform/modules/module_contract_resolution.cpp
   platform/modules/module_contract_resolution.h
-  platform/modules/module_context.cpp
-  platform/modules/module_context.h
-  platform/modules/module_dependency_graph.cpp
-  platform/modules/module_dependency_graph.h
   platform/modules/module_definition.cpp
   platform/modules/module_definition.h
+  platform/modules/module_dependency_graph.cpp
+  platform/modules/module_dependency_graph.h
   platform/modules/module_descriptor.cpp
   platform/modules/module_descriptor.h
   platform/modules/module_descriptor_validation.cpp
@@ -160,6 +155,11 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/modules/services/module_service_registry.h
   platform/modules/status/sirius_status_module.cpp
   platform/modules/status/sirius_status_module.h
+  platform/platform.cpp
+  platform/platform.h
+  platform/platform_bootstrap.cpp
+  platform/platform_bootstrap.h
+  platform/platform_configuration.h
   ui/action/action_intent.cpp
   ui/action/action_intent.h
   ui/declaration/declaration_composition.cpp
@@ -186,16 +186,14 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   ui/hud/hud_snapshot.h
   ui/input/input_diagnostic.cpp
   ui/input/input_diagnostic.h
-  ui/input/input_runtime.cpp
-  ui/input/input_runtime.h
   ui/input/input_routing_result.cpp
   ui/input/input_routing_result.h
+  ui/input/input_runtime.cpp
+  ui/input/input_runtime.h
   ui/input/input_snapshot.cpp
   ui/input/input_snapshot.h
   ui/input/input_validation.cpp
   ui/input/input_validation.h
-  ui/localization/localization_snapshot.cpp
-  ui/localization/localization_snapshot.h
   ui/layout/layout_diagnostic.cpp
   ui/layout/layout_diagnostic.h
   ui/layout/layout_runtime.cpp
@@ -208,12 +206,14 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   ui/layout/layout_snapshot.h
   ui/layout/layout_validation.cpp
   ui/layout/layout_validation.h
+  ui/localization/localization_snapshot.cpp
+  ui/localization/localization_snapshot.h
   ui/property/property_dependency_graph.cpp
   ui/property/property_dependency_graph.h
-  ui/property/property_evaluation.cpp
-  ui/property/property_evaluation.h
   ui/property/property_diagnostic.cpp
   ui/property/property_diagnostic.h
+  ui/property/property_evaluation.cpp
+  ui/property/property_evaluation.h
   ui/property/property_generation.cpp
   ui/property/property_generation.h
   ui/property/property_id.cpp
@@ -232,6 +232,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   ui/property/property_stored_value.h
   ui/property/property_type_descriptor.cpp
   ui/property/property_type_descriptor.h
+  ui/render/render_command_snapshot.cpp
+  ui/render/render_command_snapshot.h
   ui/render/render_diagnostic.cpp
   ui/render/render_diagnostic.h
   ui/render/render_layout_projection.cpp
@@ -242,8 +244,6 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   ui/render/render_runtime_projection.h
   ui/render/render_validation.cpp
   ui/render/render_validation.h
-  ui/render/render_command_snapshot.cpp
-  ui/render/render_command_snapshot.h
   ui/scene/aggregate_surface_runtime.cpp
   ui/scene/aggregate_surface_runtime.h
   ui/scene/aggregate_surface_validation.cpp
@@ -258,10 +258,10 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   ui/scene/single_surface_runtime.h
   ui/scene/surface_declaration_projection.cpp
   ui/scene/surface_declaration_projection.h
-  ui/scene/surface_scene_id.cpp
-  ui/scene/surface_scene_id.h
   ui/scene/surface_runtime_diagnostic.cpp
   ui/scene/surface_runtime_diagnostic.h
+  ui/scene/surface_scene_id.cpp
+  ui/scene/surface_scene_id.h
   ui/scene/surface_snapshot.cpp
   ui/scene/surface_snapshot.h
   ui/theme/theme_diagnostic.cpp
