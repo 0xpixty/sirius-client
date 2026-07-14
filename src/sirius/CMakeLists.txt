@@ -220,6 +220,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   ui/scene/scene_property_projection.h
   ui/scene/scene_snapshot.cpp
   ui/scene/scene_snapshot.h
+  ui/scene/single_surface_runtime.cpp
+  ui/scene/single_surface_runtime.h
   ui/scene/surface_declaration_projection.cpp
   ui/scene/surface_declaration_projection.h
   ui/scene/surface_snapshot.cpp
