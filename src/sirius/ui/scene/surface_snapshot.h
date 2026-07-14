@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace sirius::ui::scene
 {
@@ -95,6 +96,20 @@ namespace sirius::ui::scene
 		ESurfaceCompositionStatus m_Status = ESurfaceCompositionStatus::Unavailable;
 		std::size_t m_StableOrderIndex = 0;
 		std::optional<CSceneSnapshot> m_Scene;
+	};
+
+	class CSurfaceSnapshotList final
+	{
+	public:
+		explicit CSurfaceSnapshotList(std::vector<CSurfaceSnapshot> Surfaces);
+		~CSurfaceSnapshotList() noexcept;
+
+		const std::vector<CSurfaceSnapshot> &Surfaces() const noexcept;
+		std::size_t SurfaceCount() const noexcept;
+		bool IsEmpty() const noexcept;
+
+	private:
+		std::vector<CSurfaceSnapshot> m_Surfaces;
 	};
 
 } // namespace sirius::ui::scene

@@ -109,4 +109,26 @@ namespace sirius::ui::scene
 		return m_Scene.has_value();
 	}
 
+	CSurfaceSnapshotList::CSurfaceSnapshotList(std::vector<CSurfaceSnapshot> Surfaces) :
+		m_Surfaces(std::move(Surfaces))
+	{
+	}
+
+	CSurfaceSnapshotList::~CSurfaceSnapshotList() noexcept = default;
+
+	const std::vector<CSurfaceSnapshot> &CSurfaceSnapshotList::Surfaces() const noexcept
+	{
+		return m_Surfaces;
+	}
+
+	std::size_t CSurfaceSnapshotList::SurfaceCount() const noexcept
+	{
+		return m_Surfaces.size();
+	}
+
+	bool CSurfaceSnapshotList::IsEmpty() const noexcept
+	{
+		return m_Surfaces.empty();
+	}
+
 } // namespace sirius::ui::scene
