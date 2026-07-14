@@ -162,6 +162,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   platform/modules/status/sirius_status_module.h
   ui/action/action_intent.cpp
   ui/action/action_intent.h
+  ui/declaration/declaration_composition.cpp
+  ui/declaration/declaration_composition.h
   ui/declaration/declaration_diagnostic.cpp
   ui/declaration/declaration_diagnostic.h
   ui/declaration/declaration_registration_plan.cpp
