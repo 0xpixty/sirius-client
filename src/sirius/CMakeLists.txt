@@ -190,6 +190,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   ui/layout/layout_diagnostic.h
   ui/layout/layout_runtime.cpp
   ui/layout/layout_runtime.h
+  ui/layout/layout_runtime_projection.cpp
+  ui/layout/layout_runtime_projection.h
   ui/layout/layout_scene_projection.cpp
   ui/layout/layout_scene_projection.h
   ui/layout/layout_snapshot.cpp
