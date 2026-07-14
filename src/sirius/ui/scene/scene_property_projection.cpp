@@ -16,4 +16,16 @@ namespace sirius::ui::scene
 		return MetadataRecords;
 	}
 
+	sirius::ui::property::CPropertyRuntimeSnapshot ProjectUiScenePropertyRuntimeSnapshot(const sirius::ui::declaration::CUiPropertyDeclarationList &Properties)
+	{
+		return sirius::ui::property::CPropertyRuntimeSnapshot(
+			ProjectUiScenePropertyMetadata(Properties),
+			sirius::ui::property::CPropertyStorageSnapshot({}),
+			sirius::ui::property::CPropertyDiagnosticSnapshot({}),
+			sirius::ui::property::CPropertyGenerationSnapshot({}),
+			sirius::ui::property::CPropertyInvalidationSnapshot({}),
+			sirius::ui::property::CPropertyDependencyGraphSnapshot({}),
+			sirius::ui::property::CPropertyEvaluationSnapshot({}));
+	}
+
 } // namespace sirius::ui::scene
