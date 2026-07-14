@@ -230,6 +230,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   ui/render/render_runtime.h
   ui/render/render_runtime_projection.cpp
   ui/render/render_runtime_projection.h
+  ui/render/render_validation.cpp
+  ui/render/render_validation.h
   ui/render/render_command_snapshot.cpp
   ui/render/render_command_snapshot.h
   ui/scene/aggregate_surface_runtime.cpp
