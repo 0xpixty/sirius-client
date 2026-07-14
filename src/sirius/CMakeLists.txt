@@ -224,6 +224,8 @@ set_src(SIRIUS_CLIENT GLOB_RECURSE src/sirius
   ui/property/property_type_descriptor.h
   ui/render/render_diagnostic.cpp
   ui/render/render_diagnostic.h
+  ui/render/render_layout_projection.cpp
+  ui/render/render_layout_projection.h
   ui/render/render_runtime.cpp
   ui/render/render_runtime.h
   ui/render/render_command_snapshot.cpp
