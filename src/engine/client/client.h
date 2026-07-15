@@ -25,6 +25,8 @@
 #include <engine/textrender.h>
 #include <engine/warning.h>
 
+#include <sirius/adapters/ddnet/ddnet_platform_host.h>
+
 #include <chrono>
 #include <deque>
 #include <memory>
@@ -88,6 +90,7 @@ class CClient : public IClient, public CDemoPlayer::IListener
 	CUpdater m_Updater;
 	CFriends m_Friends;
 	CFriends m_Foes;
+	sirius::adapters::ddnet::CDdnetPlatformHost m_SiriusPlatformHost;
 
 	char m_aConnectAddressStr[MAX_SERVER_ADDRESSES * NETADDR_MAXSTRSIZE] = "";
 

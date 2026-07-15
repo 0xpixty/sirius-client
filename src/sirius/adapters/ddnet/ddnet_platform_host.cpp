@@ -1,0 +1,60 @@
+/* (c) Sirius Client contributors. See licence.txt in the root of the distribution for more information. */
+#include "ddnet_platform_host.h"
+
+#include <sirius/platform/input/source/buffered_input_source.h>
+#include <sirius/platform/platform_configuration.h>
+
+#include <utility>
+
+namespace sirius::adapters::ddnet
+{
+
+	CDdnetPlatformHost::CDdnetPlatformHost() noexcept :
+		m_InputCollector(m_InputAdapter)
+	{
+	}
+
+	CDdnetPlatformHost::~CDdnetPlatformHost() noexcept
+	{
+		Stop();
+	}
+
+	void CDdnetPlatformHost::Start()
+	{
+		platform::CPlatformConfiguration Configuration;
+		m_Bootstrap.Start(std::move(Configuration));
+	}
+
+	void CDdnetPlatformHost::Stop() noexcept
+	{
+		m_Bootstrap.Stop();
+	}
+
+	void CDdnetPlatformHost::ProcessInput(IInput &Input)
+	{
+		auto *pInputSource = m_Bootstrap.InputSource();
+		if(!pInputSource)
+		{
+			return;
+		}
+
+		m_InputCollector.Collect(Input, *pInputSource);
+		for(const auto &Event : pInputSource->Events())
+		{
+			m_Bootstrap.ProcessInputEvent(Event);
+		}
+
+		m_Bootstrap.ForwardInput();
+	}
+
+	bool CDdnetPlatformHost::IsStarted() const noexcept
+	{
+		return m_Bootstrap.IsStarted();
+	}
+
+	std::optional<platform::features::CSiriusStatusSnapshot> CDdnetPlatformHost::SiriusStatusSnapshot() const noexcept
+	{
+		return m_Bootstrap.SiriusStatusSnapshot();
+	}
+
+} // namespace sirius::adapters::ddnet

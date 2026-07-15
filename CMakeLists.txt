@@ -2731,6 +2731,7 @@ if(CLIENT)
     render_map.h
     # tidy-alphabetical-end
   )
+  include(src/sirius/CMakeLists.txt)
   set(GAME_GENERATED_CLIENT
     # tidy-alphabetical-start
     src/generated/checksum.cpp
@@ -2740,7 +2741,7 @@ if(CLIENT)
     src/generated/client_data7.h
     # tidy-alphabetical-end
   )
-  set(CLIENT_SRC ${ENGINE_CLIENT} ${PLATFORM_CLIENT} ${GAME_CLIENT} ${GAME_EDITOR} ${GAME_MAP} ${GAME_GENERATED_CLIENT})
+  set(CLIENT_SRC ${ENGINE_CLIENT} ${PLATFORM_CLIENT} ${GAME_CLIENT} ${GAME_EDITOR} ${GAME_MAP} ${SIRIUS_CLIENT} ${GAME_GENERATED_CLIENT})
 
   set(DEPS_CLIENT ${DEPS} ${GLEW_DEP} ${WAVPACK_DEP})
 
@@ -3257,6 +3258,19 @@ if((GTEST_FOUND OR DOWNLOAD_GTEST) AND SERVER)
     server_test.cpp
     serverbrowser_test.cpp
     serverinfo_test.cpp
+    sirius_feature_activation_controller_test.cpp
+    sirius_module_contract_resolution_test.cpp
+    sirius_module_contract_test.cpp
+    sirius_module_definition_test.cpp
+    sirius_module_dependency_graph_test.cpp
+    sirius_module_descriptor_test.cpp
+    sirius_module_descriptor_validation_test.cpp
+    sirius_module_lifecycle_graph_test.cpp
+    sirius_module_lifecycle_order_test.cpp
+    sirius_module_registration_plan_test.cpp
+    sirius_module_runtime_composition_test.cpp
+    sirius_module_runtime_diagnostics_test.cpp
+    sirius_platform_activation_lifecycle_test.cpp
     snapshot_test.cpp
     str_test.cpp
     swap_endian_test.cpp
@@ -3285,8 +3299,64 @@ if((GTEST_FOUND OR DOWNLOAD_GTEST) AND SERVER)
     src/engine/client/sqlite.cpp
     src/game/client/components/censor.cpp
     src/game/client/components/censor.h
+    src/sirius/core/config/config_registry.cpp
+    src/sirius/core/events/event_dispatcher.cpp
+    src/sirius/core/logging/logger.cpp
+    src/sirius/core/runtime/core_runtime.cpp
+    src/sirius/core/runtime/runtime_component_registry.cpp
+    src/sirius/core/runtime/runtime_context.cpp
+    src/sirius/core/runtime/runtime_lifecycle.cpp
+    src/sirius/core/services/service_registry.cpp
+    src/sirius/core/tasks/task_dispatcher.cpp
+    src/sirius/core/tasks/task_queue.cpp
+    src/sirius/platform/commands/activation/command_activation_handler.cpp
+    src/sirius/platform/commands/activation/command_activation_resolver.cpp
+    src/sirius/platform/commands/activation/technical_activation_command.cpp
+    src/sirius/platform/commands/command_context.cpp
+    src/sirius/platform/commands/command_dispatcher.cpp
+    src/sirius/platform/commands/command_lifecycle.cpp
+    src/sirius/platform/commands/command_registry.cpp
+    src/sirius/platform/features/activation/feature_activation_behavior_registry.cpp
+    src/sirius/platform/features/activation/feature_activation_handler.cpp
+    src/sirius/platform/features/activation/feature_activation_resolver.cpp
+    src/sirius/platform/features/activation/technical_activation_behavior.cpp
+    src/sirius/platform/features/feature_activation_controller.cpp
+    src/sirius/platform/features/feature_activation_registry.cpp
+    src/sirius/platform/features/feature_context.cpp
+    src/sirius/platform/features/feature_lifecycle.cpp
+    src/sirius/platform/features/feature_registry.cpp
+    src/sirius/platform/input/bindings/activation/binding_activation_adapter.cpp
+    src/sirius/platform/input/bindings/activation/binding_activation_dispatcher.cpp
+    src/sirius/platform/input/bindings/activation/binding_activation_registry.cpp
+    src/sirius/platform/input/bindings/binding_matcher.cpp
+    src/sirius/platform/input/bindings/binding_registry.cpp
+    src/sirius/platform/input/dispatch/input_event_forwarder.cpp
+    src/sirius/platform/input/source/buffered_input_source.cpp
+    src/sirius/platform/modules/module.cpp
+    src/sirius/platform/modules/module_context.cpp
+    src/sirius/platform/modules/module_definition.cpp
+    src/sirius/platform/modules/module_dependency_graph.cpp
+    src/sirius/platform/modules/module_descriptor.cpp
+    src/sirius/platform/modules/module_descriptor_validation.cpp
+    src/sirius/platform/modules/module_lifecycle.cpp
+    src/sirius/platform/modules/module_lifecycle_graph.cpp
+    src/sirius/platform/modules/module_registration_plan.cpp
+    src/sirius/platform/modules/module_registry.cpp
+    src/sirius/platform/modules/services/module_service_context.cpp
+    src/sirius/platform/modules/services/module_service_lifecycle.cpp
+    src/sirius/platform/modules/services/module_service_registry.cpp
+    src/sirius/platform/platform.cpp
     # tidy-alphabetical-end
   )
+
+  list(APPEND TESTS_EXTRA ${SIRIUS_CLIENT})
+  list(REMOVE_DUPLICATES TESTS_EXTRA)
+
+  if(NOT MSVC AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    set(SIRIUS_TESTS ${TESTS})
+    list(FILTER SIRIUS_TESTS INCLUDE REGEX "/sirius_.*\\.cpp$")
+    set_property(SOURCE ${SIRIUS_TESTS} APPEND PROPERTY COMPILE_OPTIONS -fexceptions)
+  endif()
 
   set(TARGET_TESTRUNNER testrunner)
   add_executable(${TARGET_TESTRUNNER} EXCLUDE_FROM_ALL
