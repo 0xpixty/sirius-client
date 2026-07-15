@@ -8,70 +8,70 @@
 
 namespace sirius::platform::modules
 {
-namespace
-{
-
-	class CExportCandidate final
+	namespace
 	{
-	public:
-		CExportCandidate(CModuleId ModuleId, CModuleContractExport Export) :
-			m_ModuleId(std::move(ModuleId)),
-			m_Export(std::move(Export))
+
+		class CExportCandidate final
 		{
-		}
-
-		const CModuleId &ModuleId() const noexcept
-		{
-			return m_ModuleId;
-		}
-
-		const CModuleContractExport &Export() const noexcept
-		{
-			return m_Export;
-		}
-
-	private:
-		CModuleId m_ModuleId;
-		CModuleContractExport m_Export;
-	};
-
-	bool SameContract(const CModuleContractExport &Export, const CModuleContractImport &Import) noexcept
-	{
-		return Export.Id() == Import.Id() && Export.Version() == Import.Version();
-	}
-
-	bool SameContract(const CModuleContractExport &Left, const CModuleContractExport &Right) noexcept
-	{
-		return Left.Id() == Right.Id() && Left.Version() == Right.Version();
-	}
-
-	bool HasDuplicateExport(const std::vector<CExportCandidate> &Exports, const CModuleContractExport &Export) noexcept
-	{
-		for(const auto &Candidate : Exports)
-		{
-			if(SameContract(Candidate.Export(), Export))
+		public:
+			CExportCandidate(CModuleId ModuleId, CModuleContractExport Export) :
+				m_ModuleId(std::move(ModuleId)),
+				m_Export(std::move(Export))
 			{
-				return true;
 			}
-		}
 
-		return false;
-	}
-
-	const CExportCandidate *FindExport(const std::vector<CExportCandidate> &Exports, const CModuleContractImport &Import) noexcept
-	{
-		for(const auto &Candidate : Exports)
-		{
-			if(SameContract(Candidate.Export(), Import))
+			const CModuleId &ModuleId() const noexcept
 			{
-				return &Candidate;
+				return m_ModuleId;
 			}
+
+			const CModuleContractExport &Export() const noexcept
+			{
+				return m_Export;
+			}
+
+		private:
+			CModuleId m_ModuleId;
+			CModuleContractExport m_Export;
+		};
+
+		bool SameContract(const CModuleContractExport &Export, const CModuleContractImport &Import) noexcept
+		{
+			return Export.Id() == Import.Id() && Export.Version() == Import.Version();
 		}
 
-		return nullptr;
-	}
+		bool SameContract(const CModuleContractExport &Left, const CModuleContractExport &Right) noexcept
+		{
+			return Left.Id() == Right.Id() && Left.Version() == Right.Version();
+		}
 
-} // namespace
+		bool HasDuplicateExport(const std::vector<CExportCandidate> &Exports, const CModuleContractExport &Export) noexcept
+		{
+			for(const auto &Candidate : Exports)
+			{
+				if(SameContract(Candidate.Export(), Export))
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		const CExportCandidate *FindExport(const std::vector<CExportCandidate> &Exports, const CModuleContractImport &Import) noexcept
+		{
+			for(const auto &Candidate : Exports)
+			{
+				if(SameContract(Candidate.Export(), Import))
+				{
+					return &Candidate;
+				}
+			}
+
+			return nullptr;
+		}
+
+	} // namespace
 
 	CModuleContractBinding::CModuleContractBinding(CModuleId ImportingModuleId, CModuleId ExportingModuleId, CModuleContractId ContractId, CModuleContractVersion Version) :
 		m_ImportingModuleId(std::move(ImportingModuleId)),

@@ -1,3 +1,4 @@
+#include <gtest/gtest.h>
 #include <sirius/platform/commands/command.h>
 #include <sirius/platform/commands/command_id.h>
 #include <sirius/platform/features/feature.h>
@@ -9,191 +10,189 @@
 #include <sirius/platform/modules/services/module_service.h>
 #include <sirius/platform/modules/services/module_service_id.h>
 
-#include <gtest/gtest.h>
-
 #include <memory>
 #include <utility>
 
 namespace sirius::platform::modules
 {
-namespace
-{
-
-	class CDescriptorValidationFeature final : public features::IFeature
+	namespace
 	{
-	public:
-		explicit CDescriptorValidationFeature(features::CFeatureId Id) :
-			m_Id(std::move(Id))
+
+		class CDescriptorValidationFeature final : public features::IFeature
 		{
+		public:
+			explicit CDescriptorValidationFeature(features::CFeatureId Id) :
+				m_Id(std::move(Id))
+			{
+			}
+
+			const features::CFeatureId &Id() const noexcept override { return m_Id; }
+			bool Initialize(features::CFeatureContext &Context) override
+			{
+				(void)Context;
+				return true;
+			}
+			void Shutdown(features::CFeatureContext &Context) noexcept override { (void)Context; }
+
+		private:
+			features::CFeatureId m_Id;
+		};
+
+		class CDescriptorValidationCommand final : public commands::ICommand
+		{
+		public:
+			explicit CDescriptorValidationCommand(commands::CCommandId Id) :
+				m_Id(std::move(Id))
+			{
+			}
+
+			const commands::CCommandId &Id() const noexcept override { return m_Id; }
+			bool Initialize(commands::CCommandContext &Context) override
+			{
+				(void)Context;
+				return true;
+			}
+			void Shutdown(commands::CCommandContext &Context) noexcept override { (void)Context; }
+			bool Execute(commands::CCommandContext &Context) override
+			{
+				(void)Context;
+				return true;
+			}
+
+		private:
+			commands::CCommandId m_Id;
+		};
+
+		class CDescriptorValidationService final : public services::IModuleService
+		{
+		public:
+			explicit CDescriptorValidationService(services::CModuleServiceId Id) :
+				m_Id(std::move(Id))
+			{
+			}
+
+			const services::CModuleServiceId &Id() const noexcept override { return m_Id; }
+			bool Initialize(services::CModuleServiceContext &Context) override
+			{
+				(void)Context;
+				return true;
+			}
+			void Shutdown(services::CModuleServiceContext &Context) noexcept override { (void)Context; }
+
+		private:
+			services::CModuleServiceId m_Id;
+		};
+
+		TEST(SiriusModuleDescriptorValidation, MatchingDeclaredOwnershipPasses)
+		{
+			CModule Module(CModuleDescriptor(
+				CModuleId("module.sirius.validation.matching"),
+				{features::CFeatureId("feature.sirius.validation.matching")},
+				{commands::CCommandId("command.sirius.validation.matching")},
+				{services::CModuleServiceId("service.sirius.validation.matching")}));
+
+			std::unique_ptr<features::IFeature> pFeature = std::make_unique<CDescriptorValidationFeature>(features::CFeatureId("feature.sirius.validation.matching"));
+			std::unique_ptr<commands::ICommand> pCommand = std::make_unique<CDescriptorValidationCommand>(commands::CCommandId("command.sirius.validation.matching"));
+			std::unique_ptr<services::IModuleService> pService = std::make_unique<CDescriptorValidationService>(services::CModuleServiceId("service.sirius.validation.matching"));
+			ASSERT_TRUE(Module.Features().Register(pFeature));
+			ASSERT_TRUE(Module.Commands().Register(pCommand));
+			ASSERT_TRUE(Module.ModuleServices().Register(pService));
+
+			EXPECT_TRUE(IsModuleDescriptorOwnershipValid(Module));
 		}
 
-		const features::CFeatureId &Id() const noexcept override { return m_Id; }
-		bool Initialize(features::CFeatureContext &Context) override
+		TEST(SiriusModuleDescriptorValidation, MissingDeclaredOwnershipFails)
 		{
-			(void)Context;
-			return true;
-		}
-		void Shutdown(features::CFeatureContext &Context) noexcept override { (void)Context; }
+			CModule Module(CModuleDescriptor(
+				CModuleId("module.sirius.validation.missing"),
+				{features::CFeatureId("feature.sirius.validation.missing")},
+				{},
+				{}));
 
-	private:
-		features::CFeatureId m_Id;
-	};
-
-	class CDescriptorValidationCommand final : public commands::ICommand
-	{
-	public:
-		explicit CDescriptorValidationCommand(commands::CCommandId Id) :
-			m_Id(std::move(Id))
-		{
+			EXPECT_FALSE(IsModuleDescriptorOwnershipValid(Module));
 		}
 
-		const commands::CCommandId &Id() const noexcept override { return m_Id; }
-		bool Initialize(commands::CCommandContext &Context) override
+		TEST(SiriusModuleDescriptorValidation, UndeclaredActualOwnershipFails)
 		{
-			(void)Context;
-			return true;
-		}
-		void Shutdown(commands::CCommandContext &Context) noexcept override { (void)Context; }
-		bool Execute(commands::CCommandContext &Context) override
-		{
-			(void)Context;
-			return true;
+			CModule Module(CModuleDescriptor(CModuleId("module.sirius.validation.undeclared")));
+			std::unique_ptr<features::IFeature> pFeature = std::make_unique<CDescriptorValidationFeature>(features::CFeatureId("feature.sirius.validation.undeclared"));
+			ASSERT_TRUE(Module.Features().Register(pFeature));
+
+			EXPECT_FALSE(IsModuleDescriptorOwnershipValid(Module));
 		}
 
-	private:
-		commands::CCommandId m_Id;
-	};
-
-	class CDescriptorValidationService final : public services::IModuleService
-	{
-	public:
-		explicit CDescriptorValidationService(services::CModuleServiceId Id) :
-			m_Id(std::move(Id))
+		TEST(SiriusModuleDescriptorValidation, DuplicateDeclarationsFail)
 		{
+			CModule Module(CModuleDescriptor(
+				CModuleId("module.sirius.validation.duplicate"),
+				{features::CFeatureId("feature.sirius.validation.duplicate"), features::CFeatureId("feature.sirius.validation.duplicate")},
+				{},
+				{}));
+
+			EXPECT_FALSE(IsModuleDescriptorOwnershipValid(Module));
 		}
 
-		const services::CModuleServiceId &Id() const noexcept override { return m_Id; }
-		bool Initialize(services::CModuleServiceContext &Context) override
+		TEST(SiriusModuleDescriptorValidation, EquivalentDefinitionAndConstructedDescriptorsPass)
 		{
-			(void)Context;
-			return true;
+			const CModuleDescriptor Expected(
+				CModuleId("module.sirius.validation.parity"),
+				{features::CFeatureId("feature.sirius.validation.parity")},
+				{commands::CCommandId("command.sirius.validation.parity")},
+				{services::CModuleServiceId("service.sirius.validation.parity")},
+				{CModuleId("module.sirius.validation.dependency")},
+				{CModuleContractImport(CModuleContractId("contract.sirius.validation.import"), CModuleContractVersion(1, 0), EModuleContractImportRequirement::Required)},
+				{CModuleContractExport(CModuleContractId("contract.sirius.validation.export"), CModuleContractVersion(1, 0))});
+			const CModuleDescriptor Actual(
+				CModuleId("module.sirius.validation.parity"),
+				{features::CFeatureId("feature.sirius.validation.parity")},
+				{commands::CCommandId("command.sirius.validation.parity")},
+				{services::CModuleServiceId("service.sirius.validation.parity")},
+				{CModuleId("module.sirius.validation.dependency")},
+				{CModuleContractImport(CModuleContractId("contract.sirius.validation.import"), CModuleContractVersion(1, 0), EModuleContractImportRequirement::Required)},
+				{CModuleContractExport(CModuleContractId("contract.sirius.validation.export"), CModuleContractVersion(1, 0))});
+
+			EXPECT_TRUE(AreModuleDescriptorsEquivalent(Expected, Actual));
 		}
-		void Shutdown(services::CModuleServiceContext &Context) noexcept override { (void)Context; }
 
-	private:
-		services::CModuleServiceId m_Id;
-	};
+		TEST(SiriusModuleDescriptorValidation, DependencyMismatchFailsParity)
+		{
+			const CModuleDescriptor Expected(
+				CModuleId("module.sirius.validation.parity"),
+				{},
+				{},
+				{},
+				{CModuleId("module.sirius.validation.expected")});
+			const CModuleDescriptor Actual(
+				CModuleId("module.sirius.validation.parity"),
+				{},
+				{},
+				{},
+				{CModuleId("module.sirius.validation.actual")});
 
-	TEST(SiriusModuleDescriptorValidation, MatchingDeclaredOwnershipPasses)
-	{
-		CModule Module(CModuleDescriptor(
-			CModuleId("module.sirius.validation.matching"),
-			{features::CFeatureId("feature.sirius.validation.matching")},
-			{commands::CCommandId("command.sirius.validation.matching")},
-			{services::CModuleServiceId("service.sirius.validation.matching")}));
+			EXPECT_FALSE(AreModuleDescriptorsEquivalent(Expected, Actual));
+		}
 
-		std::unique_ptr<features::IFeature> pFeature = std::make_unique<CDescriptorValidationFeature>(features::CFeatureId("feature.sirius.validation.matching"));
-		std::unique_ptr<commands::ICommand> pCommand = std::make_unique<CDescriptorValidationCommand>(commands::CCommandId("command.sirius.validation.matching"));
-		std::unique_ptr<services::IModuleService> pService = std::make_unique<CDescriptorValidationService>(services::CModuleServiceId("service.sirius.validation.matching"));
-		ASSERT_TRUE(Module.Features().Register(pFeature));
-		ASSERT_TRUE(Module.Commands().Register(pCommand));
-		ASSERT_TRUE(Module.ModuleServices().Register(pService));
+		TEST(SiriusModuleDescriptorValidation, ContractMismatchFailsParity)
+		{
+			const CModuleDescriptor Expected(
+				CModuleId("module.sirius.validation.parity"),
+				{},
+				{},
+				{},
+				{},
+				{CModuleContractImport(CModuleContractId("contract.sirius.validation.expected"), CModuleContractVersion(1, 0), EModuleContractImportRequirement::Required)},
+				{});
+			const CModuleDescriptor Actual(
+				CModuleId("module.sirius.validation.parity"),
+				{},
+				{},
+				{},
+				{},
+				{CModuleContractImport(CModuleContractId("contract.sirius.validation.actual"), CModuleContractVersion(1, 0), EModuleContractImportRequirement::Required)},
+				{});
 
-		EXPECT_TRUE(IsModuleDescriptorOwnershipValid(Module));
-	}
+			EXPECT_FALSE(AreModuleDescriptorsEquivalent(Expected, Actual));
+		}
 
-	TEST(SiriusModuleDescriptorValidation, MissingDeclaredOwnershipFails)
-	{
-		CModule Module(CModuleDescriptor(
-			CModuleId("module.sirius.validation.missing"),
-			{features::CFeatureId("feature.sirius.validation.missing")},
-			{},
-			{}));
-
-		EXPECT_FALSE(IsModuleDescriptorOwnershipValid(Module));
-	}
-
-	TEST(SiriusModuleDescriptorValidation, UndeclaredActualOwnershipFails)
-	{
-		CModule Module(CModuleDescriptor(CModuleId("module.sirius.validation.undeclared")));
-		std::unique_ptr<features::IFeature> pFeature = std::make_unique<CDescriptorValidationFeature>(features::CFeatureId("feature.sirius.validation.undeclared"));
-		ASSERT_TRUE(Module.Features().Register(pFeature));
-
-		EXPECT_FALSE(IsModuleDescriptorOwnershipValid(Module));
-	}
-
-	TEST(SiriusModuleDescriptorValidation, DuplicateDeclarationsFail)
-	{
-		CModule Module(CModuleDescriptor(
-			CModuleId("module.sirius.validation.duplicate"),
-			{features::CFeatureId("feature.sirius.validation.duplicate"), features::CFeatureId("feature.sirius.validation.duplicate")},
-			{},
-			{}));
-
-		EXPECT_FALSE(IsModuleDescriptorOwnershipValid(Module));
-	}
-
-	TEST(SiriusModuleDescriptorValidation, EquivalentDefinitionAndConstructedDescriptorsPass)
-	{
-		const CModuleDescriptor Expected(
-			CModuleId("module.sirius.validation.parity"),
-			{features::CFeatureId("feature.sirius.validation.parity")},
-			{commands::CCommandId("command.sirius.validation.parity")},
-			{services::CModuleServiceId("service.sirius.validation.parity")},
-			{CModuleId("module.sirius.validation.dependency")},
-			{CModuleContractImport(CModuleContractId("contract.sirius.validation.import"), CModuleContractVersion(1, 0), EModuleContractImportRequirement::Required)},
-			{CModuleContractExport(CModuleContractId("contract.sirius.validation.export"), CModuleContractVersion(1, 0))});
-		const CModuleDescriptor Actual(
-			CModuleId("module.sirius.validation.parity"),
-			{features::CFeatureId("feature.sirius.validation.parity")},
-			{commands::CCommandId("command.sirius.validation.parity")},
-			{services::CModuleServiceId("service.sirius.validation.parity")},
-			{CModuleId("module.sirius.validation.dependency")},
-			{CModuleContractImport(CModuleContractId("contract.sirius.validation.import"), CModuleContractVersion(1, 0), EModuleContractImportRequirement::Required)},
-			{CModuleContractExport(CModuleContractId("contract.sirius.validation.export"), CModuleContractVersion(1, 0))});
-
-		EXPECT_TRUE(AreModuleDescriptorsEquivalent(Expected, Actual));
-	}
-
-	TEST(SiriusModuleDescriptorValidation, DependencyMismatchFailsParity)
-	{
-		const CModuleDescriptor Expected(
-			CModuleId("module.sirius.validation.parity"),
-			{},
-			{},
-			{},
-			{CModuleId("module.sirius.validation.expected")});
-		const CModuleDescriptor Actual(
-			CModuleId("module.sirius.validation.parity"),
-			{},
-			{},
-			{},
-			{CModuleId("module.sirius.validation.actual")});
-
-		EXPECT_FALSE(AreModuleDescriptorsEquivalent(Expected, Actual));
-	}
-
-	TEST(SiriusModuleDescriptorValidation, ContractMismatchFailsParity)
-	{
-		const CModuleDescriptor Expected(
-			CModuleId("module.sirius.validation.parity"),
-			{},
-			{},
-			{},
-			{},
-			{CModuleContractImport(CModuleContractId("contract.sirius.validation.expected"), CModuleContractVersion(1, 0), EModuleContractImportRequirement::Required)},
-			{});
-		const CModuleDescriptor Actual(
-			CModuleId("module.sirius.validation.parity"),
-			{},
-			{},
-			{},
-			{},
-			{CModuleContractImport(CModuleContractId("contract.sirius.validation.actual"), CModuleContractVersion(1, 0), EModuleContractImportRequirement::Required)},
-			{});
-
-		EXPECT_FALSE(AreModuleDescriptorsEquivalent(Expected, Actual));
-	}
-
-} // namespace
+	} // namespace
 } // namespace sirius::platform::modules

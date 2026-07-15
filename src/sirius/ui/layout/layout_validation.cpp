@@ -67,10 +67,10 @@ namespace sirius::ui::layout
 		bool HasInvalidSizeConstraints(const CLayoutSizeConstraints &Constraints) noexcept
 		{
 			return HasInvalidSize(Constraints.Minimum()) ||
-				HasInvalidSize(Constraints.Preferred()) ||
-				HasInvalidSize(Constraints.Maximum()) ||
-				!IsOrdered(Constraints.Minimum().Width(), Constraints.Preferred().Width(), Constraints.Maximum().Width()) ||
-				!IsOrdered(Constraints.Minimum().Height(), Constraints.Preferred().Height(), Constraints.Maximum().Height());
+			       HasInvalidSize(Constraints.Preferred()) ||
+			       HasInvalidSize(Constraints.Maximum()) ||
+			       !IsOrdered(Constraints.Minimum().Width(), Constraints.Preferred().Width(), Constraints.Maximum().Width()) ||
+			       !IsOrdered(Constraints.Minimum().Height(), Constraints.Preferred().Height(), Constraints.Maximum().Height());
 		}
 	}
 

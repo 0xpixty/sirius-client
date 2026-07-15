@@ -110,11 +110,11 @@ namespace sirius::platform::modules::status
 	{
 		const auto &Descriptor = Module.Descriptor();
 		return Descriptor.Id() == SiriusStatusModuleId() &&
-			Descriptor.DeclaresFeature(SiriusStatusFeatureId()) &&
-			Descriptor.DeclaresCommand(SiriusStatusOpenCommandId()) &&
-			Descriptor.DeclaresCommand(SiriusStatusCloseCommandId()) &&
-			Descriptor.DeclaresCommand(SiriusStatusToggleCommandId()) &&
-			IsModuleDescriptorOwnershipValid(Module);
+		       Descriptor.DeclaresFeature(SiriusStatusFeatureId()) &&
+		       Descriptor.DeclaresCommand(SiriusStatusOpenCommandId()) &&
+		       Descriptor.DeclaresCommand(SiriusStatusCloseCommandId()) &&
+		       Descriptor.DeclaresCommand(SiriusStatusToggleCommandId()) &&
+		       IsModuleDescriptorOwnershipValid(Module);
 	}
 
 	CSiriusStatusFeatureActivation SiriusStatusFeatureActivation()

@@ -1,8 +1,8 @@
 /* (c) Sirius Client contributors. See licence.txt in the root of the distribution for more information. */
 #include "feature_activation_controller.h"
 
-#include "feature_activation.h"
 #include "activation/feature_activation_behavior_registry.h"
+#include "feature_activation.h"
 #include "feature_activation_registry.h"
 #include "feature_activation_state.h"
 

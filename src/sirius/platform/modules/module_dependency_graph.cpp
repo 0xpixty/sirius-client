@@ -8,31 +8,31 @@
 
 namespace sirius::platform::modules
 {
-namespace
-{
-
-	bool ContainsDuplicateIds(const std::vector<CModuleId> &Ids) noexcept
+	namespace
 	{
-		for(auto Outer = Ids.begin(); Outer != Ids.end(); ++Outer)
+
+		bool ContainsDuplicateIds(const std::vector<CModuleId> &Ids) noexcept
 		{
-			for(auto Inner = Outer + 1; Inner != Ids.end(); ++Inner)
+			for(auto Outer = Ids.begin(); Outer != Ids.end(); ++Outer)
 			{
-				if(*Outer == *Inner)
+				for(auto Inner = Outer + 1; Inner != Ids.end(); ++Inner)
 				{
-					return true;
+					if(*Outer == *Inner)
+					{
+						return true;
+					}
 				}
 			}
+
+			return false;
 		}
 
-		return false;
-	}
+		bool PlanHasDependency(const CModuleRegistrationPlan &Plan, const CModuleId &Id) noexcept
+		{
+			return Plan.Has(Id);
+		}
 
-	bool PlanHasDependency(const CModuleRegistrationPlan &Plan, const CModuleId &Id) noexcept
-	{
-		return Plan.Has(Id);
-	}
-
-} // namespace
+	} // namespace
 
 	CModuleDependencyNode::CModuleDependencyNode(CModuleId Id, std::vector<CModuleId> DependencyIds) :
 		m_Id(std::move(Id)),

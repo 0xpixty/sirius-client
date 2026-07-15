@@ -24,9 +24,9 @@ namespace sirius::ui::render
 		bool IsFiniteBounds(const sirius::ui::layout::CLayoutRect &Bounds) noexcept
 		{
 			return IsFinite(Bounds.X().Value()) &&
-				IsFinite(Bounds.Y().Value()) &&
-				IsNonNegativeFinite(Bounds.Width()) &&
-				IsNonNegativeFinite(Bounds.Height());
+			       IsFinite(Bounds.Y().Value()) &&
+			       IsNonNegativeFinite(Bounds.Width()) &&
+			       IsNonNegativeFinite(Bounds.Height());
 		}
 
 		bool IsColorChannelValid(float Value) noexcept
@@ -37,9 +37,9 @@ namespace sirius::ui::render
 		bool IsColorValid(const CRenderColor &Color) noexcept
 		{
 			return IsColorChannelValid(Color.Red()) &&
-				IsColorChannelValid(Color.Green()) &&
-				IsColorChannelValid(Color.Blue()) &&
-				IsColorChannelValid(Color.Alpha());
+			       IsColorChannelValid(Color.Green()) &&
+			       IsColorChannelValid(Color.Blue()) &&
+			       IsColorChannelValid(Color.Alpha());
 		}
 
 		bool IsSupportedRenderCommandKind(ERenderCommandKind Kind) noexcept

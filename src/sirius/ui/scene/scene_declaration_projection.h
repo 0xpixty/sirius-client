@@ -4,8 +4,8 @@
 
 #include "scene_snapshot.h"
 
-#include <sirius/ui/declaration/element_declaration.h>
 #include <sirius/ui/declaration/declaration_snapshot.h>
+#include <sirius/ui/declaration/element_declaration.h>
 
 #include <vector>
 

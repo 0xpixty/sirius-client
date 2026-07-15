@@ -61,8 +61,8 @@ namespace sirius::ui::scene
 		auto DeclarationDiagnostics = sirius::ui::declaration::ValidateUiDeclarationSnapshot(Declarations);
 		auto SurfaceDiagnostics = ValidateAggregateSurfaceDeclarations(Declarations);
 		const ESurfaceCompositionStatus Status = DeclarationDiagnostics.IsEmpty() && !SurfaceDiagnostics.HasErrors() ?
-			ESurfaceCompositionStatus::Composed :
-			ESurfaceCompositionStatus::Failed;
+								 ESurfaceCompositionStatus::Composed :
+								 ESurfaceCompositionStatus::Failed;
 
 		std::vector<CSurfaceSnapshot> Surfaces;
 		for(const auto &Surface : Declarations.Surfaces())

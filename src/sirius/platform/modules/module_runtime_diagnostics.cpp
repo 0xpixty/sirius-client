@@ -12,24 +12,24 @@
 
 namespace sirius::platform::modules
 {
-namespace
-{
-
-	bool FindOrder(const std::vector<CModuleId> &OrderedIds, const CModuleId &Id, std::size_t &Order) noexcept
+	namespace
 	{
-		for(std::size_t Index = 0; Index < OrderedIds.size(); ++Index)
+
+		bool FindOrder(const std::vector<CModuleId> &OrderedIds, const CModuleId &Id, std::size_t &Order) noexcept
 		{
-			if(OrderedIds[Index] == Id)
+			for(std::size_t Index = 0; Index < OrderedIds.size(); ++Index)
 			{
-				Order = Index;
-				return true;
+				if(OrderedIds[Index] == Id)
+				{
+					Order = Index;
+					return true;
+				}
 			}
+
+			return false;
 		}
 
-		return false;
-	}
-
-} // namespace
+	} // namespace
 
 	CModuleRuntimeDiagnosticsModuleSnapshot::CModuleRuntimeDiagnosticsModuleSnapshot(
 		CModuleId Id,

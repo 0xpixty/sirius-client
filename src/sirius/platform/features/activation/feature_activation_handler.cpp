@@ -1,9 +1,9 @@
 /* (c) Sirius Client contributors. See licence.txt in the root of the distribution for more information. */
 #include "feature_activation_handler.h"
 
+#include <sirius/platform/features/activation/feature_activation_resolver.h>
 #include <sirius/platform/features/feature_activation_controller.h>
 #include <sirius/platform/features/feature_id.h>
-#include <sirius/platform/features/activation/feature_activation_resolver.h>
 
 namespace sirius::platform::features
 {

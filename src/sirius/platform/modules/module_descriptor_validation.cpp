@@ -7,82 +7,82 @@
 
 namespace sirius::platform::modules
 {
-namespace
-{
-
-	template<typename TId>
-	bool HasDuplicateIds(const std::vector<TId> &Ids) noexcept
+	namespace
 	{
-		for(auto Outer = Ids.begin(); Outer != Ids.end(); ++Outer)
+
+		template<typename TId>
+		bool HasDuplicateIds(const std::vector<TId> &Ids) noexcept
 		{
-			for(auto Inner = Outer + 1; Inner != Ids.end(); ++Inner)
+			for(auto Outer = Ids.begin(); Outer != Ids.end(); ++Outer)
 			{
-				if(*Outer == *Inner)
+				for(auto Inner = Outer + 1; Inner != Ids.end(); ++Inner)
 				{
-					return true;
+					if(*Outer == *Inner)
+					{
+						return true;
+					}
 				}
 			}
-		}
 
-		return false;
-	}
-
-	template<typename TId>
-	bool IdVectorsAreEquivalent(const std::vector<TId> &Expected, const std::vector<TId> &Actual) noexcept
-	{
-		return Expected == Actual;
-	}
-
-	bool ContractImportsAreEquivalent(const std::vector<CModuleContractImport> &Expected, const std::vector<CModuleContractImport> &Actual) noexcept
-	{
-		if(Expected.size() != Actual.size())
-		{
 			return false;
 		}
 
-		for(std::size_t Index = 0; Index < Expected.size(); ++Index)
+		template<typename TId>
+		bool IdVectorsAreEquivalent(const std::vector<TId> &Expected, const std::vector<TId> &Actual) noexcept
 		{
-			if(Expected[Index].Id() != Actual[Index].Id() ||
-				Expected[Index].Version() != Actual[Index].Version() ||
-				Expected[Index].Requirement() != Actual[Index].Requirement())
+			return Expected == Actual;
+		}
+
+		bool ContractImportsAreEquivalent(const std::vector<CModuleContractImport> &Expected, const std::vector<CModuleContractImport> &Actual) noexcept
+		{
+			if(Expected.size() != Actual.size())
 			{
 				return false;
 			}
+
+			for(std::size_t Index = 0; Index < Expected.size(); ++Index)
+			{
+				if(Expected[Index].Id() != Actual[Index].Id() ||
+					Expected[Index].Version() != Actual[Index].Version() ||
+					Expected[Index].Requirement() != Actual[Index].Requirement())
+				{
+					return false;
+				}
+			}
+
+			return true;
 		}
 
-		return true;
-	}
-
-	bool ContractExportsAreEquivalent(const std::vector<CModuleContractExport> &Expected, const std::vector<CModuleContractExport> &Actual) noexcept
-	{
-		if(Expected.size() != Actual.size())
+		bool ContractExportsAreEquivalent(const std::vector<CModuleContractExport> &Expected, const std::vector<CModuleContractExport> &Actual) noexcept
 		{
-			return false;
-		}
-
-		for(std::size_t Index = 0; Index < Expected.size(); ++Index)
-		{
-			if(Expected[Index].Id() != Actual[Index].Id() ||
-				Expected[Index].Version() != Actual[Index].Version())
+			if(Expected.size() != Actual.size())
 			{
 				return false;
 			}
+
+			for(std::size_t Index = 0; Index < Expected.size(); ++Index)
+			{
+				if(Expected[Index].Id() != Actual[Index].Id() ||
+					Expected[Index].Version() != Actual[Index].Version())
+				{
+					return false;
+				}
+			}
+
+			return true;
 		}
 
-		return true;
-	}
-
-} // namespace
+	} // namespace
 
 	bool AreModuleDescriptorsEquivalent(const CModuleDescriptor &Expected, const CModuleDescriptor &Actual) noexcept
 	{
 		return Expected.Id() == Actual.Id() &&
-			IdVectorsAreEquivalent(Expected.FeatureIds(), Actual.FeatureIds()) &&
-			IdVectorsAreEquivalent(Expected.CommandIds(), Actual.CommandIds()) &&
-			IdVectorsAreEquivalent(Expected.ModuleServiceIds(), Actual.ModuleServiceIds()) &&
-			IdVectorsAreEquivalent(Expected.DependencyIds(), Actual.DependencyIds()) &&
-			ContractImportsAreEquivalent(Expected.ContractImports(), Actual.ContractImports()) &&
-			ContractExportsAreEquivalent(Expected.ContractExports(), Actual.ContractExports());
+		       IdVectorsAreEquivalent(Expected.FeatureIds(), Actual.FeatureIds()) &&
+		       IdVectorsAreEquivalent(Expected.CommandIds(), Actual.CommandIds()) &&
+		       IdVectorsAreEquivalent(Expected.ModuleServiceIds(), Actual.ModuleServiceIds()) &&
+		       IdVectorsAreEquivalent(Expected.DependencyIds(), Actual.DependencyIds()) &&
+		       ContractImportsAreEquivalent(Expected.ContractImports(), Actual.ContractImports()) &&
+		       ContractExportsAreEquivalent(Expected.ContractExports(), Actual.ContractExports());
 	}
 
 	bool IsModuleDescriptorOwnershipValid(const IModule &Module) noexcept

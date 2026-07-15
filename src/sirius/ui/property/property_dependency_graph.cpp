@@ -55,9 +55,9 @@ namespace sirius::ui::property
 	bool CPropertyDependencyReference::operator==(const CPropertyDependencyReference &Other) const noexcept
 	{
 		return m_IsSource == Other.m_IsSource &&
-			m_SourceKind == Other.m_SourceKind &&
-			m_TargetKind == Other.m_TargetKind &&
-			m_StableId == Other.m_StableId;
+		       m_SourceKind == Other.m_SourceKind &&
+		       m_TargetKind == Other.m_TargetKind &&
+		       m_StableId == Other.m_StableId;
 	}
 
 	bool CPropertyDependencyReference::operator!=(const CPropertyDependencyReference &Other) const noexcept

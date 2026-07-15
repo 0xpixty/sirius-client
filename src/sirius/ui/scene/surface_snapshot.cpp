@@ -66,11 +66,11 @@ namespace sirius::ui::scene
 	bool IsApprovedInitialUiHostSlot(const CUiHostSlotId &HostSlotId) noexcept
 	{
 		return HostSlotId == UiHostSlotBeforeHUD() ||
-			HostSlotId == UiHostSlotHUD() ||
-			HostSlotId == UiHostSlotOverlay() ||
-			HostSlotId == UiHostSlotMenu() ||
-			HostSlotId == UiHostSlotModal() ||
-			HostSlotId == UiHostSlotDebug();
+		       HostSlotId == UiHostSlotHUD() ||
+		       HostSlotId == UiHostSlotOverlay() ||
+		       HostSlotId == UiHostSlotMenu() ||
+		       HostSlotId == UiHostSlotModal() ||
+		       HostSlotId == UiHostSlotDebug();
 	}
 
 	CSurfaceSnapshot::CSurfaceSnapshot(

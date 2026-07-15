@@ -69,12 +69,12 @@ namespace sirius::ui::property
 	bool CPropertyRuntimeSnapshot::IsEmpty() const noexcept
 	{
 		return m_MetadataRecords.empty() &&
-			m_Storage.IsEmpty() &&
-			m_Diagnostics.IsEmpty() &&
-			m_Generations.IsEmpty() &&
-			m_Invalidations.IsEmpty() &&
-			m_DependencyGraph.IsEmpty() &&
-			m_Evaluation.IsEmpty();
+		       m_Storage.IsEmpty() &&
+		       m_Diagnostics.IsEmpty() &&
+		       m_Generations.IsEmpty() &&
+		       m_Invalidations.IsEmpty() &&
+		       m_DependencyGraph.IsEmpty() &&
+		       m_Evaluation.IsEmpty();
 	}
 
 } // namespace sirius::ui::property

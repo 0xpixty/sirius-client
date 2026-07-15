@@ -8,79 +8,79 @@
 
 namespace sirius::ui::input
 {
-namespace
-{
-	bool IsSupportedDeviceKind(EUiInputDeviceKind Kind) noexcept
+	namespace
 	{
-		switch(Kind)
+		bool IsSupportedDeviceKind(EUiInputDeviceKind Kind) noexcept
 		{
-		case EUiInputDeviceKind::Pointer:
-		case EUiInputDeviceKind::Keyboard:
-		case EUiInputDeviceKind::Gamepad:
-		case EUiInputDeviceKind::Touch:
-		case EUiInputDeviceKind::Text:
-		case EUiInputDeviceKind::Activation:
-			return true;
-		case EUiInputDeviceKind::Unknown:
+			switch(Kind)
+			{
+			case EUiInputDeviceKind::Pointer:
+			case EUiInputDeviceKind::Keyboard:
+			case EUiInputDeviceKind::Gamepad:
+			case EUiInputDeviceKind::Touch:
+			case EUiInputDeviceKind::Text:
+			case EUiInputDeviceKind::Activation:
+				return true;
+			case EUiInputDeviceKind::Unknown:
+				return false;
+			}
+
 			return false;
 		}
 
-		return false;
-	}
-
-	bool IsSupportedEventKind(EUiInputEventKind Kind) noexcept
-	{
-		switch(Kind)
+		bool IsSupportedEventKind(EUiInputEventKind Kind) noexcept
 		{
-		case EUiInputEventKind::Move:
-		case EUiInputEventKind::Press:
-		case EUiInputEventKind::Release:
-		case EUiInputEventKind::Scroll:
-		case EUiInputEventKind::Text:
-		case EUiInputEventKind::Navigation:
-		case EUiInputEventKind::Action:
-		case EUiInputEventKind::Cancel:
-			return true;
-		}
-
-		return false;
-	}
-
-	bool IsSupportedButtonState(EUiInputButtonState State) noexcept
-	{
-		switch(State)
-		{
-		case EUiInputButtonState::None:
-		case EUiInputButtonState::Pressed:
-		case EUiInputButtonState::Released:
-		case EUiInputButtonState::Held:
-			return true;
-		}
-
-		return false;
-	}
-
-	bool IsValidPosition(const CUiInputPosition &Position) noexcept
-	{
-		return std::isfinite(Position.X()) && std::isfinite(Position.Y());
-	}
-
-	bool HasEarlierEventId(
-		const std::vector<CUiInputEventSnapshot> &Events,
-		const CUiInputEventId &EventId,
-		std::size_t CurrentIndex) noexcept
-	{
-		for(std::size_t Index = 0; Index < CurrentIndex; ++Index)
-		{
-			if(Events[Index].Id() == EventId)
+			switch(Kind)
 			{
+			case EUiInputEventKind::Move:
+			case EUiInputEventKind::Press:
+			case EUiInputEventKind::Release:
+			case EUiInputEventKind::Scroll:
+			case EUiInputEventKind::Text:
+			case EUiInputEventKind::Navigation:
+			case EUiInputEventKind::Action:
+			case EUiInputEventKind::Cancel:
 				return true;
 			}
+
+			return false;
 		}
 
-		return false;
-	}
-} // namespace
+		bool IsSupportedButtonState(EUiInputButtonState State) noexcept
+		{
+			switch(State)
+			{
+			case EUiInputButtonState::None:
+			case EUiInputButtonState::Pressed:
+			case EUiInputButtonState::Released:
+			case EUiInputButtonState::Held:
+				return true;
+			}
+
+			return false;
+		}
+
+		bool IsValidPosition(const CUiInputPosition &Position) noexcept
+		{
+			return std::isfinite(Position.X()) && std::isfinite(Position.Y());
+		}
+
+		bool HasEarlierEventId(
+			const std::vector<CUiInputEventSnapshot> &Events,
+			const CUiInputEventId &EventId,
+			std::size_t CurrentIndex) noexcept
+		{
+			for(std::size_t Index = 0; Index < CurrentIndex; ++Index)
+			{
+				if(Events[Index].Id() == EventId)
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+	} // namespace
 
 	CUiInputDiagnosticSnapshot ValidateUiInputSnapshot(
 		const CUiInputSnapshot &Snapshot,

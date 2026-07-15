@@ -8,28 +8,28 @@
 
 namespace sirius::platform::modules
 {
-namespace
-{
-
-	bool ContainsId(const std::vector<CModuleId> &Ids, const CModuleId &Id) noexcept
+	namespace
 	{
-		return std::find(Ids.begin(), Ids.end(), Id) != Ids.end();
-	}
 
-	bool DependenciesAreInitialized(const CModuleDependencyNode &Node, const std::vector<CModuleId> &InitializationOrder) noexcept
-	{
-		for(const auto &DependencyId : Node.DependencyIds())
+		bool ContainsId(const std::vector<CModuleId> &Ids, const CModuleId &Id) noexcept
 		{
-			if(!ContainsId(InitializationOrder, DependencyId))
-			{
-				return false;
-			}
+			return std::find(Ids.begin(), Ids.end(), Id) != Ids.end();
 		}
 
-		return true;
-	}
+		bool DependenciesAreInitialized(const CModuleDependencyNode &Node, const std::vector<CModuleId> &InitializationOrder) noexcept
+		{
+			for(const auto &DependencyId : Node.DependencyIds())
+			{
+				if(!ContainsId(InitializationOrder, DependencyId))
+				{
+					return false;
+				}
+			}
 
-} // namespace
+			return true;
+		}
+
+	} // namespace
 
 	CModuleLifecycleGraph::CModuleLifecycleGraph(std::vector<CModuleId> InitializationOrder, std::vector<CModuleId> ShutdownOrder) :
 		m_InitializationOrder(std::move(InitializationOrder)),

@@ -8,24 +8,24 @@
 
 namespace sirius::platform::modules
 {
-namespace
-{
-
-	bool ContractBindingsAreBackedByDependencies(const CModuleDependencyGraph &DependencyGraph, const CModuleContractResolution &ContractResolution) noexcept
+	namespace
 	{
-		for(const auto &Binding : ContractResolution.Bindings())
+
+		bool ContractBindingsAreBackedByDependencies(const CModuleDependencyGraph &DependencyGraph, const CModuleContractResolution &ContractResolution) noexcept
 		{
-			const auto *pImporter = DependencyGraph.Get(Binding.ImportingModuleId());
-			if(!pImporter || !pImporter->DependsOn(Binding.ExportingModuleId()))
+			for(const auto &Binding : ContractResolution.Bindings())
 			{
-				return false;
+				const auto *pImporter = DependencyGraph.Get(Binding.ImportingModuleId());
+				if(!pImporter || !pImporter->DependsOn(Binding.ExportingModuleId()))
+				{
+					return false;
+				}
 			}
+
+			return true;
 		}
 
-		return true;
-	}
-
-} // namespace
+	} // namespace
 
 	CModuleRuntimeComposition::CModuleRuntimeComposition(
 		CModuleDependencyGraph DependencyGraph,
@@ -112,8 +112,8 @@ namespace
 	EModuleRuntimeCompositionFailureStage ValidateModuleRuntimeDefinitionDescriptorParity(const CModuleDescriptor &Expected, const CModuleDescriptor &Actual) noexcept
 	{
 		return AreModuleDescriptorsEquivalent(Expected, Actual) ?
-			EModuleRuntimeCompositionFailureStage::None :
-			EModuleRuntimeCompositionFailureStage::DescriptorParity;
+			       EModuleRuntimeCompositionFailureStage::None :
+			       EModuleRuntimeCompositionFailureStage::DescriptorParity;
 	}
 
 	CModuleRuntimeCompositionResult BuildModuleRuntimeCompositionResult(const CModuleRegistrationPlan &Plan)

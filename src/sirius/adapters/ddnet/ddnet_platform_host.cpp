@@ -1,8 +1,8 @@
 /* (c) Sirius Client contributors. See licence.txt in the root of the distribution for more information. */
 #include "ddnet_platform_host.h"
 
-#include <sirius/platform/platform_configuration.h>
 #include <sirius/platform/input/source/buffered_input_source.h>
+#include <sirius/platform/platform_configuration.h>
 
 #include <utility>
 

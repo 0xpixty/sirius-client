@@ -77,10 +77,10 @@ namespace sirius::ui::property
 	bool CPropertyGenerationStamp::operator==(const CPropertyGenerationStamp &Other) const noexcept
 	{
 		return m_DeclarationGeneration == Other.m_DeclarationGeneration &&
-			m_EffectiveValueGeneration == Other.m_EffectiveValueGeneration &&
-			m_MetadataGeneration == Other.m_MetadataGeneration &&
-			m_DependencyGeneration == Other.m_DependencyGeneration &&
-			m_DiagnosticGeneration == Other.m_DiagnosticGeneration;
+		       m_EffectiveValueGeneration == Other.m_EffectiveValueGeneration &&
+		       m_MetadataGeneration == Other.m_MetadataGeneration &&
+		       m_DependencyGeneration == Other.m_DependencyGeneration &&
+		       m_DiagnosticGeneration == Other.m_DiagnosticGeneration;
 	}
 
 	bool CPropertyGenerationStamp::operator!=(const CPropertyGenerationStamp &Other) const noexcept

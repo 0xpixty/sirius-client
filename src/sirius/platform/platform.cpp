@@ -4,8 +4,8 @@
 #include <sirius/core/runtime/core_runtime.h>
 #include <sirius/core/runtime/core_runtime_configuration.h>
 #include <sirius/platform/commands/activation/technical_activation_command.h>
-#include <sirius/platform/features/activation/technical_activation_behavior.h>
 #include <sirius/platform/commands/command_id.h>
+#include <sirius/platform/features/activation/technical_activation_behavior.h>
 #include <sirius/platform/features/feature_activation.h>
 #include <sirius/platform/features/feature_activation_state.h>
 #include <sirius/platform/features/feature_id.h>
@@ -351,7 +351,6 @@ namespace sirius::platform
 		{
 			ConfigureStatusCommandActivations(CommandActivation.ActivationId(), CommandActivation.CommandId());
 		}
-
 	}
 
 } // namespace sirius::platform

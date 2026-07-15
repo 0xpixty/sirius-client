@@ -156,9 +156,9 @@ namespace sirius::ui::property
 	bool CPropertyId::operator==(const CPropertyId &Other) const noexcept
 	{
 		return m_ModuleScopeId == Other.m_ModuleScopeId &&
-			m_SurfaceId == Other.m_SurfaceId &&
-			m_OwnerId == Other.m_OwnerId &&
-			m_NameId == Other.m_NameId;
+		       m_SurfaceId == Other.m_SurfaceId &&
+		       m_OwnerId == Other.m_OwnerId &&
+		       m_NameId == Other.m_NameId;
 	}
 
 	bool CPropertyId::operator!=(const CPropertyId &Other) const noexcept
