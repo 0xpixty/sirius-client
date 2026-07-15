@@ -29,6 +29,9 @@ public:
 private:
 	bool m_WasActive = false;
 	bool m_Active = false;
+	float m_AnimationProgress = 0.0f;
+	float m_HighlightAngle = 0.0f;
+	float m_HighlightProgress = 0.0f;
 
 	vec2 m_SelectorMouse = vec2(0.0f, 0.0f);
 	int m_SelectedBind = -1;

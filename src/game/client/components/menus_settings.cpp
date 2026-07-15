@@ -2161,6 +2161,16 @@ void CMenus::RenderSettingsBindWheel(CUIRect MainView)
 	s_Selected = std::clamp(s_Selected, 0, SliceCount - 1);
 
 	CUIRect Headline, Hint, SlotRow, Left, Right, Row, Label, Field;
+	const auto DoAccentEditBox = [&](CLineInput *pInput, const CUIRect &Rect, float FontSize) {
+		const bool Active = pInput->IsActive();
+		const bool Hovered = Ui()->MouseHovered(&Rect);
+		const ColorRGBA OutlineColor = AccentColor().WithAlpha(Active ? 1.0f : (Hovered ? 0.7f : 0.4f));
+		Rect.Draw(OutlineColor, IGraphics::CORNER_ALL, 5.0f);
+		CUIRect Inner;
+		Rect.Margin(1.5f, &Inner);
+		const ColorRGBA BackgroundColor(0.08f, 0.08f, 0.08f, 0.96f);
+		return Ui()->DoClearableEditBox(pInput, &Inner, FontSize, IGraphics::CORNER_ALL, {}, &BackgroundColor);
+	};
 
 	MainView.HSplitTop(30.0f, &Headline, &MainView);
 	Ui()->DoLabel(&Headline, Localize("Bind Wheel"), 20.0f, TEXTALIGN_ML);
@@ -2231,7 +2241,7 @@ void CMenus::RenderSettingsBindWheel(CUIRect MainView)
 	static CLineInput s_NameInput;
 	s_NameInput.SetBuffer(BindWheel.m_vBinds[s_Selected].m_aName, sizeof(BindWheel.m_vBinds[s_Selected].m_aName));
 	s_NameInput.SetEmptyText(Localize("e.g. Kill"));
-	if(Ui()->DoClearableEditBox(&s_NameInput, &Field, 12.0f))
+	if(DoAccentEditBox(&s_NameInput, Field, 12.0f))
 		SaveMClient();
 
 	Right.HSplitTop(12.0f, nullptr, &Right);
@@ -2241,8 +2251,29 @@ void CMenus::RenderSettingsBindWheel(CUIRect MainView)
 	static CLineInput s_CommandInput;
 	s_CommandInput.SetBuffer(BindWheel.m_vBinds[s_Selected].m_aCommand, sizeof(BindWheel.m_vBinds[s_Selected].m_aCommand));
 	s_CommandInput.SetEmptyText(Localize("e.g. kill"));
-	if(Ui()->DoClearableEditBox(&s_CommandInput, &Field, 12.0f))
+	if(DoAccentEditBox(&s_CommandInput, Field, 12.0f))
 		SaveMClient();
+
+	Right.HSplitTop(12.0f, nullptr, &Right);
+	Right.HSplitTop(16.0f, &Label, &Right);
+	Ui()->DoLabel(&Label, Localize("Quick presets"), 12.0f, TEXTALIGN_ML);
+	Right.HSplitTop(4.0f, nullptr, &Right);
+	Right.HSplitTop(24.0f, &Row, &Right);
+	static CButtonContainer s_aPresetButtons[3];
+	static constexpr const char *s_apPresetLabels[3] = {"/team {}", "/team0mode", "/lock"};
+	static constexpr const char *s_apPresetCommands[3] = {"say \"/team {}\"", "say \"/team0mode\"", "say \"/lock\""};
+	for(int i = 0; i < 3; ++i)
+	{
+		CUIRect Button;
+		Row.VSplitLeft((Row.w - 12.0f) / (3 - i), &Button, &Row);
+		if(i < 2)
+			Row.VSplitLeft(6.0f, nullptr, &Row);
+		if(DoButton_Menu(&s_aPresetButtons[i], s_apPresetLabels[i], 0, &Button))
+		{
+			str_copy(BindWheel.m_vBinds[s_Selected].m_aCommand, s_apPresetCommands[i]);
+			SaveMClient();
+		}
+	}
 
 	Right.HSplitTop(16.0f, nullptr, &Right);
 	Right.HSplitTop(16.0f, &Row, &Right);
